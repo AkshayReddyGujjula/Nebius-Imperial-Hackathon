@@ -7,7 +7,7 @@ import { TopBar } from '@/components/TopBar'
 import { EmptyState } from '@/components/EmptyState'
 import { ChatPanel } from '@/components/chat/ChatPanel'
 import { QuestionDeck } from '@/components/chat/QuestionDeck'
-import { MatrixDrawer } from '@/components/matrix/MatrixDrawer'
+import { SummaryPanel } from '@/components/summary/SummaryPanel'
 import { Inspector } from '@/components/inspector/Inspector'
 import { useShortcuts } from '@/components/useShortcuts'
 import { FeedRail } from '@/components/feed/FeedRail'
@@ -65,7 +65,7 @@ export default function App() {
         ) : (
           <>
             <div className="dl-fade-in relative min-h-0 flex-1"><Canvas /></div>
-            <MatrixDrawer />
+            <SummaryPanel />
             <QuestionDeck />
           </>
         )}
