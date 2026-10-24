@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { ChevronDown, ChevronUp, RefreshCw, Table2 } from 'lucide-react'
+import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, RefreshCw, Table2 } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { nodeId } from '@shared/index'
 import { useCrux } from '@/store/runStore'
@@ -41,8 +41,27 @@ function Summary() {
   const ready = status === 'ready' && !!synthesis && !!plan
   const wasReady = useRef(ready)
   const [justRevealed, setJustRevealed] = useState(false)
+  // Narrow centre column → one card at a time ("slides") with dots; wide → three cards side by side.
+  const [panelEl, setPanelEl] = useState<HTMLElement | null>(null)
+  const [narrow, setNarrow] = useState(false)
+  const [slide, setSlide] = useState(0)
+  const touched = useRef(false)
   useEffect(() => {
-    if (ready && !wasReady.current) { setJustRevealed(true); setCollapsed(false) }
+    const el = panelEl
+    if (!el) return
+    const ro = new ResizeObserver(([e]) => setNarrow(e.contentRect.width < 760))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [panelEl])
+  useEffect(() => {
+    if (ready && !wasReady.current) {
+      setJustRevealed(true); setCollapsed(false); setSlide(0); touched.current = false
+      // Auto-advance once through the slides on first reveal; any click stops it.
+      const t1 = setTimeout(() => { if (!touched.current) setSlide(1) }, 4000)
+      const t2 = setTimeout(() => { if (!touched.current) setSlide(2) }, 8000)
+      wasReady.current = ready
+      return () => { clearTimeout(t1); clearTimeout(t2) }
+    }
     wasReady.current = ready
   }, [ready])
 
@@ -66,6 +85,7 @@ function Summary() {
   const reasons = reasonsSrc.slice(0, 2).map((r) => clip(r, 10))
   const ifs = (synthesis?.conditions ?? []).map(splitIf).filter((x): x is { care: string; pick: string } => !!x).slice(0, 3)
     .map(({ care, pick }) => ({ care: clip(care, 4), pick: clip(pick, 4) }))
+  const go = (i: number) => { touched.current = true; setSlide(i) }
 
   const openEvidence = () => { setViewMode('detailed'); select(nodeId.recommendation) }
 
@@ -82,7 +102,7 @@ function Summary() {
   }
 
   return (
-    <section aria-label="Your summary" className={`sm-panel${justRevealed ? ' sm-reveal' : ''}`}
+    <section ref={setPanelEl} aria-label="Your summary" className={`sm-panel${justRevealed ? ' sm-reveal' : ''}`}
       onAnimationEnd={(e) => { if (e.target === e.currentTarget) setJustRevealed(false) }}>
       <header className="sm-head">
         <h2>Your summary</h2>
@@ -111,8 +131,10 @@ function Summary() {
         </div>
       ) : (
         <>
-          <div className="sm-cards">
-            <article className="sm-card" style={{ animationDelay: '0ms' }}>
+          <div className={`sm-cards${narrow ? ' sm-slides' : ''}`}>
+            {(() => {
+              const cards = [
+            <article key="best" className="sm-card" style={{ animationDelay: '0ms' }}>
               <h3>Best fit for you</h3>
               <p className="sm-key">{headline}</p>
               <ul className="sm-bars">
@@ -124,17 +146,30 @@ function Summary() {
                   </li>
                 ))}
               </ul>
-            </article>
-            <article className="sm-card" style={{ animationDelay: '250ms' }}>
+            </article>,
+            <article key="why" className="sm-card" style={{ animationDelay: narrow ? '0ms' : '250ms' }}>
               <h3>Why</h3>
               <ul className="sm-list">{reasons.map((r, i) => <li key={i}>{r}</li>)}</ul>
-            </article>
-            {ifs.length > 0 ? (
-              <article className="sm-card" style={{ animationDelay: '500ms' }}>
+            </article>,
+            ...(ifs.length > 0 ? [
+              <article key="ifs" className="sm-card" style={{ animationDelay: narrow ? '0ms' : '500ms' }}>
                 <h3>If you care most about…</h3>
                 <ul className="sm-ifs">{ifs.map((x, i) => <li key={i}><span>{x.care}</span><em>→</em><b>{x.pick}</b></li>)}</ul>
-              </article>
-            ) : null}
+              </article>] : []),
+              ]
+              if (!narrow) return cards
+              const i = Math.min(slide, cards.length - 1)
+              return (
+                <>
+                  {cards[i]}
+                  <nav className="sm-nav" aria-label="Summary steps">
+                    <button type="button" aria-label="Previous" disabled={i === 0} onClick={() => go(i - 1)}><ChevronLeft className="!size-4" /></button>
+                    {cards.map((c, j) => <button key={c.key} type="button" className="sm-dot" data-on={j === i} aria-label={`Step ${j + 1}`} onClick={() => go(j)} />)}
+                    <button type="button" aria-label="Next" disabled={i === cards.length - 1} onClick={() => go(i + 1)}><ChevronRight className="!size-4" /></button>
+                  </nav>
+                </>
+              )
+            })()}
           </div>
           <footer className="sm-foot">
             <span>From your answers and {sourceCount} checked sources.</span>

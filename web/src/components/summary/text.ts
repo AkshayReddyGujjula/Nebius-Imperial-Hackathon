@@ -16,5 +16,6 @@ export function splitIf(c: string): { care: string; pick: string } | null {
   if (!m) return null
   const care = m[1].replace(/^(?:you\s+)?(?:value|care (?:most )?about|prioriti[sz]e)\s+/i, '')
   const pick = m[2].split(/\s+[—–]\s+|\s+-\s+/)[0].replace(/^(?:you should\s+|choose\s+|pick\s+|go with\s+)/i, '')
+    .replace(/\s+(?:fits|is|works)\s+(?:best|better)\b.*$/i, '')
   return { care, pick }
 }

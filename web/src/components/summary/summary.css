@@ -33,6 +33,12 @@
 .sm-bars li[data-lead='true'] .sm-track span { background: var(--crux-accent); }
 @keyframes sm-grow { from { transform: scaleX(0) } to { transform: scaleX(1) } }
 .sm-val { text-align: right; }
+.sm-slides { display: flex; flex-direction: column; gap: 6px; }
+.sm-slides .sm-card { animation-duration: 300ms; }
+.sm-nav { display: flex; align-items: center; justify-content: center; gap: 8px; }
+.sm-nav button:disabled { opacity: .3; }
+.sm-dot { width: 9px; height: 9px; border-radius: 999px; background: var(--crux-border-strong); transition: width 200ms var(--crux-ease); }
+.sm-dot[data-on='true'] { width: 22px; background: var(--crux-accent); }
 .sm-list { display: flex; flex-direction: column; gap: 6px; font-size: 16px; line-height: 1.3; }
 .sm-list li::before { content: '✓'; color: var(--crux-accent); font-weight: 700; margin-right: 8px; }
 .sm-ifs { display: flex; flex-direction: column; gap: 6px; font-size: 15px; line-height: 1.3; }
