@@ -1,0 +1,72 @@
+/* Live research-agent activity on canvas cards (QuestionNode / FindingNode). Paper & Forest palette. */
+
+/* ── State pill with progress ring ─────────────────────────────────────── */
+.ax-pill { --ax-c: var(--crux-text-tertiary); --ax-bg: var(--crux-subtle); display: inline-flex; align-items: center; gap: 4px; height: 18px; padding: 0 7px 0 3px; border-radius: var(--crux-radius-pill); background: var(--ax-bg); color: var(--ax-c); font-size: 11px; line-height: 14px; font-weight: 600; letter-spacing: 0; text-transform: none; white-space: nowrap; flex: none; }
+.ax-pill-queued { --ax-c: var(--crux-text-tertiary); --ax-bg: var(--crux-subtle); }
+.ax-pill-searching { --ax-c: var(--dl-status-active); --ax-bg: var(--crux-accent-soft); }
+.ax-pill-reading { --ax-c: var(--dl-status-reading); --ax-bg: color-mix(in srgb, var(--dl-status-reading) 12%, #FFFDF8); }
+.ax-pill-thinking { --ax-c: #6A5A86; --ax-bg: color-mix(in srgb, #6A5A86 12%, #FFFDF8); }
+.ax-pill-writing { --ax-c: var(--dl-status-warn); --ax-bg: var(--dl-status-warn-soft); }
+.ax-pill-done { --ax-c: var(--dl-status-done); --ax-bg: var(--crux-ok-soft); }
+.ax-pill-failed { --ax-c: var(--dl-status-failed); --ax-bg: var(--dl-status-failed-soft); }
+
+.ax-ring { width: 13px; height: 13px; flex: none; transform: rotate(-90deg); }
+.ax-ring circle { fill: none; stroke-width: 2; }
+.ax-ring .ax-ring-track { stroke: color-mix(in srgb, var(--ax-c) 22%, transparent); }
+.ax-ring .ax-ring-bar { stroke: var(--ax-c); stroke-linecap: round; transition: stroke-dashoffset .6s cubic-bezier(.2,0,0,1); }
+.ax-ring.is-spin { animation: ax-spin 1.6s linear infinite; }
+.ax-ring-icon { width: 13px; height: 13px; flex: none; }
+
+/* ── Header model line ─────────────────────────────────────────────────── */
+.ax-who { font-size: 11px; line-height: 14px; color: var(--crux-text-tertiary); margin: -2px 0 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; }
+.ax-who b { font-weight: 600; color: var(--crux-text-secondary); }
+
+/* ── Activity panel ────────────────────────────────────────────────────── */
+.ax-panel { position: relative; margin-top: 6px; flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; gap: 4px; overflow: hidden; }
+.ax-label { display: flex; align-items: center; gap: 6px; font-size: 10.5px; line-height: 13px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--crux-text-quaternary); flex: none; }
+.ax-label .ax-count { margin-left: auto; font-weight: 500; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; color: var(--crux-text-tertiary); }
+
+.ax-query { position: relative; overflow: hidden; border-radius: var(--crux-radius-chip); border: 1px solid var(--crux-accent-border); background: var(--crux-accent-soft); padding: 3px 7px; font-family: var(--font-mono, ui-monospace, monospace); font-size: 11.5px; line-height: 16px; color: var(--crux-accent-text); display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow-wrap: anywhere; flex: none; }
+.ax-query.is-live::after { content: ""; position: absolute; inset: 0; background: linear-gradient(100deg, transparent 20%, rgba(255,253,248,.7) 50%, transparent 80%); transform: translateX(-100%); animation: ax-shimmer 1.8s ease-in-out infinite; pointer-events: none; }
+
+.ax-caret { display: inline-block; width: 6px; height: 1em; margin-left: 1px; vertical-align: -2px; background: currentColor; opacity: .7; animation: ax-blink 1s steps(1) infinite; }
+
+/* Source chips strip — scrolls horizontally inside React Flow (nowheel). */
+.ax-strip { display: flex; gap: 4px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; padding-bottom: 2px; flex: none; }
+.ax-strip::-webkit-scrollbar { display: none; }
+.ax-src { position: relative; display: inline-flex; align-items: center; gap: 4px; height: 20px; max-width: 120px; padding: 0 6px 0 3px; border: 1px solid var(--crux-border); border-radius: var(--crux-radius-chip); background: var(--crux-surface); color: var(--crux-text-secondary); font-size: 11px; line-height: 14px; white-space: nowrap; flex: none; overflow: hidden; transition: border-color .25s, background .25s, color .25s; }
+.ax-src > span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.ax-fav { display: inline-grid; place-items: center; width: 14px; height: 14px; border-radius: 3px; font-size: 9px; font-weight: 700; color: #FFFDF8; flex: none; text-transform: uppercase; }
+.ax-src.is-reading { border-color: color-mix(in srgb, var(--dl-status-reading) 45%, transparent); background: color-mix(in srgb, var(--dl-status-reading) 8%, #FFFDF8); color: var(--dl-status-reading); }
+.ax-src.is-reading::after { content: ""; position: absolute; left: 0; bottom: 0; height: 2px; width: 100%; background: var(--dl-status-reading); transform-origin: left; animation: ax-read 1.1s linear infinite; }
+
+.ax-think { font-size: 12px; line-height: 17px; color: var(--crux-text-secondary); font-style: italic; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; overflow: hidden; overflow-wrap: anywhere; }
+.ax-text { font-size: 12.5px; line-height: 18px; color: var(--crux-text-secondary); overflow-wrap: anywhere; }
+.ax-text.is-strong { color: var(--crux-text); }
+.ax-text.is-bad { color: var(--crux-bad); }
+.ax-scroll { overflow-y: auto; min-height: 0; flex: 1 1 auto; scrollbar-width: thin; }
+
+/* Finding chip that pops in when finding.added lands. */
+.ax-fchip { display: inline-flex; align-items: center; gap: 4px; height: 20px; max-width: 100%; padding: 0 7px; border-radius: var(--crux-radius-chip); font-size: 11px; line-height: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; flex: none; align-self: flex-start; }
+.ax-fchip svg { width: 12px; height: 12px; flex: none; }
+.ax-fchip-ok { background: var(--crux-ok-soft); border: 1px solid var(--crux-ok-border); color: var(--crux-ok); }
+.ax-fchip-warn { background: var(--crux-warn-soft); border: 1px solid var(--crux-warn-border); color: var(--crux-warn); }
+
+/* Finding node verified / unverified stamp. */
+.ax-stamp { position: absolute; top: 8px; right: 8px; display: inline-flex; align-items: center; gap: 3px; height: 16px; padding: 0 5px; border-radius: 4px; font-size: 9.5px; line-height: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; transform: rotate(-4deg); border: 1px solid currentColor; opacity: .9; pointer-events: none; }
+.ax-stamp svg { width: 10px; height: 10px; }
+.ax-stamp-ok { color: var(--crux-ok); background: var(--crux-ok-soft); }
+.ax-stamp-warn { color: var(--crux-warn); background: var(--crux-warn-soft); }
+.ax-fid { font-family: var(--font-mono, ui-monospace, monospace); font-size: 10.5px; color: var(--crux-text-quaternary); margin-right: 4px; }
+.ax-claim-pad { padding-right: 62px; }
+
+@keyframes ax-spin { from { transform: rotate(-90deg); } to { transform: rotate(270deg); } }
+@keyframes ax-shimmer { 0% { transform: translateX(-100%); } 60%, 100% { transform: translateX(100%); } }
+@keyframes ax-blink { 50% { opacity: 0; } }
+@keyframes ax-read { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .ax-ring.is-spin, .ax-query.is-live::after, .ax-caret, .ax-src.is-reading::after { animation: none; }
+  .ax-query.is-live::after { display: none; }
+  .ax-ring .ax-ring-bar, .ax-src { transition: none; }
+}
