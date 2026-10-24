@@ -5,7 +5,7 @@ import { mockSpeedFromUrl, playMock } from '@/dev/mockRun'
 import { Canvas } from '@/graph/Canvas'
 import { TopBar } from '@/components/TopBar'
 import { EmptyState } from '@/components/EmptyState'
-import { ActivityRail } from '@/components/rail/ActivityRail'
+import { ChatPanel } from '@/components/chat/ChatPanel'
 import { MatrixDrawer } from '@/components/matrix/MatrixDrawer'
 import { Inspector } from '@/components/inspector/Inspector'
 import { useShortcuts } from '@/components/useShortcuts'
@@ -50,12 +50,13 @@ export default function App() {
     setError(null)
   }, [])
 
+  const idle = phase === 'idle'
   return (
-    <div className="grid h-dvh grid-cols-[280px_minmax(0,1fr)] grid-rows-[52px_minmax(0,1fr)] overflow-hidden bg-crux-page text-crux-text">
+    <div className={`grid h-dvh grid-rows-[52px_minmax(0,1fr)] overflow-hidden bg-crux-page text-crux-text transition-[grid-template-columns] duration-[240ms] ease-[cubic-bezier(.2,0,0,1)] ${idle ? 'grid-cols-[0px_minmax(0,1fr)]' : 'grid-cols-[420px_minmax(0,1fr)]'}`}>
       <TopBar onNewDecision={newDecision} />
-      <ActivityRail />
+      <div className="min-h-0 min-w-0 overflow-hidden">{idle ? null : <ChatPanel />}</div>
       <main className="relative flex min-h-0 min-w-0 flex-col">
-        {phase === 'idle' ? (
+        {idle ? (
           <EmptyState onRun={run} onReplay={replay} error={error} />
         ) : (
           <>

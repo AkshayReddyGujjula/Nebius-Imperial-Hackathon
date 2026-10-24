@@ -45,7 +45,7 @@ export function Composer({ onSubmit, mic, error }: { onSubmit: (text: string) =>
         />
         <div className="mt-2 flex items-center gap-2">
           <span className="text-[12px] text-crux-text-tertiary">
-            <kbd className="ui-mono">Enter</kbd> to run · <kbd className="ui-mono">Shift</kbd>+<kbd className="ui-mono">Enter</kbd> new line
+            <kbd className="ui-mono">Enter</kbd> to send · <kbd className="ui-mono">Shift</kbd>+<kbd className="ui-mono">Enter</kbd> new line
           </span>
           <div className="flex-1" />
           {draft.length > 3500 ? (
@@ -56,7 +56,7 @@ export function Composer({ onSubmit, mic, error }: { onSubmit: (text: string) =>
           ) : null}
           {mic}
           <button id="crux-run" type="button" className="ui-btn primary icon !size-9" disabled={!ready || busy}
-            onClick={submit} aria-label="Run" title={ready ? 'Run' : 'Write at least 10 characters'}>
+            onClick={submit} aria-label="Send" title={ready ? 'Send' : 'Write at least 10 characters'}>
             <ArrowUp className="!size-4" />
           </button>
         </div>

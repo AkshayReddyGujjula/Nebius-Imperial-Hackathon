@@ -1,5 +1,5 @@
 import type {
-  BlindSpotAnswerRequest, ClarifyRequest, ClarifyResponse, CreateReplayRequest, CreateRunRequest, CreateRunResponse,
+  BlindSpotAnswerRequest, ChatRequest, ChatResponse, ClarifyRequest, ClarifyResponse, CreateReplayRequest, CreateRunRequest, CreateRunResponse,
   DeeperRequest, DeeperResponse, FollowupRequest, HealthResponse, LadderRequest,
   LadderResponse, ReplayInfo, SynthesizeRequest, TranscribeResponse,
 } from '@shared/api'
@@ -46,6 +46,9 @@ export const researchBlindSpot = (runId: string): Promise<DeeperResponse> => req
 export const answerBlindSpot = (runId: string, body: BlindSpotAnswerRequest): Promise<void> => req('POST', `${run(runId)}/blindspot/answer`, body)
 export const synthesize = (runId: string, body: SynthesizeRequest): Promise<{ ok: true }> => req('POST', `${run(runId)}/synthesize`, body)
 export const runLadder = (runId: string, body: LadderRequest): Promise<LadderResponse> => req('POST', `${run(runId)}/ladder`, body)
+/** Sends a chat message on the live run; the reply arrives later as a `chat.message` event. */
+export const sendChat = (runId: string, text: string, inputMode: 'text' | 'voice' = 'text'): Promise<ChatResponse> =>
+  req('POST', `${run(runId)}/chat`, { text, inputMode } satisfies ChatRequest)
 export const followup = (runId: string, body: FollowupRequest): Promise<void> => req('POST', `${run(runId)}/followup`, body)
 export async function transcribe(audio: Blob): Promise<TranscribeResponse> {
   const form = new FormData()
