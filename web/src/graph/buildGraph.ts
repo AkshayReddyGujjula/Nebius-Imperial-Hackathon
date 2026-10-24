@@ -58,20 +58,27 @@ export function buildEdges(input: EdgeInput): Edge[] {
     const status = agents[agentByQuestion[headId.slice(2)]]?.status
     return !status || status === 'queued'
   }
+  // The decision → question edge flows while that question's agent is searching, reading, thinking or writing.
+  const WORKING = new Set(['searching', 'reading', 'thinking', 'writing'])
+  const headWorking = (headId: string): boolean => {
+    if (headId === nodeId.blindspot) return false
+    const status = agents[agentByQuestion[headId.slice(2)]]?.status
+    return !!status && WORKING.has(status)
+  }
 
   const edges: Edge[] = []
-  const tree = (source: string, target: string, type: 'smoothstep' | 'straight' | 'bus', dashed: boolean): Edge => ({
+  const tree = (source: string, target: string, type: 'smoothstep' | 'straight' | 'bus', dashed: boolean, working = false): Edge => ({
     id: `e:${source}>${target}`,
     source, target, type,
     sourceHandle: 'b', targetHandle: 't',
-    className: onPath.has(`${source}>${target}`) ? 'edge-active' : dashed ? 'edge-queued' : 'edge-solid',
+    className: onPath.has(`${source}>${target}`) ? 'edge-active' : working ? 'edge-working' : dashed ? 'edge-queued' : 'edge-solid',
     selectable: false,
     focusable: false,
   })
 
   for (const col of layout.columns) {
     if (col.length === 0) continue
-    edges.push(tree(nodeId.decision, col[0], 'smoothstep', headQueued(col[0])))
+    edges.push(tree(nodeId.decision, col[0], 'smoothstep', headQueued(col[0]), headWorking(col[0])))
     for (let i = 1; i < col.length; i++) edges.push(tree(col[i - 1], col[i], 'straight', false))
     edges.push(tree(col[col.length - 1], nodeId.recommendation, 'bus', !synthesisReady))
   }

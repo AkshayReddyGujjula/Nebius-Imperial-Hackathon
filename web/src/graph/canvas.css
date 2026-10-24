@@ -13,6 +13,8 @@
 /* Edges */
 .cx-canvas .react-flow__edge-path { stroke: var(--crux-edge); stroke-width: 1.25; transition: stroke var(--crux-duration) var(--crux-ease); }
 .cx-canvas .react-flow__edge.edge-queued .react-flow__edge-path { stroke-dasharray: 4 4; }
+.cx-canvas .react-flow__edge.edge-working .react-flow__edge-path { stroke: var(--crux-accent); stroke-width: 1.5; stroke-dasharray: 5 4; animation: cx-edge-flow .8s linear infinite; }
+@keyframes cx-edge-flow { to { stroke-dashoffset: -9; } }
 .cx-canvas .react-flow__edge.edge-active .react-flow__edge-path { stroke: var(--crux-accent); stroke-width: 1.5; }
 .cx-canvas .react-flow__edge.edge-contradiction .react-flow__edge-path { stroke: var(--crux-contradiction); stroke-dasharray: 3 3; stroke-width: 1.25; }
 
