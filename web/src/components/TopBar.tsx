@@ -6,6 +6,7 @@ import { selectTopStatus } from '@/store/selectors'
 import { fmtClock } from '@/lib/format'
 import { Dot, dotForTone } from './common/StatusDot'
 import { useNow } from './useNow'
+import { ModelLegend } from '@/components/ModelLegend'
 
 const API = import.meta.env.VITE_API_BASE ?? ''
 const FINISHED = ['done', 'failed', 'timeout']
@@ -104,8 +105,7 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
         </div>
       ) : null}
 
-      {/* Slot for <ModelLegend /> (mounted by the orchestrator), just left of the view toggle. */}
-      <div className="dl-topbar-slot flex flex-none items-center" />
+      <div className="dl-topbar-slot flex flex-none items-center"><ModelLegend /></div>
 
       <div className="ui-seg" role="radiogroup" aria-label="View mode">
         {(['simple', 'detailed'] as const).map((m) => (
