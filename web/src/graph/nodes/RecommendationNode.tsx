@@ -24,7 +24,10 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
     })
     return { k: open.length, m: qs.length }
   }))
-  const stale = useCrux(useShallow((s) => selectRecommendationStale(s)))
+  const stale = useCrux(useShallow((s) => {
+    const r = selectRecommendationStale(s)
+    return { stale: r.stale, reasons: r.reasons.join(' · ') }
+  }))
   const select = useCrux((s) => s.select)
 
   const ready = status === 'ready' && synthesis
@@ -36,7 +39,7 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
         Recommendation
         {ready && stale.stale && (
           <span className="cx-right">
-            <span className="cx-stale" title={stale.reasons.join(' Â· ')}>
+            <span className="cx-stale" title={stale.reasons}>
               <TriangleAlert style={{ width: 12, height: 12 }} />
               New information since this was written.
             </span>
