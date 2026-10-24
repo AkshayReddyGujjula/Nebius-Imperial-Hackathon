@@ -1,6 +1,6 @@
 import type { CruxEvent, EventOf, Question } from '@shared/index'
 import { nodeId, parseNodeId } from '@shared/ids'
-import { fmtMs } from '@/lib/format'
+import { clip, fmtMs } from '@/lib/format'
 import type { ActivityItem, ActivityTone, AgentView, ReasoningView, RunData, UiState } from './types'
 
 export type ReducerState = RunData & UiState
@@ -21,7 +21,7 @@ export function qLabel(s: Pick<RunData, 'plan'>, questionId: string): string {
 export function qShort(s: Pick<RunData, 'plan'>, questionId: string): string {
   const q = s.plan?.questions.find((x) => x.id === questionId)
   const t = q?.text ?? ''
-  return t.length > 48 ? `${t.slice(0, 47).trimEnd()}…` : t
+  return clip(t, 48)
 }
 export function prettyModel(model: string): string {
   return model.includes('/') ? model.slice(model.lastIndexOf('/') + 1) : model
@@ -225,7 +225,7 @@ function apply(s: ReducerState, e: CruxEvent): Patch {
       if (!s.plan) return {}
       const plan = { ...s.plan, questions: upsertQuestion(s.plan.questions, e.question) }
       const blind = e.question.origin === 'blindspot'
-      const t = e.question.text.length > 48 ? `${e.question.text.slice(0, 47).trimEnd()}…` : e.question.text
+      const t = clip(e.question.text, 48)
       return {
         plan,
         acts: [item(e, 0, 'accent', blind ? 'Researching your blind spot' : `Digging deeper: ${t}`,

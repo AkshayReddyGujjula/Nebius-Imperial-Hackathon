@@ -18,3 +18,11 @@ export function fmtClock(ms: number): string {
 
 export const optionLetter = (i: number): string => String.fromCharCode(65 + i)
 export const pct = (value: number): string => `${Math.round(value * 100)}%`
+
+/** Shortens text to at most `max` characters, cutting at a word boundary and adding "…". */
+export function clip(text: string, max: number): string {
+  if (text.length <= max) return text
+  const cut = text.slice(0, max - 1)
+  const space = cut.lastIndexOf(' ')
+  return `${(space > max * 0.5 ? cut.slice(0, space) : cut).replace(/[\s,;:.\-–—]+$/, '')}…`
+}
