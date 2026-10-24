@@ -105,7 +105,8 @@ export async function synthesize(ctx: RunContext, summarizer: Summarizer, weight
       try {
         out = await callJson(ctx, "orchestrator", SynthesisOut, {
           model: CONFIG.models.orchestrator, reasoningEffort: "max", maxTokens: 32000, timeoutMs: 90_000, messages, onReasoning });
-      } catch {
+      } catch (err) {
+        console.warn("[synthesize] max effort failed:", err);
         out = await callJson(ctx, "orchestrator", SynthesisOut, {
           model: CONFIG.models.orchestrator, reasoningEffort: "high", maxTokens: 32000, timeoutMs: 60_000, messages, onReasoning });
       }
