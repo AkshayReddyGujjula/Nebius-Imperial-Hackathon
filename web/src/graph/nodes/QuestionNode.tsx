@@ -46,7 +46,7 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
         <b>{modelName(agent?.model || 'deepseek')}</b> · effort {EFFORT_WORD[question.effort]}
         {detailed && agent?.usage ? ` · ${fmtTokens(agent.usage.outputTokens)} tok · ${fmtMs(agent.usage.ms)}` : ''}
       </div>
-      <div className="cx-title cx-clamp-2">{question.text}</div>
+      <div className={`cx-title ${detailed ? 'cx-clamp-1' : 'cx-clamp-2'}`} title={question.text}>{question.text}</div>
       {agent ? (
         <AgentActivity agentId={agent.id} questionId={qid} total={total} summary={summary} />
       ) : (
