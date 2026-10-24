@@ -1,6 +1,7 @@
 import { existsSync, readFileSync } from "node:fs";
 import { join, relative } from "node:path";
 import { Hono, type Context } from "hono";
+import { MODEL_IDS } from "@shared/models";
 import { cors } from "hono/cors";
 import { streamSSE } from "hono/streaming";
 import { serve } from "@hono/node-server";
@@ -71,11 +72,7 @@ app.post("/api/clarify", async (c) => {
 });
 
 const DEFAULT_MODELS = { ...CONFIG.models };
-const ALLOWED_MODELS = {
-  orchestrator: ["deepseek-ai/DeepSeek-V4.1-Flash-1017", "deepseek-ai/DeepSeek-V4.1-Flash"],
-  agent: ["deepseek-ai/DeepSeek-V4.1-Flash-1017", "deepseek-ai/DeepSeek-V4.1-Flash"],
-  audit: ["MiniMaxAI/MiniMax-M3.1-Flash", "zai-org/GLM-5.3-Flash", "Qwen/Qwen3-30B-A3B-Instruct-2507"],
-};
+const ALLOWED_MODELS = { orchestrator: MODEL_IDS, agent: MODEL_IDS, audit: MODEL_IDS };
 
 app.post("/api/runs", async (c) => {
   const body = await readJson<CreateRunRequest>(c);

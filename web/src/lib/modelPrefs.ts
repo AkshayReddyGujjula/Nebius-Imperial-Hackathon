@@ -1,20 +1,8 @@
 import type { RunModels } from '@shared/api'
+import { MODEL_CATALOG } from '@shared/models'
 
-export const MODEL_CHOICES = {
-  orchestrator: [
-    { id: 'deepseek-ai/DeepSeek-V4.1-Flash-1017', name: 'DeepSeek V4.1 Flash (1017)' },
-    { id: 'deepseek-ai/DeepSeek-V4.1-Flash', name: 'DeepSeek V4.1 Flash' },
-  ],
-  agent: [
-    { id: 'deepseek-ai/DeepSeek-V4.1-Flash-1017', name: 'DeepSeek V4.1 Flash (1017)' },
-    { id: 'deepseek-ai/DeepSeek-V4.1-Flash', name: 'DeepSeek V4.1 Flash' },
-  ],
-  audit: [
-    { id: 'MiniMaxAI/MiniMax-M3.1-Flash', name: 'MiniMax M3.1 Flash' },
-    { id: 'zai-org/GLM-5.3-Flash', name: 'GLM-5.3 Flash' },
-    { id: 'Qwen/Qwen3-30B-A3B-Instruct-2507', name: 'Qwen3 30B A3B' },
-  ],
-} as const
+const CHOICES = MODEL_CATALOG.map((m) => ({ id: m.id, name: `${m.name} · ${m.tier === 'smart' ? 'smart' : 'cheap'} · $${m.in}/$${m.out}${m.tested ? ' · tested' : ''}` }))
+export const MODEL_CHOICES = { orchestrator: CHOICES, agent: CHOICES, audit: CHOICES }
 
 export interface Preset { id: string; name: string; why: string; models: Required<RunModels> }
 
@@ -28,6 +16,12 @@ export const PRESETS: Preset[] = [
   { id: 'budget', name: 'Budget reviewer',
     why: 'Qwen3 30B, a small mixture-of-experts model, reviews at about a third of the price of MiniMax.',
     models: { orchestrator: 'deepseek-ai/DeepSeek-V4.1-Flash-1017', agent: 'deepseek-ai/DeepSeek-V4.1-Flash-1017', audit: 'Qwen/Qwen3-30B-A3B-Instruct-2507' } },
+  { id: 'smart', name: 'Maximum quality',
+    why: 'DeepSeek V4 Pro plans and researches, Kimi K3 reviews. Bigger, slower and roughly 5–10× the cost.',
+    models: { orchestrator: 'deepseek-ai/DeepSeek-V4-Pro', agent: 'deepseek-ai/DeepSeek-V4-Pro', audit: 'moonshotai/Kimi-K3' } },
+  { id: 'cheapest', name: 'Cheapest',
+    why: 'DeepSeek V4 Flash (0731) at $0.14/$0.28 per 1M tokens researches; Gemma 3 27B reviews. Lowest cost, less careful.',
+    models: { orchestrator: 'deepseek-ai/DeepSeek-V4.1-Flash-1017', agent: 'deepseek-ai/DeepSeek-V4-Flash-0731', audit: 'google/gemma-3-27b-it' } },
   { id: 'previous', name: 'Previous DeepSeek build',
     why: 'The older DeepSeek V4.1 Flash for planning and research, to compare. It guesses more often (4% vs 33% non-hallucination).',
     models: { orchestrator: 'deepseek-ai/DeepSeek-V4.1-Flash', agent: 'deepseek-ai/DeepSeek-V4.1-Flash', audit: 'MiniMaxAI/MiniMax-M3.1-Flash' } },

@@ -4,3 +4,4 @@ export * from "./api";
 export * from "./ids";
 export * from "./matrix";
 export * from "./pricing";
+export * from "./models";

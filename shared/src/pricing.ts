@@ -8,6 +8,9 @@ export const PRICES_PER_M: Record<string, { in: number; cachedIn: number; out: n
 };
 export const TAVILY_USD_PER_CREDIT = 0.008;
 
+import { MODEL_CATALOG } from "./models";
+for (const m of MODEL_CATALOG) if (!PRICES_PER_M[m.id]) PRICES_PER_M[m.id] = { in: m.in, cachedIn: m.in, out: m.out };
+
 export function costUsd(model: string, inputTokens: number, cachedInputTokens: number, outputTokens: number): number {
   const p = PRICES_PER_M[model];
   if (!p) return 0;
