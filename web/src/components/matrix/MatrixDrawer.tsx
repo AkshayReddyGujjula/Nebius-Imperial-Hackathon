@@ -1,4 +1,5 @@
-import { ChevronDown, ChevronUp, Loader, Table2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ChevronDown, ChevronUp, Loader, Maximize2, Minimize2, Table2 } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useCrux } from '@/store/runStore'
 import { optionLetter } from '@/lib/format'
@@ -9,7 +10,15 @@ export function MatrixDrawer() {
   const { plan, open, detailed } = useCrux(useShallow((s) => ({ plan: s.plan, open: s.matrixOpen, detailed: s.viewMode === 'detailed' })))
   const setMatrixOpen = useCrux((s) => s.setMatrixOpen)
   const { cells, leader } = useMatrix()
+  const [full, setFull] = useState(false)
+  useEffect(() => {
+    if (!full) return
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setFull(false) }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [full])
   if (!plan) return null
+  const isFull = full && open
 
   const o = plan.options.length
   const c = plan.criteria.length
@@ -19,8 +28,10 @@ export function MatrixDrawer() {
 
   return (
     <section aria-label="Trade-off matrix"
-      className="flex flex-none flex-col border-t border-crux-border-strong bg-crux-surface shadow-[0_-1px_0_rgba(28,27,23,.04)]"
-      style={{ height: open ? 'min(440px, max(55%, 360px))' : 48, transition: 'height 220ms var(--crux-ease)' }}>
+      className={isFull
+        ? 'fixed inset-3 z-50 flex flex-col overflow-hidden rounded-xl border border-crux-border-strong bg-crux-surface shadow-[0_24px_64px_rgba(0,0,0,.55)]'
+        : 'flex flex-none flex-col border-t border-crux-border-strong bg-crux-surface shadow-[0_-1px_0_rgba(28,27,23,.04)]'}
+      style={isFull ? undefined : { height: open ? 'min(440px, max(55%, 360px))' : 48, transition: 'height 220ms var(--crux-ease)' }}>
       <div className="flex h-12 flex-none items-center gap-3 px-4">
         <button type="button" className="flex items-center gap-2 text-[13px] font-semibold" onClick={() => setMatrixOpen(!open)}>
           <Table2 className="!size-4 text-crux-text-secondary" />Trade-off matrix<span className="hidden font-normal text-crux-text-tertiary xl:inline">· how each option fits what matters to you</span>
@@ -41,8 +52,13 @@ export function MatrixDrawer() {
         ) : (
           <span className="ui-num text-[13px] text-crux-text-tertiary">{k ? `${k} of ${o * c} scores in` : "Waiting for the agents' scores…"}</span>
         )}
-        <button type="button" className="ui-btn sm" onClick={() => setMatrixOpen(!open)} title="Toggle with M">
-          {open ? <><ChevronDown />Close</> : <><ChevronUp />Open</>}
+        {open ? (
+          <button type="button" className="ui-btn sm" onClick={() => setFull(!isFull)} title={isFull ? 'Exit full screen (Esc)' : 'Full screen'}>
+            {isFull ? <><Minimize2 />Exit full screen</> : <><Maximize2 />Full screen</>}
+          </button>
+        ) : null}
+        <button type="button" className="ui-btn sm" onClick={() => { setFull(false); setMatrixOpen(!open) }} title="Toggle with M">
+          {open ? <><ChevronDown />Minimise</> : <><ChevronUp />Open</>}
         </button>
       </div>
       {open ? (
