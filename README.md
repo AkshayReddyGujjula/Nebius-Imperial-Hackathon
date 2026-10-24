@@ -1,10 +1,10 @@
-# Crux
+# Decision Lab
 
 **Research what your decision actually hinges on.**
 
-Crux takes a decision you are stuck on ("I have a hackathon tomorrow and an exam the day after. Should I go?"), works out the questions it hinges on, and sends one research agent at each question in parallel. Every quote is checked against its source in code, a second model family audits the findings for contradictions, and you get a recommendation plus a trade-off matrix whose weights you can change. Built for the Noetic × Nebius One-Day Hackathon (Imperial College London) on open models running on Nebius Token Factory.
+Decision Lab first interviews you about a decision you are stuck on ("I have a hackathon tomorrow and an exam the day after. Should I go?"), asks a few questions to understand your situation, works out what the decision hinges on, and sends one research agent at each question in parallel. Every quote is checked against its source in code, a second model family audits the findings for contradictions, and you get an unbiased decision brief (facts and stats for each option, never a verdict) plus a trade-off matrix whose weights you can change. Built for the Noetic × Nebius One-Day Hackathon (Imperial College London) on open models running on Nebius Token Factory.
 
-![Crux, Simple mode, at the end of a run](docs/simple.png)
+![Decision Lab, Simple mode, at the end of a run](docs/simple.png)
 
 ## What it does
 
@@ -12,7 +12,7 @@ Crux takes a decision you are stuck on ("I have a hackathon tomorrow and an exam
 2. **Parallel research agents.** One agent per question searches the web through Tavily, reads, may search again within its effort budget, and submits findings with a verbatim quote and a source. Agents also propose 1-5 scores for each option.
 3. **Citation checks.** Code verifies that each cited source was actually retrieved and that the quote appears in its text: verified, partial, or not found. Failures are shown, not hidden.
 4. **Cross-family audit.** A model from a different family (MiniMax) looks for contradictions between agents. Same-model agents are not independent experts; this is the check for that.
-5. **Recommendation and matrix.** DeepSeek writes a conditional recommendation that cites findings. The trade-off matrix (options x criteria) re-ranks instantly in code when you change a weight. The AI did not change its mind; your priorities did.
+5. **Decision brief and matrix.** DeepSeek writes a neutral brief: what the decision hinges on, the key stats for each option, and "if you value X most" lines. It never tells you what to do. The trade-off matrix (options x criteria) re-ranks instantly in code when you change a weight, so the ranking reflects your priorities, not the model's.
 
 Follow-ups: dig deeper on any branch (the effort is bumped one level), research or answer the blind spot yourself, an effort ladder that reruns a branch at low, high and max on the same evidence so you can see what extra thinking buys, and voice input for the decision.
 
@@ -39,12 +39,12 @@ Outside Token Factory:
 - **Tavily** for web search (Nebius is acquiring Tavily).
 - **ElevenLabs Scribe v2** for speech-to-text, because Token Factory has no speech-to-text model. All reasoning stays on open models on Nebius.
 
-## Where the models struggle (and what Crux does about it)
+## Where the models struggle (and what Decision Lab does about it)
 
 Measured in `SMOKE.md` (three smoke runs on 24 Oct 2026) and the two recorded runs in `server/replays/`.
 
 - **GLM-5.3-Flash is unreliable for summaries.** Even at effort `none` it spent the whole 40-token budget on hidden reasoning and returned an empty line in 3 of 6 calls (plus one truncated). We switched the summarizer to Nemotron, and the summarizer treats an empty reply as "skip".
-- **Max reasoning effort is not predictable.** On the same multi-step problem, `max` used 1.3k tokens (2.4 s) in one run and 12.3k tokens (17.9 s) in another; `low` used 0.6-0.75k. On an easy puzzle, low and max were indistinguishable (28-76 tokens). Effort is honoured only when there is something to think about, so Crux shows tokens and time per branch instead of implying max is always better.
+- **Max reasoning effort is not predictable.** On the same multi-step problem, `max` used 1.3k tokens (2.4 s) in one run and 12.3k tokens (17.9 s) in another; `low` used 0.6-0.75k. On an easy puzzle, low and max were indistinguishable (28-76 tokens). Effort is honoured only when there is something to think about, so Decision Lab shows tokens and time per branch instead of implying max is always better.
 - **In tool mode the agent sometimes keeps searching instead of submitting.** On turn 2 DeepSeek would call another search rather than `submit_findings`. The search budget is enforced in code per effort level, and a final salvage call forces a submission.
 - **Nebius 503 outages.** Requests are retried with backoff (2, 4, 8, 12 s, honouring `Retry-After`) when nothing has streamed yet, and planning and synthesis fall back from `max` to `high` on failure.
 - **Models do not reliably stay faithful to sources.** DeepSeek's non-hallucination rate is low enough that we do not trust it to quote correctly, so every quote is checked against the retrieved source text in code (verified / partial / not found). Unknown matrix cells are never treated as 0: they show "No evidence yet", and totals show a range instead. All maths (weighted totals, ranking, ranges) is done in code, not by the model.
