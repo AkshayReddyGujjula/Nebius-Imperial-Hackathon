@@ -102,8 +102,8 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
   // Simple mode: the answer lives in the bottom "Your summary" panel; this node only points at it.
   if (!detailed) {
     return (
-      <NodeShell id={id} className="cx-node-root" label="Your summary">
-        <div className="cx-live cx-body cx-body-strong" style={{ fontSize: 16, padding: '4px 0' }}>
+      <NodeShell id={id} className={`cx-node-root cx-brief-pill ${ready ? 'is-ready' : ''}`} label="Your summary">
+        <div className="cx-live cx-body cx-body-strong" style={{ fontSize: 14, whiteSpace: 'nowrap' }}>
           {ready ? <span style={{ color: 'var(--crux-accent-text)' }}>✓ Summary ready ↓</span>
             : status === 'running' ? <><span className="cx-dot" />Writing your summary…</>
             : status === 'failed' ? <span>Summary didn't load ↓</span>

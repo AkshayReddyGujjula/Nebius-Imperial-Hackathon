@@ -229,3 +229,7 @@
 @media (prefers-reduced-motion: no-preference) {
   .cx-node.is-focus:not(.is-selected) { animation: cx-stage-glow 1.6s ease-in-out infinite; }
 }
+
+/* Simple mode: the brief is a small pill pointing at the bottom summary panel. */
+.cx-brief-pill { border-radius: 999px !important; padding: 0 16px !important; display: flex; align-items: center; justify-content: center; }
+.cx-brief-pill.is-ready { border-color: var(--crux-accent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--crux-accent) 25%, transparent); }

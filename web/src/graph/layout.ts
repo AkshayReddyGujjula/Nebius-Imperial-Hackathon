@@ -158,9 +158,12 @@ export function layoutGraph({ plan, findings, viewMode, contradictionCount = 0 }
   const audY = qcY + quoteH + gap
   nodes.push({ id: AUDITOR_ID, kind: 'auditor', refId: null, x: (totalW - audW) / 2, y: audY, w: audW, h: audH })
   const recY = audY + audH + gap
+  // Simple mode: the brief is just a small pointer to the bottom summary panel, sized like the stage pills.
+  const briefW = detailed ? recW : L.pillW
+  const briefH = detailed ? L.recH[viewMode] : L.pillH
   nodes.push({
     id: nodeId.recommendation, kind: 'recommendation', refId: null,
-    x: (totalW - recW) / 2, y: recY, w: recW, h: L.recH[viewMode],
+    x: (totalW - briefW) / 2, y: recY, w: briefW, h: briefH,
   })
 
   // DECISION: shared memory sits left of the agents row; dashed edges fan out to every agent and the brief.
@@ -172,7 +175,7 @@ export function layoutGraph({ plan, findings, viewMode, contradictionCount = 0 }
   // DECISION: the conversation sits left of the brief, below where the memory edge turns in, so they never cross.
   nodes.push({
     id: CHAT_ID, kind: 'chatout', refId: null,
-    x: sideX - L.memoryW, y: recY + L.recH[viewMode] / 2 + 24, w: L.memoryW, h: 84,
+    x: sideX - L.memoryW, y: recY + briefH / 2 + 24, w: L.memoryW, h: 84,
   })
 
   return { nodes, columns: colItems.map((items) => items.map((it) => it.id)), totalW }

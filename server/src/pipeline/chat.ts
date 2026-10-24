@@ -69,6 +69,25 @@ export function shapeReply(raw: string): string {
   return out.join(" ");
 }
 
+/** The conversation asks at most this many questions; after that it wraps up and points at the summary. */
+const MAX_QUESTIONS = 10;
+const WRAP_UP = "Thanks, I have what I need. Your summary is ready below, ranked by what you told me.";
+const asked = new WeakMap<object, number>();
+const endsWithQuestion = (t: string | undefined) => /\?["'”)]?\s*$/.test((t ?? "").trim());
+
+/** Posts an assistant turn, enforcing the question budget. */
+function ask(ctx: RunContext, reply: string, suggestions: string[], rec: number | null): void {
+  const isQuestion = endsWithQuestion(shapeReply(reply));
+  const n = asked.get(ctx.state) ?? 0;
+  if (isQuestion && n >= MAX_QUESTIONS) {
+    const last = ctx.state.chat[ctx.state.chat.length - 1];
+    if (last?.text !== WRAP_UP) say(ctx, "assistant", WRAP_UP);
+    return;
+  }
+  if (isQuestion) asked.set(ctx.state, n + 1);
+  say(ctx, "assistant", reply, suggestions, rec);
+}
+
 const GENERIC = ["Yes, a lot", "Somewhat", "Not really", "Not sure yet"];
 
 /** Every turn that asks a question carries 2-4 one-tap answers; falls back to generic ones if the model gave none. */
@@ -169,7 +188,7 @@ export function openConversation(ctx: RunContext): Promise<void> {
       const out = await callChat(ctx, CHAT_OPEN_USER(ctx.state.decision, ctx.state.memory));
       updateMemory(ctx, out.memory, "conversation");
       const s = answersFor(out.reply, out.suggestions, out.recommendedIndex);
-      say(ctx, "assistant", out.reply.trim(), s.suggestions, s.recommendedIndex);
+      ask(ctx, out.reply.trim(), s.suggestions, s.recommendedIndex);
     } catch (err) {
       console.warn("[chat] opening failed:", err);
       say(ctx, "assistant", "I've started researching this for you. While the agents work — how big are the stakes on each side for you?",
@@ -208,7 +227,7 @@ export function userTurn(ctx: RunContext, text: string): Promise<void> {
       }
     }
     const s = answersFor(out.reply, out.suggestions, out.recommendedIndex);
-    say(ctx, "assistant", out.reply.trim(), s.suggestions, s.recommendedIndex);
+    ask(ctx, out.reply.trim(), s.suggestions, s.recommendedIndex);
     if (out.action === "research") startResearch(ctx, out.researchRequest?.trim() || text);
     else if (out.action === "update_brief" || weightsChanged) requestBrief(ctx);
   });
@@ -223,9 +242,12 @@ export function afterSynthesis(ctx: RunContext, synthesis: Synthesis | null): vo
   if (!synthesis || ctx.state.replay) return;
   void enqueue(ctx, async () => {
     try {
+      // A new brief must not stack a second question on top of one the person hasn't answered yet.
+      const last = ctx.state.chat[ctx.state.chat.length - 1];
+      if (last?.role === "assistant" && endsWithQuestion(last.text)) return;
       const out = await callChat(ctx, `${context(ctx)}\n\n${CHAT_AFTER_SYNTHESIS}`);
       const s = answersFor(out.reply, out.suggestions, out.recommendedIndex);
-      say(ctx, "assistant", out.reply.trim(), s.suggestions, s.recommendedIndex);
+      ask(ctx, out.reply.trim(), s.suggestions, s.recommendedIndex);
     } catch (err) {
       console.warn("[chat] after-synthesis turn failed:", err);
       const cond = synthesis.conditions.slice(0, 2).join(" ");
