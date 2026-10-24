@@ -70,7 +70,24 @@ function attach(runId: string): void {
   // DECISION: RunData has no setter for runId; ingest adopts the runId from the first event (reducer global rule),
   // so we set it directly here to drop stray events from a previous run.
   useCrux.setState({ runId })
-  disconnect = connectRun(runId, store.ingest)
+  // EventSource auto-reconnects; if it stays in error for ~8 s without a message, surface a notice.
+  let timer: ReturnType<typeof setTimeout> | null = null
+  let warned = false
+  const clear = () => { if (timer) { clearTimeout(timer); timer = null } warned = false }
+  const stopConn = connectRun(
+    runId,
+    (e) => { clear(); store.ingest(e) },
+    () => {
+      if (timer || warned) return
+      timer = setTimeout(() => {
+        warned = true; timer = null
+        useCrux.setState((s) => ({
+          notices: [...s.notices, { id: `sse-${Date.now()}`, level: 'warn', message: 'Connection to the server was lost — retrying…', ts: Date.now() }],
+        }))
+      }, 8000)
+    },
+  )
+  disconnect = () => { clear(); stopConn() }
 }
 
 export async function startRun(decision: string, mode: 'text' | 'voice'): Promise<void> {

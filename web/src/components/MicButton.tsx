@@ -26,8 +26,8 @@ export function MicButton({ onError }: { onError: (msg: string | null) => void }
       useCrux.getState().setDraft(existing ? `${existing} ${text}` : text, 'voice')
       onError(null)
       window.setTimeout(() => document.getElementById('crux-run')?.focus(), 0)
-    } catch {
-      onError("Couldn't transcribe — try again or type instead.")
+    } catch (e) {
+      onError(e instanceof Error && e.message ? e.message : "Couldn't transcribe — try again or type instead.")
     } finally {
       setState('idle')
     }

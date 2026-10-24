@@ -13,26 +13,30 @@ function BlindSpotNodeImpl({ id }: NodeProps<CruxNode>) {
   const runId = useCrux((s) => s.runId)
   const mock = useCrux((s) => s.mock)
   const select = useCrux((s) => s.select)
+  const replay = useCrux((s) => s.replay)
   const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   if (!bs) return null
-  const live = !mock && !!runId
+  const live = !mock && !replay && !!runId
+  const offNote = replay ? 'Not available on a replay — start a live run.' : 'Not available in mock data'
 
   const research = async () => {
     if (!live) return
-    setBusy(true)
-    try { await researchBlindSpot(runId) } catch (err) { console.warn('Research failed', err) } finally { setBusy(false) }
+    setBusy(true); setError(null)
+    try { await researchBlindSpot(runId) } catch (err) { setError(err instanceof Error ? err.message : 'Research failed') } finally { setBusy(false) }
   }
 
   const dismiss = async () => {
     // DECISION: the mock run has no server, so Dismiss updates the store directly there.
+    if (replay) { setError(offNote); return }
     if (mock || !runId) {
       useCrux.setState((s) => (s.plan?.blindSpot
         ? { plan: { ...s.plan, blindSpot: { ...s.plan.blindSpot, status: 'dismissed' } }, selectedNodeId: s.selectedNodeId === id ? null : s.selectedNodeId }
         : {}))
       return
     }
-    setBusy(true)
-    try { await dismissBlindSpot(runId) } catch (err) { console.warn('Dismiss failed', err) } finally { setBusy(false) }
+    setBusy(true); setError(null)
+    try { await dismissBlindSpot(runId) } catch (err) { setError(err instanceof Error ? err.message : 'Dismiss failed') } finally { setBusy(false) }
   }
 
   return (
@@ -58,7 +62,7 @@ function BlindSpotNodeImpl({ id }: NodeProps<CruxNode>) {
         ) : bs.status === 'open' ? (
           <div className="cx-row nodrag nopan" onPointerDown={stop} onClick={stop}>
             {bs.researchable && (
-              <button type="button" className="cx-btn" disabled={busy || !live} onClick={research} title={live ? undefined : 'Not available in mock data'}>
+              <button type="button" className="cx-btn" disabled={busy || !live} onClick={research} title={live ? undefined : offNote}>
                 Research it
               </button>
             )}
@@ -72,6 +76,7 @@ function BlindSpotNodeImpl({ id }: NodeProps<CruxNode>) {
             )}
           </div>
         ) : null}
+        {error && <p className="text-xs" style={{ color: 'var(--crux-bad)', margin: '4px 0 0' }}>{error}</p>}
       </div>
     </NodeShell>
   )
