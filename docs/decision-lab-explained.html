@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Decision Lab — explained</title>
+<style>
+:root{--page:#F4F1EA;--surf:#FFFDF8;--bd:#E2DCCF;--tx:#1C1B17;--t2:#57524A;--t3:#736D61;--acc:#1F4D3A;--accs:#DDE8E1;--blue:#3E5C76;--warn:#A26B12;--warns:#F3E7CF;--fail:#A33B2B}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--page);color:var(--tx);font:16px/1.55 -apple-system,"Segoe UI",system-ui,Roboto,sans-serif}
+h1,h2,h3{font-family:Georgia,"Times New Roman",serif;font-weight:normal;line-height:1.2;margin:0 0 .5em}
+h1{font-size:40px}h2{font-size:28px;color:var(--acc)}h3{font-size:19px}
+nav{position:sticky;top:0;z-index:5;background:rgba(244,241,234,.95);border-bottom:1px solid var(--bd);padding:10px 24px;display:flex;gap:18px;flex-wrap:wrap;font-size:14px}
+nav b{font-family:Georgia,serif;font-weight:normal;color:var(--acc);margin-right:8px}
+nav a{color:var(--t2);text-decoration:none}nav a:hover{color:var(--acc)}
+main{max-width:1100px;margin:0 auto;padding:0 24px 80px}
+section{padding:48px 0 8px;scroll-margin-top:50px}
+.card{background:var(--surf);border:1px solid var(--bd);border-radius:10px;padding:20px 22px}
+.muted{color:var(--t2)}.small{font-size:13px;color:var(--t3)}
+.kicker{font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin-bottom:6px}
+.hero{padding:56px 0 24px}
+.hero p.lead{font-size:20px;color:var(--t2);max-width:820px}
+.scenario{display:inline-block;margin-top:14px;background:var(--accs);color:var(--acc);border-radius:8px;padding:10px 16px;font-family:Georgia,serif;font-size:18px}
+.grid{display:grid;gap:16px}.g2{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+@media(max-width:800px){.g2,.g3,.g4{grid-template-columns:1fr}}
+.prob h3{color:var(--fail)}
+.flow{display:flex;gap:0;align-items:stretch;flex-wrap:wrap}
+.step{flex:1 1 180px;background:var(--surf);border:1px solid var(--bd);border-radius:10px;padding:16px;position:relative;margin-right:26px;margin-bottom:12px}
+.step:not(:last-child)::after{content:"";position:absolute;right:-22px;top:50%;width:18px;height:2px;background:var(--acc)}
+.step:not(:last-child)::before{content:"";position:absolute;right:-24px;top:calc(50% - 4px);border-left:7px solid var(--acc);border-top:5px solid transparent;border-bottom:5px solid transparent}
+.num{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--acc);color:#fff;align-items:center;justify-content:center;font-size:13px;margin-bottom:8px}
+.mock{margin-top:10px;font-size:12.5px;border:1px solid var(--bd);border-radius:6px;padding:8px;background:var(--page)}
+.chip{display:inline-block;border:1px solid var(--bd);background:var(--surf);border-radius:14px;padding:2px 9px;margin:2px 2px;font-size:12px}
+.chip.on{border-color:var(--acc);background:var(--accs);color:var(--acc)}
+.tag{display:inline-block;font-size:11px;border-radius:4px;padding:1px 6px}
+.ok{background:var(--accs);color:var(--acc)}.am{background:var(--warns);color:var(--warn)}
+.side{margin-top:6px;border-left:3px solid var(--blue);padding:12px 16px;background:var(--surf);border-radius:0 8px 8px 0}
+table{border-collapse:collapse;width:100%;background:var(--surf);border:1px solid var(--bd);border-radius:10px;overflow:hidden;font-size:15px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--bd);vertical-align:top}
+th{background:var(--accs);color:var(--acc);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:.05em}
+tr:last-child td{border-bottom:0}
+.stat{background:var(--surf);border:1px solid var(--bd);border-radius:10px;padding:18px}
+.stat .v{font-family:Georgia,serif;font-size:34px;color:var(--acc);line-height:1.1}
+.stat .l{color:var(--t2);font-size:14px;margin-top:6px}
+.trust li{margin-bottom:10px}
+.svgwrap{background:var(--surf);border:1px solid var(--bd);border-radius:10px;padding:12px;overflow-x:auto}
+svg text{font-family:-apple-system,"Segoe UI",system-ui,sans-serif}
+blockquote{margin:0;font-family:Georgia,serif;font-size:19px;line-height:1.5;color:var(--tx)}
+.say{border-left:3px solid var(--acc);padding:6px 14px;margin:10px 0;background:var(--surf);border-radius:0 8px 8px 0}
+dl dt{font-weight:600;margin-top:12px}dl dd{margin:4px 0 0;color:var(--t2)}
+footer{margin-top:40px;color:var(--t3);font-size:13px;border-top:1px solid var(--bd);padding-top:14px}
+</style>
+</head>
+<body>
+<nav><b>Decision Lab</b>
+<a href="#problem">Problem</a><a href="#how">How it works</a><a href="#arch">Architecture</a><a href="#who">Who does what</a><a href="#trust">Trust</a><a href="#numbers">Numbers</a><a href="#timeline">Timeline</a><a href="#cheat">Cheat-sheet</a></nav>
+<main>
+
+<section class="hero" id="top">
+<div class="kicker">Noetic × Nebius hackathon · open models on Nebius Token Factory</div>
+<h1>Decision Lab</h1>
+<p class="lead">Talk a hard decision through. Open models research it while you chat. <strong style="color:var(--acc)">It never decides for you</strong> — it shows you what the decision hinges on, with checked evidence, ranked by your own priorities.</p>
+<div class="scenario">Today’s demo: “Claude Code or Codex — which coding agent fits me?”</div>
+</section>
+
+<section id="problem">
+<div class="kicker">1 · The problem</div>
+<h2>Asking a chatbot about a hard decision doesn’t really help</h2>
+<div class="grid g4 prob">
+<div class="card"><h3>“It depends”</h3><p class="muted">Or the opposite: it just picks one for you, without knowing what you care about.</p></div>
+<div class="card"><h3>Generic answers</h3><p class="muted">The same answer for everyone. Your budget, habits and constraints are ignored.</p></div>
+<div class="card"><h3>Made-up sources</h3><p class="muted">Models confidently “quote” pages that don’t say that. You can’t tell which claims are real.</p></div>
+<div class="card"><h3>No “why”</h3><p class="muted">You get a conclusion, not the trade-off behind it — so you can’t check it or change it.</p></div>
+</div>
+</section>
+
+<section id="how">
+<div class="kicker">2 · How it works for you</div>
+<h2>Five steps, in plain English</h2>
+<div class="flow">
+<div class="step"><span class="num">1</span><h3>Say the decision</h3><p class="small">Type it, or say it into the mic.</p><div class="mock">“Claude Code or Codex — which coding agent fits me?”</div></div>
+<div class="step"><span class="num">2</span><h3>It asks about you</h3><p class="small">One question at a time, with tap-to-answer choices — or type your own.</p><div class="mock">How much do you care about price?<br><span class="chip on">A lot</span><span class="chip">Some</span><span class="chip">Not much</span><span class="chip">Type my own…</span></div></div>
+<div class="step"><span class="num">3</span><h3>4 agents research</h3><p class="small">Meanwhile, four research agents search the web in parallel.</p><div class="mock">◐ Pricing &amp; limits<br>◐ Code quality<br>◐ Workflow fit<br>◐ What users report</div></div>
+<div class="step"><span class="num">4</span><h3>Everything is checked</h3><p class="small">Every quote is matched against its page. A different AI audits for contradictions.</p><div class="mock"><span class="tag ok">quote verified</span><br><span class="tag am">quote not found</span> shown, not hidden</div></div>
+<div class="step"><span class="num">5</span><h3>Decision brief</h3><p class="small">What it hinges on, the stats on each side, “if you value X → Y”, and a trade-off matrix ranked by <em>your</em> weights.</p><div class="mock">Hinges on: price vs. autonomy<br>If you value cost most → …</div></div>
+</div>
+<div class="side"><strong style="color:var(--blue)">You can interject any time.</strong> <span class="muted">Type in the side chat (“actually I mostly work in the terminal”). It is written into a shared memory file, <code>user.md</code>, that every agent reads — so the research adapts, and it never asks you the same thing twice.</span></div>
+</section>
+
+<section id="arch">
+<div class="kicker">3 · Architecture (technical)</div>
+<h2>How it is built</h2>
+<p class="muted">All LLMs run on <strong>Nebius Token Factory</strong> — OpenAI-compatible, one API key. Arithmetic and verification are done in code, not by a model.</p>
+<div class="svgwrap">
+<svg viewBox="0 0 1040 640" width="100%" role="img" aria-label="Architecture diagram">
+<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1F4D3A"/></marker>
+<marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3E5C76"/></marker></defs>
+<style>.b{fill:#FFFDF8;stroke:#E2DCCF;stroke-width:1.5}.g{fill:#DDE8E1;stroke:#1F4D3A;stroke-width:1.2}.code{fill:#F4F1EA;stroke:#736D61;stroke-dasharray:4 3}.mem{fill:#F3E7CF;stroke:#A26B12}.t{font-size:14px;fill:#1C1B17;font-weight:600}.s{font-size:12px;fill:#57524A}.ln{stroke:#1F4D3A;stroke-width:1.6;fill:none}.lb{stroke:#3E5C76;stroke-width:1.4;fill:none;stroke-dasharray:5 4}.zone{fill:none;stroke:#E2DCCF;stroke-dasharray:6 5}.zt{font-size:11px;fill:#736D61;letter-spacing:.1em}</style>
+<!-- browser -->
+<rect class="zone" x="10" y="10" width="1020" height="96" rx="8"/><text class="zt" x="22" y="28">BROWSER</text>
+<rect class="b" x="30" y="36" width="230" height="58" rx="6"/><text class="t" x="44" y="58">React 19 + React Flow</text><text class="s" x="44" y="78">research canvas</text>
+<rect class="b" x="275" y="36" width="230" height="58" rx="6"/><text class="t" x="289" y="58">Chat panel</text><text class="s" x="289" y="78">questions, choices, interjections</text>
+<rect class="b" x="520" y="36" width="230" height="58" rx="6"/><text class="t" x="534" y="58">Trade-off matrix</text><text class="s" x="534" y="78">your weights → ranking</text>
+<rect class="b" x="765" y="36" width="250" height="58" rx="6"/><text class="t" x="779" y="58">Live feed + mic</text><text class="s" x="779" y="78">status lines, speech input</text>
+<!-- SSE -->
+<rect class="g" x="300" y="128" width="440" height="44" rx="6"/><text class="t" x="318" y="148">SSE event stream</text><text class="s" x="318" y="164">event-sourced · replayable JSONL (powers “Replay a recorded run”)</text>
+<path class="ln" d="M520 106 L520 126" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<!-- server -->
+<rect class="zone" x="10" y="190" width="1020" height="440" rx="8"/><text class="zt" x="22" y="208">HONO SERVER (Node)</text>
+<path class="ln" d="M520 172 L520 214" marker-end="url(#ar)"/>
+<rect class="g" x="210" y="216" width="270" height="58" rx="6"/><text class="t" x="224" y="238">Conversation engine</text><text class="s" x="224" y="258">DeepSeek V4.1 Flash · asks 1 question</text>
+<rect class="g" x="560" y="216" width="290" height="58" rx="6"/><text class="t" x="574" y="238">Planner</text><text class="s" x="574" y="258">DeepSeek V4.1 Flash · max · sets effort/branch</text>
+<path class="ln" d="M480 245 L558 245" marker-end="url(#ar)"/>
+<!-- agents -->
+<g>
+<rect class="g" x="440" y="302" width="130" height="50" rx="6"/><text class="t" x="452" y="322">Agent 1</text><text class="s" x="452" y="340">effort: low</text>
+<rect class="g" x="580" y="302" width="130" height="50" rx="6"/><text class="t" x="592" y="322">Agent 2</text><text class="s" x="592" y="340">effort: high</text>
+<rect class="g" x="720" y="302" width="130" height="50" rx="6"/><text class="t" x="732" y="322">Agent 3</text><text class="s" x="732" y="340">effort: high</text>
+<rect class="g" x="860" y="302" width="130" height="50" rx="6"/><text class="t" x="872" y="322">Agent 4</text><text class="s" x="872" y="340">effort: max</text>
+<text class="s" x="440" y="296">4 research agents · DeepSeek · parallel · tool-calling</text>
+</g>
+<path class="ln" d="M705 274 L705 290" marker-end="url(#ar)"/>
+<rect class="b" x="40" y="302" width="200" height="50" rx="6"/><text class="t" x="54" y="322">Tavily search</text><text class="s" x="54" y="340">web results + page text</text>
+<path class="ln" d="M242 327 L438 327" marker-end="url(#ar)" marker-start="url(#ar)"/>
+<!-- quote check -->
+<rect class="code" x="560" y="378" width="290" height="46" rx="6"/><text class="t" x="574" y="398">Quote check — in code</text><text class="s" x="574" y="414">quote must appear in the fetched page</text>
+<path class="ln" d="M705 352 L705 376" marker-end="url(#ar)"/>
+<rect class="g" x="560" y="446" width="290" height="50" rx="6"/><text class="t" x="574" y="466">Auditor · MiniMax M3.1 Flash</text><text class="s" x="574" y="484">different model family · contradictions</text>
+<path class="ln" d="M705 424 L705 444" marker-end="url(#ar)"/>
+<rect class="g" x="560" y="518" width="290" height="50" rx="6"/><text class="t" x="574" y="538">Synthesis writer · DeepSeek · max</text><text class="s" x="574" y="556">neutral decision brief, no verdict</text>
+<path class="ln" d="M705 496 L705 516" marker-end="url(#ar)"/>
+<rect class="code" x="880" y="518" width="135" height="50" rx="6"/><text class="t" x="892" y="538">Matrix maths</text><text class="s" x="892" y="556">shared/matrix.ts</text>
+<path class="ln" d="M850 543 L878 543" marker-end="url(#ar)"/>
+<!-- side services -->
+<rect class="b" x="40" y="378" width="200" height="50" rx="6"/><text class="t" x="54" y="398">Nemotron 3.5 Lightning</text><text class="s" x="54" y="416">live status lines ~0.3 s</text>
+<rect class="b" x="40" y="446" width="200" height="50" rx="6"/><text class="t" x="54" y="466">ElevenLabs Scribe v2</text><text class="s" x="54" y="484">speech-to-text ~2 s</text>
+<path class="lb" d="M242 403 L438 340" marker-end="url(#ab)"/>
+<!-- memory -->
+<rect class="mem" x="250" y="518" width="250" height="56" rx="6"/><text class="t" x="264" y="540">user.md — shared memory</text><text class="s" x="264" y="560">read by every agent; answers written in</text>
+<path class="lb" d="M375 518 L345 276" marker-end="url(#ab)"/>
+<path class="lb" d="M500 540 L558 540" marker-end="url(#ab)"/>
+<path class="lb" d="M440 518 L560 272" marker-end="url(#ab)"/>
+<path class="lb" d="M460 518 L500 354" marker-end="url(#ab)"/>
+<text class="s" x="40" y="610">Green = LLM on Nebius Token Factory · dashed grey = deterministic code · amber = shared memory · blue dashed = reads/feeds</text>
+</svg>
+</div>
+</section>
+
+<section id="who">
+<div class="kicker">4 · Who does what</div>
+<h2>Each role gets the model that suits it</h2>
+<table>
+<tr><th>Role</th><th>Model</th><th>Why this model</th></tr>
+<tr><td>Conversation engine</td><td>DeepSeek V4.1 Flash</td><td>Fast replies; asks one question at a time with choices while research runs.</td></tr>
+<tr><td>Planner</td><td>DeepSeek V4.1 Flash · max effort</td><td>Splits the decision into research branches and assigns each its own effort (low/high/max) — spend reasoning only where it matters.</td></tr>
+<tr><td>4 research agents</td><td>DeepSeek V4.1 Flash · per-branch effort</td><td>Reliable tool-calling (Tavily search); cheap enough to run four in parallel.</td></tr>
+<tr><td>Quote check</td><td>No model — code</td><td>Verification should not be done by the thing being verified.</td></tr>
+<tr><td>Auditor</td><td>MiniMax M3.1 Flash</td><td>A different model family — same-model agents aren’t independent, so they share blind spots.</td></tr>
+<tr><td>Synthesis writer</td><td>DeepSeek V4.1 Flash · max</td><td>Writes the neutral brief: what it hinges on, stats each side, “if you value X → Y”.</td></tr>
+<tr><td>Matrix ranking</td><td>No model — <code>shared/matrix.ts</code></td><td>Your weights × scores is arithmetic; the AI never “changes its mind”, your priorities do.</td></tr>
+<tr><td>Live status lines</td><td>NVIDIA Nemotron 3.5 Lightning</td><td>~0.3 s per line; replaced GLM-5.3-Flash, which returned empty summaries 3 of 6 times.</td></tr>
+<tr><td>Speech-to-text</td><td>ElevenLabs Scribe v2</td><td>~2 s for a spoken decision; Token Factory has no speech model.</td></tr>
+</table>
+</section>
+
+<section id="trust">
+<div class="kicker">5 · Trust, and where the models struggle</div>
+<h2>We don’t trust the models — we check them</h2>
+<div class="grid g2">
+<div class="card"><h3>What we do</h3><ul class="trust">
+<li><strong>Every quote verified in code</strong> against the retrieved page; click a finding to see it highlighted in its source.</li>
+<li><span class="tag am">quote not found</span> — amber when the model paraphrased and called it a quote. Shown, not hidden.</li>
+<li><strong>Different-family auditor</strong> (MiniMax) looks for contradictions between agents.</li>
+<li><strong>503 retries with backoff</strong> on Nebius; if an update fails the previous brief stays, with “Try again”.</li>
+</ul></div>
+<div class="card"><h3>What we found</h3><ul class="trust">
+<li>DeepSeek’s <strong>non-hallucination rate is ~33%</strong> (AA-Omniscience) — the reason quote checking exists.</li>
+<li>With tools it gets much better: <strong>HLE 36.8 → 63.9</strong> — the reason agents search instead of recalling.</li>
+<li>GLM-5.3-Flash gave <strong>empty summaries 3 of 6</strong> times → switched to Nemotron.</li>
+<li>Max effort is noisy: <strong>1.3k–12k reasoning tokens</strong> on the same problem → planner sets effort per branch.</li>
+</ul></div>
+</div>
+</section>
+
+<section id="numbers">
+<div class="kicker">6 · Numbers (all from our runs)</div>
+<h2>Cheap, fast, checked</h2>
+<div class="grid g3">
+<div class="stat"><div class="v">$0.03–0.04</div><div class="l">Nebius tokens per decision (+ ~30 Tavily credits)</div></div>
+<div class="stat"><div class="v">55–70 s</div><div class="l">of research per decision</div></div>
+<div class="stat"><div class="v">2.4–3.5×</div><div class="l">faster in parallel than in sequence</div></div>
+<div class="stat"><div class="v">12 / 12</div><div class="l">quotes verified in the recorded run</div></div>
+<div class="stat"><div class="v">~0.3 s</div><div class="l">per Nemotron live status line</div></div>
+<div class="stat"><div class="v">~2 s</div><div class="l">speech-to-text with Scribe v2</div></div>
+</div>
+</section>
+
+<section id="timeline">
+<div class="kicker">7 · One run, second by second (approximate)</div>
+<h2>Everything overlaps — you keep chatting while it researches</h2>
+<div class="svgwrap">
+<svg viewBox="0 0 1040 360" width="100%" role="img" aria-label="Timeline swimlanes">
+<style>.lane{font-size:13px;fill:#57524A}.ax{font-size:11px;fill:#736D61}.bar{rx:4}.bt{font-size:11px;fill:#1C1B17}.bw{font-size:11px;fill:#fff}</style>
+<g stroke="#E2DCCF">
+<line x1="140" y1="30" x2="140" y2="320"/><line x1="320" y1="30" x2="320" y2="320"/><line x1="500" y1="30" x2="500" y2="320"/><line x1="680" y1="30" x2="680" y2="320"/><line x1="860" y1="30" x2="860" y2="320"/><line x1="1030" y1="30" x2="1030" y2="320"/>
+<line x1="20" y1="72" x2="1030" y2="72"/><line x1="20" y1="120" x2="1030" y2="120"/><line x1="20" y1="168" x2="1030" y2="168"/><line x1="20" y1="216" x2="1030" y2="216"/><line x1="20" y1="264" x2="1030" y2="264"/>
+</g>
+<text class="ax" x="136" y="24">0 s</text><text class="ax" x="312" y="24">20</text><text class="ax" x="492" y="24">40</text><text class="ax" x="672" y="24">60</text><text class="ax" x="852" y="24">80</text><text class="ax" x="1000" y="24">~100</text>
+<text class="lane" x="20" y="52">You</text><text class="lane" x="20" y="100">Conversation</text><text class="lane" x="20" y="148">Planner</text><text class="lane" x="20" y="196">4 agents</text><text class="lane" x="20" y="244">Auditor</text><text class="lane" x="20" y="292">Writer</text>
+<!-- you: 9px per second; x=140 + 9*s -->
+<rect class="bar" x="140" y="38" width="30" height="22" fill="#3E5C76"/><text class="bw" x="144" y="53">ask</text>
+<rect class="bar" x="230" y="38" width="40" height="22" fill="#3E5C76"/><text class="bw" x="234" y="53">tap</text>
+<rect class="bar" x="340" y="38" width="40" height="22" fill="#3E5C76"/><text class="bw" x="344" y="53">tap</text>
+<rect class="bar" x="520" y="38" width="80" height="22" fill="#3E5C76"/><text class="bw" x="524" y="53">interject</text>
+<rect class="bar" x="900" y="38" width="120" height="22" fill="#3E5C76"/><text class="bw" x="904" y="53">read brief, weights</text>
+<rect class="bar" x="170" y="86" width="60" height="22" fill="#DDE8E1" stroke="#1F4D3A"/><text class="bt" x="174" y="101">Q1</text>
+<rect class="bar" x="270" y="86" width="70" height="22" fill="#DDE8E1" stroke="#1F4D3A"/><text class="bt" x="274" y="101">Q2</text>
+<rect class="bar" x="380" y="86" width="70" height="22" fill="#DDE8E1" stroke="#1F4D3A"/><text class="bt" x="384" y="101">Q3</text>
+<rect class="bar" x="600" y="86" width="70" height="22" fill="#DDE8E1" stroke="#1F4D3A"/><text class="bt" x="604" y="101">reply</text>
+<rect class="bar" x="160" y="134" width="90" height="22" fill="#1F4D3A"/><text class="bw" x="164" y="149">plan · max</text>
+<rect class="bar" x="250" y="176" width="540" height="10" fill="#1F4D3A"/><rect class="bar" x="250" y="188" width="430" height="10" fill="#1F4D3A" opacity=".8"/><rect class="bar" x="250" y="200" width="480" height="10" fill="#1F4D3A" opacity=".65"/><rect class="bar" x="250" y="176" width="0" height="0"/>
+<text class="bt" x="560" y="164" style="fill:#57524A">search · read · extract quotes (55–70 s, parallel)</text>
+<rect class="bar" x="790" y="230" width="60" height="22" fill="#A26B12"/><text class="bw" x="794" y="245">audit</text>
+<rect class="bar" x="850" y="278" width="110" height="22" fill="#1F4D3A"/><text class="bw" x="854" y="293">brief · max</text>
+<text class="ax" x="140" y="345">Nemotron status lines stream to the live feed throughout · quote checks run in code as each agent finishes · times are illustrative of a typical run</text>
+</svg>
+</div>
+</section>
+
+<section id="cheat">
+<div class="kicker">8 · Rehearsal cheat-sheet</div>
+<h2>What to say</h2>
+<div class="card"><h3>30-second pitch</h3>
+<blockquote>Chatbots either say “it depends” or pick for you. Decision Lab is a conversation instead: it asks about you one question at a time, while four open-model agents on Nebius research the decision in parallel. Every quote is checked in code, a different model family audits the agents, and you get a brief that shows what the decision hinges on — ranked by your own priorities. About four cents a decision. It never decides for you.</blockquote>
+</div>
+<h3 style="margin-top:24px">Three lines to land</h3>
+<div class="say">“Every answer goes into a shared memory file — user.md. Every agent reads it, so they stay in sync and never ask me the same thing twice.”</div>
+<div class="say">“Open models hallucinate — DeepSeek’s non-hallucination rate is about a third. So we don’t trust it: every quote is checked against the page in code. Amber means it paraphrased — we show that instead of hiding it.”</div>
+<div class="say">“The maths is done in code, not by the model. The AI didn’t change its mind — my priorities did.”</div>
+<h3 style="margin-top:24px">Likely judge questions</h3>
+<div class="card"><dl>
+<dt>Isn’t this just a chatbot?</dt><dd>A chatbot answers. This researches in parallel while it talks, checks every quote in code, keeps a shared memory of you that every agent reads, and never picks for you.</dd>
+<dt>Why not just tell me the answer?</dt><dd>Because the right answer depends on what you value. We show the evidence and the trade-offs; the matrix ranks by your weights.</dd>
+<dt>How do you know it’s not hallucinating?</dt><dd>We don’t trust it: quotes are matched against the retrieved page in code, and a different model family audits for contradictions. Failures are shown, not hidden.</dd>
+<dt>What does it cost?</dt><dd>About four cents per decision on Nebius, plus ~30 Tavily credits.</dd>
+<dt>Why these models?</dt><dd>DeepSeek for reliable tool-calling at low cost; MiniMax because an auditor from the same family shares blind spots; Nemotron because GLM returned empty summaries 3 of 6 times.</dd>
+<dt>What’s next?</dt><dd>Persist user.md across decisions (it already lives in a file), team decisions with dissent, and fine-tuning the planner on accepted plans via Token Factory.</dd>
+</dl></div>
+<div class="card" style="margin-top:16px;border-color:var(--warn);background:var(--warns)"><strong style="color:var(--warn)">If something goes wrong:</strong> <span class="muted">run stalls &gt; 20 s → New decision → <em>Replay a recorded run</em>, and say it’s a recording. Update fails → the previous brief stays with “Try again”; mention Nebius 503s honestly. Mic fails → type it.</span></div>
+</section>
+
+<footer>Decision Lab · Noetic × Nebius hackathon · facts from docs/DEMO.md and docs/decision-lab-summary.html</footer>
+</main>
+</body>
+</html>
