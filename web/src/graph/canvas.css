@@ -233,3 +233,16 @@
 /* Simple mode: the brief is a small pill pointing at the bottom summary panel. */
 .cx-brief-pill { border-radius: 999px !important; padding: 0 16px !important; display: flex; align-items: center; justify-content: center; }
 .cx-brief-pill.is-ready { border-color: var(--crux-accent) !important; box-shadow: 0 0 0 3px color-mix(in srgb, var(--crux-accent) 25%, transparent); }
+.cx-steps { position: absolute; z-index: 5; top: 12px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 4px;
+  padding: 4px 10px; border-radius: 999px; background: color-mix(in srgb, var(--crux-surface) 88%, transparent); border: 1px solid var(--crux-border-strong);
+  pointer-events: none; font-size: 12px; white-space: nowrap; color: var(--crux-text-tertiary); }
+.cx-steps li { display: flex; align-items: center; gap: 5px; }
+.cx-steps li + li::before { content: ''; width: 14px; height: 1px; background: var(--crux-border-strong); margin-right: 4px; }
+.cx-step-dot { display: inline-grid; place-items: center; width: 18px; height: 18px; border-radius: 999px; font-size: 10.5px; font-weight: 700;
+  border: 1px solid var(--crux-border-strong); }
+.cx-steps li[data-state='done'] { color: var(--crux-text-secondary); }
+.cx-steps li[data-state='done'] .cx-step-dot { background: var(--crux-accent); border-color: var(--crux-accent); color: #fff; }
+.cx-steps li[data-state='active'] { color: var(--crux-text); font-weight: 600; }
+.cx-steps li[data-state='active'] .cx-step-dot { border-color: var(--crux-accent); color: var(--crux-accent-text); animation: cx-step-pulse 1.4s ease-in-out infinite; }
+@keyframes cx-step-pulse { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--crux-accent) 60%, transparent) } 50% { box-shadow: 0 0 0 5px transparent } }
+@media (prefers-reduced-motion: reduce) { .cx-steps li[data-state='active'] .cx-step-dot { animation: none; } }

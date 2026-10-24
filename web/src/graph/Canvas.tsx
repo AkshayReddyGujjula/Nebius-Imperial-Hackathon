@@ -9,6 +9,7 @@ import { useCrux } from '../store/runStore'
 import { buildEdges, buildNodes } from './buildGraph'
 import { layoutGraph } from './layout'
 import { StatusDot } from './parts'
+import { StageProgress } from './StageProgress'
 import { DecisionNode } from './nodes/DecisionNode'
 import { QuestionNode } from './nodes/QuestionNode'
 import { FindingNode } from './nodes/FindingNode'
@@ -152,6 +153,7 @@ function CanvasInner() {
         <StatusDot tone="done" label="Done" />
         <StatusDot tone="failed" label="Failed" />
       </div>}
+      <StageProgress />
       <div className="cx-overlay cx-overlay-tr">
         {viewMode === 'detailed' && <span className="cx-hint">Click any card for details</span>}
         <button type="button" className="cx-icon-btn" onClick={fit} aria-label="Fit to view" title="Fit to view">
