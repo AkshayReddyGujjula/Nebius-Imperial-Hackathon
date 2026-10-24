@@ -59,7 +59,7 @@ export default function App() {
           <EmptyState onRun={run} onReplay={replay} error={error} />
         ) : (
           <>
-            <div className="relative min-h-0 flex-1"><Canvas /></div>
+            <div className="dl-fade-in relative min-h-0 flex-1"><Canvas /></div>
             <MatrixDrawer />
           </>
         )}
