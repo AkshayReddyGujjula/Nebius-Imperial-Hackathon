@@ -1,3 +1,4 @@
+import { DecisionReceipt } from '@/components/summary/DecisionReceipt'
 import { pickBestFit } from '@shared/matrix'
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, RefreshCw, Table2 } from 'lucide-react'
@@ -22,7 +23,7 @@ export function SummaryPanel() {
 }
 
 function Summary() {
-  const { plan, synthesis, status, sourceCount, replay, mock, runId, weights } = useCrux(useShallow((s) => ({
+  const { plan, synthesis, status, replay, mock, runId, weights } = useCrux(useShallow((s) => ({
     plan: s.plan, synthesis: s.synthesis, status: s.synthesisStatus, sourceCount: Object.keys(s.sources).length,
     replay: s.replay, mock: s.mock, runId: s.runId, weights: s.weights,
   })))
@@ -192,8 +193,8 @@ function Summary() {
               )
             })()}
           </div>
+          <DecisionReceipt />
           <footer className="sm-foot">
-            <span>From your answers and {sourceCount} checked sources.</span>
             <button type="button" onClick={() => setMatrixOpen(true)}>Change what matters</button>
             <button type="button" onClick={openEvidence}>See the evidence</button>
             <button type="button" className="sm-copy" onClick={copyDecision}>{copied ? 'Copied ✓' : 'Copy my decision'}</button>
