@@ -1,16 +1,17 @@
 @layer components {
 /* Shell primitives (Lane W2). Values mirror design/options/option-b.html and §11.1. */
 
-.ui-label { font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--crux-text-tertiary); display: flex; align-items: center; gap: 6px; }
+.ui-label { font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: .06em; text-transform: uppercase; color: var(--crux-text-tertiary); display: flex; align-items: center; gap: 6px; }
 .ui-mono { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
 .ui-num { font-variant-numeric: tabular-nums; }
 
-.ui-btn { height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--crux-border); background: var(--crux-surface); font-size: 13px; font-weight: 500; color: var(--crux-text); display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; box-shadow: var(--crux-shadow-sm); white-space: nowrap; transition: background-color 150ms var(--crux-ease), border-color 150ms var(--crux-ease); }
+.ui-btn { height: 32px; padding: 0 12px; border-radius: 8px; border: 1px solid var(--crux-border); background: var(--crux-surface); font-size: 13px; font-weight: 500; color: var(--crux-text); display: inline-flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer; box-shadow: var(--crux-shadow-sm); white-space: nowrap; transition: background-color 150ms var(--crux-ease), border-color 150ms var(--crux-ease), color 150ms var(--crux-ease), transform 120ms var(--crux-ease); }
+.ui-btn:active:not(:disabled) { transform: translateY(1px) scale(.98); }
 .ui-btn:hover:not(:disabled) { background: var(--crux-hover); border-color: var(--crux-border-strong); }
 .ui-btn:disabled { opacity: .45; cursor: default; }
-.ui-btn:focus-visible { outline: 2px solid var(--crux-accent); outline-offset: 1px; }
-.ui-btn.primary { background: var(--crux-text); color: #fff; border-color: var(--crux-text); }
-.ui-btn.primary:hover:not(:disabled) { background: #27272A; border-color: #27272A; }
+.ui-btn:focus-visible { outline: 2px solid var(--dl-focus); outline-offset: 1px; }
+.ui-btn.primary { background: var(--dl-accent); color: var(--dl-accent-on); border-color: var(--dl-accent); }
+.ui-btn.primary:hover:not(:disabled) { background: var(--dl-accent-hover); border-color: var(--dl-accent-hover); }
 .ui-btn.ghost { border-color: transparent; box-shadow: none; color: var(--crux-text-secondary); background: transparent; }
 .ui-btn.ghost:hover:not(:disabled) { background: var(--crux-subtle); border-color: transparent; }
 .ui-btn.sm { height: 28px; padding: 0 10px; font-size: 12px; }
@@ -19,7 +20,7 @@
 .ui-btn.wide { width: 100%; }
 .ui-btn svg { width: 14px; height: 14px; flex: none; }
 
-.ui-pill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--crux-border); background: var(--crux-surface); font-size: 12px; color: var(--crux-text-secondary); white-space: nowrap; }
+.ui-pill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--crux-border); background: var(--crux-surface); font-size: 12px; color: var(--crux-text-secondary); white-space: nowrap; transition: background-color 200ms var(--crux-ease), border-color 200ms var(--crux-ease), color 200ms var(--crux-ease); }
 .ui-pill.warn { background: var(--crux-warn-soft); border-color: var(--crux-warn-border); color: var(--crux-warn); }
 .ui-pill.bad { background: var(--crux-bad-soft); border-color: var(--crux-bad-border); color: var(--crux-bad); }
 .ui-pill .lucide { width: 12px; height: 12px; }
@@ -35,8 +36,8 @@ button.ui-pill:hover { border-color: var(--crux-border-strong); background: var(
 .ui-tag.neutral { color: var(--crux-text-secondary); background: var(--crux-subtle); border: 1px solid var(--crux-border); }
 
 /* status dot */
-.ui-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--crux-text-tertiary); white-space: nowrap; }
-.ui-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; display: inline-block; }
+.ui-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; color: var(--crux-text-tertiary); white-space: nowrap; transition: color 200ms var(--crux-ease); }
+.ui-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; display: inline-block; transition: background-color 200ms var(--crux-ease), border-color 200ms var(--crux-ease); }
 .ui-dot.queued { border: 1.5px solid var(--crux-text-quaternary); }
 .ui-dot.active { background: var(--crux-accent); animation: crux-pulse 1.6s ease-in-out infinite; }
 .ui-dot.ok { background: var(--crux-ok); }
@@ -144,20 +145,47 @@ button.ui-cite:hover { border-color: var(--crux-border-strong); }
 .ui-textarea { width: 100%; resize: none; border: 0; outline: 0; background: transparent; color: var(--crux-text); font-size: 15px; line-height: 22px; padding: 0; }
 .ui-textarea::placeholder { color: var(--crux-text-quaternary); }
 .ui-composer { background: var(--crux-surface); border: 1px solid var(--crux-border-strong); border-radius: 12px; padding: 12px 12px 10px 14px; transition: border-color 150ms var(--crux-ease), box-shadow 150ms var(--crux-ease); }
-.ui-composer:focus-within { border-color: var(--crux-accent); box-shadow: 0 0 0 3px var(--crux-accent-soft); }
+.ui-composer:focus-within { border-color: var(--crux-accent); box-shadow: 0 0 0 3px var(--dl-focus); }
 .ui-field { width: 100%; resize: vertical; min-height: 72px; border: 1px solid var(--crux-border-strong); border-radius: 8px; padding: 8px 10px; font-size: 13px; line-height: 19px; outline: 0; background: var(--crux-surface); color: var(--crux-text); }
-.ui-field:focus { border-color: var(--crux-accent); box-shadow: 0 0 0 3px var(--crux-accent-soft); }
+.ui-field:focus { border-color: var(--crux-accent); box-shadow: 0 0 0 3px var(--dl-focus); }
 
-.ui-skel { height: 8px; border-radius: 4px; background: var(--crux-subtle); }
+.ui-skel { height: 8px; border-radius: 4px; background-color: var(--crux-subtle); position: relative; overflow: hidden; }
+.ui-skel.shimmer::after, .ui-skel-cell::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, var(--crux-surface), transparent); opacity: .7; transform: translateX(-100%); animation: dl-shimmer 1.4s ease-in-out infinite; }
+.ui-skel-cell { display: block; height: 10px; width: 70%; border-radius: 4px; background: var(--crux-subtle); position: relative; overflow: hidden; }
+@keyframes dl-shimmer { to { transform: translateX(100%); } }
+
+/* Decision Lab top bar (frame variables, value swap only) */
+.dl-mark { font-size: 9px; font-weight: 700; letter-spacing: .02em; line-height: 1; }
+.dl-topbar { background: var(--dl-frame); color: var(--dl-frame-text); border-bottom: 1px solid var(--dl-frame-border); }
+.dl-topbar-muted { color: var(--dl-frame-muted); }
+.dl-mark { background: var(--dl-accent); color: #F4F1EA; }
+.dl-progress { display: flex; flex-direction: column; gap: 4px; min-width: 220px; max-width: 320px; }
+.dl-progress-label { font-size: 12px; line-height: 14px; color: var(--dl-frame-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.dl-progress-track { display: block; position: relative; height: 4px; border-radius: 999px; background: var(--dl-progress-track); overflow: hidden; }
+.dl-progress-fill { display: block; position: relative; height: 100%; border-radius: 999px; background: var(--dl-accent); transition: width 400ms var(--crux-ease); overflow: hidden; }
+.dl-progress[data-active="true"] .dl-progress-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,253,248,.35), transparent); transform: translateX(-100%); animation: dl-shimmer 1.6s ease-in-out infinite; }
+.dl-inline-progress { height: 3px; border-radius: 999px; background: var(--crux-subtle); overflow: hidden; position: relative; }
+.dl-inline-progress::after { content: ''; position: absolute; top: 0; bottom: 0; width: 35%; border-radius: 999px; background: var(--dl-accent); animation: dl-indeterminate 1.3s ease-in-out infinite; }
+@keyframes dl-indeterminate { from { left: -35%; } to { left: 100%; } }
+.dl-fade-in { animation: dl-fade 200ms var(--crux-ease); }
+@keyframes dl-fade { from { opacity: 0; } to { opacity: 1; } }
+.dl-drawer-open { animation: dl-drawer 220ms var(--crux-ease); transform-origin: bottom; }
+@keyframes dl-drawer { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+.dl-mic-rec { position: relative; }
+.dl-mic-rec::before { content: ''; position: absolute; inset: -3px; border-radius: inherit; border: 2px solid var(--dl-status-failed); animation: dl-rec 1.2s ease-out infinite; pointer-events: none; }
+@keyframes dl-rec { from { opacity: .8; transform: scale(1); } to { opacity: 0; transform: scale(1.25); } }
 .ui-ghost { border: 1px dashed var(--crux-border-strong); border-radius: 8px; padding: 10px 12px; background: transparent; }
 
 .ui-clamp-2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 .ui-clamp-3 { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .ui-clamp-4 { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
 
-.ui-insp-enter { animation: ui-slide-in 200ms var(--crux-ease); }
-@keyframes ui-slide-in { from { transform: translateX(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+.ui-insp-enter { animation: ui-slide-in 220ms var(--crux-ease); }
+@keyframes ui-slide-in { from { transform: translateX(32px); opacity: 0; } to { transform: none; opacity: 1; } }
 
 .ui-composer kbd, .ui-kbd { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--crux-border); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; color: var(--crux-text-tertiary); background: var(--crux-surface); }
 .ui-canvas-bg { background-color: var(--crux-page); background-image: radial-gradient(var(--crux-grid) 1px, transparent 1px); background-size: 20px 20px; }
 }
+
+/* Rail container uses the frame variables (rail content is lane C2's). Unlayered so it beats utilities. */
+.dl-app > aside[aria-label="Activity"] { background: var(--dl-frame-2); border-right-color: var(--dl-frame-border); }

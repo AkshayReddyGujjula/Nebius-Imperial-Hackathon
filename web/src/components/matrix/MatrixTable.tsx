@@ -30,12 +30,13 @@ function Cell({ cell, detailed, selected }: { cell: MatrixCell; detailed: boolea
   const selectCell = useCrux((s) => s.selectCell)
   const finding = useCrux((s) => (cell.findingIds[0] ? s.findings[cell.findingIds[0]] : undefined))
   const key = cellKey(cell.optionId, cell.criterionId)
+  const pending = useCrux((s) => s.phase === 'planning' || s.phase === 'researching')
   return (
     <td className="cell" data-sel={selected} onClick={() => selectCell(key)}>
       {cell.score === null ? (
         <div>
           <div className="text-[14px] font-semibold text-crux-text-quaternary">–</div>
-          <div className="text-[12px] text-crux-text-tertiary">No evidence yet</div>
+          {pending ? <span className="ui-skel-cell mt-1" aria-label="Score pending" /> : <div className="text-[12px] text-crux-text-tertiary">No evidence yet</div>}
         </div>
       ) : (
         <div>

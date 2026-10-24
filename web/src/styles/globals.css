@@ -1,45 +1,78 @@
-﻿@import "tailwindcss";
+@import "tailwindcss";
 @import "tw-animate-css";
 
 /* DECISION: shadcn v4 init requires a named preset; initialise with nova,
    then restore new-york/zinc and the exact Crux tokens before adding components.
    shadcn --accent is a hover background; blue is --crux-accent. */
 :root {
-  --crux-page: #F7F7F8;
-  --crux-grid: #DCDCE0;
-  --crux-surface: #FFFFFF;
-  --crux-subtle: #F4F4F5;
-  --crux-hover: #FAFAFA;
-  --crux-border: #E4E4E7;
-  --crux-border-strong: #D4D4D8;
-  --crux-edge: #C9C9D0;
-  --crux-text: #18181B;
-  --crux-text-secondary: #52525B;
-  --crux-text-tertiary: #71717A;
-  --crux-text-quaternary: #A1A1AA;
-  --crux-accent: #2563EB;
-  --crux-accent-soft: #EFF6FF;
-  --crux-accent-border: #BFDBFE;
-  --crux-accent-text: #1D4ED8;
-  --crux-ok: #15803D;
-  --crux-ok-soft: #F0FDF4;
-  --crux-ok-border: #BBF7D0;
-  --crux-warn: #B45309;
-  --crux-warn-soft: #FFFBEB;
-  --crux-warn-border: #FDE68A;
-  --crux-warn-bar: #D97706;
-  --crux-bad: #B91C1C;
-  --crux-bad-soft: #FEF2F2;
-  --crux-bad-border: #FECACA;
-  --crux-contradiction: #DC2626;
+  /* Decision Lab "Paper & Forest": light paper frame, forest-green accent, near-zero shadows. */
+  --dl-frame: #FFFDF8;
+  --dl-frame-2: #EFEBE2;
+  --dl-frame-text: #1C1B17;
+  --dl-frame-text-2: #57524A;
+  --dl-frame-muted: #736D61;
+  --dl-frame-border: #E2DCCF;
+  --dl-frame-hover: #F4F1EA;
+  --dl-accent: #1F4D3A;
+  --dl-accent-hover: #173C2D;
+  --dl-accent-subtle: #DDE8E1;
+  --dl-accent-on: #FFFFFF;
+  --dl-focus: color-mix(in srgb, #1F4D3A 40%, transparent);
+  --dl-progress-track: #E6E0D3;
+  --dl-status-active: #1F4D3A;
+  --dl-status-reading: #3E5C76;
+  --dl-status-done: #4F6B47;
+  --dl-status-warn: #A26B12;
+  --dl-status-warn-soft: #F3E7CF;
+  --dl-status-failed: #A33B2B;
+  --dl-status-failed-soft: #F2DCD7;
+  --dl-agent-1: #3E5C76;
+  --dl-agent-2: #8B5E3C;
+  --dl-agent-3: #56704F;
+  --dl-agent-4: #7A4A5C;
+  --dl-agent-5: #5E6B7A;
+  --dl-agent-6: #9A7B3B;
+  --dl-agent-1-soft: color-mix(in srgb, var(--dl-agent-1) 14%, #FFFDF8);
+  --dl-agent-2-soft: color-mix(in srgb, var(--dl-agent-2) 14%, #FFFDF8);
+  --dl-agent-3-soft: color-mix(in srgb, var(--dl-agent-3) 14%, #FFFDF8);
+  --dl-agent-4-soft: color-mix(in srgb, var(--dl-agent-4) 14%, #FFFDF8);
+  --dl-agent-5-soft: color-mix(in srgb, var(--dl-agent-5) 14%, #FFFDF8);
+  --dl-agent-6-soft: color-mix(in srgb, var(--dl-agent-6) 14%, #FFFDF8);
+  --crux-page: #F4F1EA;
+  --crux-grid: #DCD5C6;
+  --crux-surface: #FFFDF8;
+  --crux-subtle: #F4F1EA;
+  --crux-hover: #F8F5EE;
+  --crux-border: #E2DCCF;
+  --crux-border-strong: #D4CCBB;
+  --crux-edge: #D4CCBB;
+  --crux-text: #1C1B17;
+  --crux-text-secondary: #57524A;
+  --crux-text-tertiary: #736D61;
+  --crux-text-quaternary: #A39C8E;
+  --crux-accent: var(--dl-accent);
+  --crux-accent-soft: var(--dl-accent-subtle);
+  --crux-accent-border: #B9CFC2;
+  --crux-accent-text: var(--dl-accent);
+  --crux-ok: #4F6B47;
+  --crux-ok-soft: #E4EBDF;
+  --crux-ok-border: #C6D3BF;
+  --crux-warn: #A26B12;
+  --crux-warn-soft: #F3E7CF;
+  --crux-warn-border: #E3CC9F;
+  --crux-warn-bar: #A26B12;
+  --crux-bad: #A33B2B;
+  --crux-bad-soft: #F2DCD7;
+  --crux-bad-border: #E2B9B0;
+  --crux-contradiction: #A33B2B;
   --crux-radius-chip: 6px;
   --crux-radius-card: 8px;
   --crux-radius-composer: 12px;
   --crux-radius-pill: 999px;
   --crux-border-width: 1px;
-  --crux-shadow-sm: 0 1px 2px rgba(24,24,27,.05);
-  --crux-shadow: 0 1px 3px rgba(24,24,27,.07), 0 1px 2px rgba(24,24,27,.04);
-  --crux-shadow-pop: 0 8px 24px rgba(24,24,27,.08), 0 2px 6px rgba(24,24,27,.05);
+  --crux-shadow-sm: 0 1px 0 rgba(28,27,23,.04);
+  --crux-shadow: 0 1px 0 rgba(28,27,23,.04);
+  --crux-shadow-pop: 0 1px 0 rgba(28,27,23,.04), 0 4px 12px rgba(28,27,23,.05);
   --crux-selected-ring: 0 0 0 1px var(--crux-accent);
   --crux-pending-dash: 4 4;
   --crux-contradiction-dash: 3 3;
@@ -105,8 +138,8 @@
   --card-foreground: var(--crux-text);
   --popover: var(--crux-surface);
   --popover-foreground: var(--crux-text);
-  --primary: var(--crux-text);
-  --primary-foreground: var(--crux-surface);
+  --primary: var(--dl-accent);
+  --primary-foreground: var(--dl-accent-on);
   --secondary: var(--crux-subtle);
   --secondary-foreground: var(--crux-text-secondary);
   --muted: var(--crux-subtle);
@@ -116,7 +149,7 @@
   --destructive: var(--crux-bad);
   --border: var(--crux-border);
   --input: var(--crux-border);
-  --ring: var(--crux-accent);
+  --ring: var(--dl-focus);
   --radius: .5rem;
 }
 
@@ -215,5 +248,14 @@
   --color-crux-bad-soft: var(--crux-bad-soft);
   --color-crux-bad-border: var(--crux-bad-border);
   --color-crux-contradiction: var(--crux-contradiction);
+  --color-dl-frame: var(--dl-frame);
+  --color-dl-frame-2: var(--dl-frame-2);
+  --color-dl-frame-text: var(--dl-frame-text);
+  --color-dl-frame-muted: var(--dl-frame-muted);
+  --color-dl-frame-border: var(--dl-frame-border);
+  --color-dl-accent: var(--dl-accent);
+  --color-dl-accent-hover: var(--dl-accent-hover);
+  --color-dl-accent-subtle: var(--dl-accent-subtle);
+  --color-dl-frame-2-bg: var(--dl-frame-2);
 }
 

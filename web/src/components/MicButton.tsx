@@ -64,18 +64,24 @@ export function MicButton({ onError }: { onError: (msg: string | null) => void }
   if (!recorderSupported()) return null
   if (state === 'recording') {
     return (
-      <button type="button" className="ui-btn h-9 gap-2 !px-2.5" onClick={() => void stop()} aria-label="Stop recording" title="Stop recording">
+      <button type="button" className="ui-btn dl-mic-rec h-9 gap-2 !px-2.5" onClick={() => void stop()} aria-label="Stop recording" title="Stop recording">
         <span className="size-2 rounded-full bg-crux-bad crux-status-active" />
         <span className="ui-num text-[12px] text-crux-text-secondary">{fmtClock(elapsed)}</span>
         <Square className="!size-3.5" />
       </button>
     )
   }
+  if (state === 'transcribing') {
+    return (
+      <button type="button" className="ui-btn h-9 gap-2 !px-2.5" disabled aria-label="Transcribing…" aria-busy="true">
+        <Loader className="ui-spin !size-4" />
+        <span className="text-[12px] text-crux-text-secondary">Transcribing…</span>
+      </button>
+    )
+  }
   return (
-    <button type="button" className="ui-btn icon !size-9" disabled={state === 'transcribing'}
-      onClick={() => void start()} aria-label={state === 'transcribing' ? 'Transcribing…' : 'Record your decision'}
-      title={state === 'transcribing' ? 'Transcribing…' : 'Say it instead'}>
-      {state === 'transcribing' ? <Loader className="ui-spin !size-4" /> : <Mic className="!size-4" />}
+    <button type="button" className="ui-btn icon !size-9" onClick={() => void start()} aria-label="Record your decision" title="Say it instead">
+      <Mic className="!size-4" />
     </button>
   )
 }

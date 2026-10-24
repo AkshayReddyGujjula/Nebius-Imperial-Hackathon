@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Table2 } from 'lucide-react'
+import { ChevronDown, ChevronUp, Loader, Table2 } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useCrux } from '@/store/runStore'
 import { optionLetter } from '@/lib/format'
@@ -19,8 +19,8 @@ export function MatrixDrawer() {
 
   return (
     <section aria-label="Trade-off matrix"
-      className="flex flex-none flex-col border-t border-crux-border-strong bg-crux-surface shadow-[0_-8px_24px_rgba(24,24,27,.05)]"
-      style={{ height: open ? 'min(440px, 55%)' : 48 }}>
+      className="flex flex-none flex-col border-t border-crux-border-strong bg-crux-surface shadow-[0_-1px_0_rgba(28,27,23,.04)]"
+      style={{ height: open ? 'min(440px, 55%)' : 48, transition: 'height 220ms var(--crux-ease)' }}>
       <div className="flex h-12 flex-none items-center gap-3 px-4">
         <button type="button" className="flex items-center gap-2 text-[13px] font-semibold" onClick={() => setMatrixOpen(!open)}>
           <Table2 className="!size-4 text-crux-text-secondary" />Trade-off matrix
@@ -33,19 +33,51 @@ export function MatrixDrawer() {
         <div className="flex-1" />
         {leadOpt && leader?.point != null ? (
           <span className="flex min-w-0 items-center gap-2 text-[13px] text-crux-text-secondary">
-            Leading:
+            <span title="Ranked by your weights, not by Decision Lab" className="cursor-help underline decoration-dotted underline-offset-2">Top for your weights:</span>
             <b className="truncate font-semibold text-crux-text">{optionLetter(li)} · {leadOpt.label}</b>
             {detailed ? <span className="ui-num font-medium text-crux-accent-text">{leader.point.toFixed(2)}</span> : null}
             {leader.tooClose ? <span className="ui-pill warn">too close to call</span> : null}
           </span>
         ) : (
-          <span className="text-[13px] text-crux-text-tertiary">Scores appear as research comes in</span>
+          <span className="ui-num text-[13px] text-crux-text-tertiary">{k ? `${k} of ${o * c} scores in` : "Waiting for the agents' scores…"}</span>
         )}
         <button type="button" className="ui-btn sm" onClick={() => setMatrixOpen(!open)} title="Toggle with M">
           {open ? <><ChevronDown />Close</> : <><ChevronUp />Open</>}
         </button>
       </div>
-      {open ? <MatrixTable /> : null}
+      {open ? (
+        <div className="dl-drawer-open flex min-h-0 flex-1 flex-col">
+          {k === 0 ? (
+            <div className="ui-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4" aria-busy="true">
+              <p className="mb-3 flex items-center gap-2 text-[13px] text-crux-text-secondary">
+                <Loader className="ui-spin text-crux-accent" />Waiting for the agents' scores…
+                <span className="ui-num text-crux-text-tertiary">0 of {o * c} scores in</span>
+              </p>
+              <table className="ui-mx">
+                <thead><tr><th>Option</th>{plan.criteria.map((cr) => <th key={cr.id}>{cr.label}</th>)}</tr></thead>
+                <tbody>
+                  {plan.options.map((op, i) => (
+                    <tr key={op.id}>
+                      <td className="text-[13px] font-medium">{optionLetter(i)} · {op.label}</td>
+                      {plan.criteria.map((cr) => <td key={cr.id}><span className="ui-skel-cell" /></td>)}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <>
+              {k < o * c ? (
+                <div className="flex items-center gap-2 px-4 pb-2 text-[12px] text-crux-text-tertiary">
+                  <span className="ui-num">{k} of {o * c} scores in</span>
+                  <span className="dl-inline-progress w-24"><span className="sr-only">loading</span></span>
+                </div>
+              ) : null}
+              <MatrixTable />
+            </>
+          )}
+        </div>
+      ) : null}
     </section>
   )
 }

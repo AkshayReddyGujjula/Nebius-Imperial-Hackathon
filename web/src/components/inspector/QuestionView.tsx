@@ -65,7 +65,20 @@ export function QuestionView({ questionId, onClose, actions }: { questionId: str
 
         <Sec title={`Findings · ${findings.length}`}>
           {findings.length === 0 ? (
-            <p className="text-[13px] text-crux-text-tertiary">{agent?.status === 'done' || agent?.status === 'failed' ? 'No findings were submitted.' : 'Findings appear here as the agent writes them up.'}</p>
+            agent?.status === 'done' || agent?.status === 'failed' || agent?.status === 'timeout' ? (
+              <p className="text-[13px] text-crux-text-tertiary">No findings were submitted.</p>
+            ) : (
+              <div className="flex flex-col gap-2" aria-busy="true">
+                <p className="flex items-center gap-2 text-[12px] text-crux-text-tertiary"><StatusDot status={agent?.status ?? 'queued'} /><span className="truncate">{status}</span></p>
+                {[0, 1].map((i) => (
+                  <div key={i} className="rounded-[8px] border border-crux-border p-3">
+                    <div className="ui-skel shimmer w-4/5" />
+                    <div className="ui-skel shimmer mt-2 w-3/5" />
+                    <div className="ui-skel shimmer mt-3 h-[18px] w-24 rounded-[6px]" />
+                  </div>
+                ))}
+              </div>
+            )
           ) : (
             <div className="flex flex-col gap-2">{findings.map((f, i) => <FindingCard key={f.id} finding={f} n={i + 1} />)}</div>
           )}
