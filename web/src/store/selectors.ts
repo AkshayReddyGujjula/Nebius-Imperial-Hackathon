@@ -1,6 +1,6 @@
 import { buildCells, computeTotals, parseNodeId } from '@shared/index'
 import type { AgentStatus, MatrixCell, OptionTotal } from '@shared/index'
-import { qIndex } from './reducer'
+import { qIndex, SYNTHESIS_NOTICE_ID } from './reducer'
 import type { ActivityTone, RunData, UiState } from './types'
 
 type S = RunData & UiState
@@ -39,6 +39,14 @@ export function selectRecommendationStale(s: S): { stale: boolean; reasons: stri
   if ((s.plan?.facts ?? []).some((f) => !factIds.has(f.id))) reasons.push('New information from you')
   if (Object.values(s.findingSeq).some((seq) => seq > s.synthesisSeq)) reasons.push('New findings arrived')
   return { stale: reasons.length > 0, reasons }
+}
+
+/** Short reason for the last failed (re)synthesis, or null. Cleared when the next synthesis starts. */
+export function selectSynthesisError(s: Pick<S, 'notices'>): string | null {
+  const msg = s.notices.find((n) => n.id === SYNTHESIS_NOTICE_ID)?.message
+  if (msg === undefined) return null
+  const line = msg.split(/\r?\n/)[0].trim() || 'unknown error'
+  return line.length > 80 ? `${line.slice(0, 79).trimEnd()}…` : line
 }
 
 // ---------- per-question trust ----------

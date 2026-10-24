@@ -4,7 +4,7 @@ import { Sparkles, TriangleAlert } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { nodeId } from '@shared/index'
 import { useCrux } from '../../store/runStore'
-import { selectRecommendationStale } from '../../store/selectors'
+import { selectRecommendationStale, selectSynthesisError } from '../../store/selectors'
 import { synthesize } from '../../lib/api'
 import type { CruxNode } from '../buildGraph'
 import { stop } from '../helpers'
@@ -34,6 +34,7 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
   const mock = useCrux((s) => s.mock)
   const weights = useCrux((s) => s.weights)
   const replay = useCrux((s) => s.replay)
+  const failure = useCrux(selectSynthesisError)
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -65,6 +66,13 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
         )}
       </div>
       {error && <p className="text-xs" style={{ color: 'var(--crux-bad)', margin: '0 0 4px' }}>{error}</p>}
+      {ready && failure && (
+        <div className="cx-row" style={{ gap: 8, margin: '0 0 6px', color: 'var(--crux-warn)', fontSize: 12, lineHeight: '16px' }}>
+          <TriangleAlert style={{ width: 12, height: 12, flex: 'none' }} />
+          <span className="cx-ellipsis" title={failure}>Couldn't update the recommendation ({failure}). Showing the previous one.</span>
+          <RetryButton disabled={updating || !live} replay={replay} onClick={update} />
+        </div>
+      )}
 
       {ready ? (
         <div className="cx-rec">
@@ -109,13 +117,27 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
           )}
         </div>
       ) : status === 'failed' ? (
-        <div className="cx-body" style={{ color: 'var(--crux-bad)' }}>Couldn't write a recommendation.</div>
+        <div className="cx-row" style={{ gap: 10 }}>
+          <span className="cx-body" style={{ color: 'var(--crux-bad)' }} title={failure ?? undefined}>
+            Couldn't write a recommendation{failure ? ` (${failure})` : ''}.
+          </span>
+          <RetryButton disabled={updating || !live} replay={replay} onClick={update} />
+        </div>
       ) : status === 'running' ? (
         <Pending text="Writing your recommendation…" live={summary} />
       ) : (
         <Pending text={waiting.m ? `Waiting on ${waiting.k} of ${waiting.m} questions` : 'Waiting on research'} live={null} />
       )}
     </NodeShell>
+  )
+}
+
+function RetryButton({ disabled, replay, onClick }: { disabled: boolean; replay: boolean; onClick: (e: { stopPropagation(): void }) => void }) {
+  return (
+    <button type="button" className="cx-btn nodrag nopan" style={{ flex: 'none' }} disabled={disabled} onPointerDown={stop} onClick={onClick}
+      title={disabled ? (replay ? 'Not available on a replay — start a live run.' : 'Not available on mock data — start a live run.') : undefined}>
+      Try again
+    </button>
   )
 }
 

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { MOCK_EVENTS } from '@/dev/mockRun'
-import { reduce, type ReducerState } from './reducer'
+import { reduce, SYNTHESIS_NOTICE_ID, type ReducerState } from './reducer'
 import { initialRun, initialUi } from './runStore'
 import { selectMatrix, selectQuestionLabel, selectQuestionTrust, selectRecommendationStale, selectTopStatus } from './selectors'
 
@@ -57,6 +57,22 @@ describe('reducer', () => {
   it('ignores events from another run', () => {
     const s = play(MOCK_EVENTS.slice(0, 3))
     expect(reduce(s, { ...MOCK_EVENTS[3], runId: 'other' })).toBeNull()
+  })
+
+  it('a failed re-synthesis keeps the previous recommendation and records the error', () => {
+    const s = play()
+    const base = { runId: s.runId!, ts: s.lastSeq + 1 }
+    const failed = play([
+      { ...base, seq: s.lastSeq + 1, type: 'synthesis.started', version: 2 },
+      { ...base, seq: s.lastSeq + 2, type: 'synthesis.failed', version: 2, error: 'Nebius returned 503' },
+    ] as typeof MOCK_EVENTS, s)
+    expect(failed.synthesis).toBe(s.synthesis)
+    expect(failed.synthesisStatus).toBe('ready')
+    expect(failed.notices.find((n) => n.id === SYNTHESIS_NOTICE_ID)?.message).toBe('Nebius returned 503')
+    const retried = play([{ ...base, seq: s.lastSeq + 3, type: 'synthesis.started', version: 3 }] as typeof MOCK_EVENTS, failed)
+    expect(retried.notices.some((n) => n.id === SYNTHESIS_NOTICE_ID)).toBe(false)
+    const first = play([{ runId: 'mock-run', ts: 1, seq: 1, type: 'synthesis.failed', version: 1, error: 'x' }] as typeof MOCK_EVENTS)
+    expect(first.synthesisStatus).toBe('failed')
   })
 
   it('plan.ready initialises the weights', () => {

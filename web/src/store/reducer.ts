@@ -51,6 +51,11 @@ function upsertQuestion(qs: Question[], q: Question): Question[] {
   const next = qs.slice(); next[i] = q; return next
 }
 
+export const SYNTHESIS_NOTICE_ID = 'synthesis-failed'
+function dropSynthesisNotice(ns: RunData['notices']): RunData['notices'] {
+  return ns.some((n) => n.id === SYNTHESIS_NOTICE_ID) ? ns.filter((n) => n.id !== SYNTHESIS_NOTICE_ID) : ns
+}
+
 // ---------- reducer ----------
 
 /** Pure: returns the state patch for one event, or null when the event is ignored. */
@@ -260,18 +265,21 @@ function apply(s: ReducerState, e: CruxEvent): Patch {
     }
 
     case 'synthesis.started':
-      return { synthesisStatus: 'running' }
+      return { synthesisStatus: 'running', notices: dropSynthesisNotice(s.notices) }
 
     case 'synthesis.ready':
       return {
-        synthesis: e.synthesis, synthesisSeq: e.seq, synthesisStatus: 'ready',
+        synthesis: e.synthesis, synthesisSeq: e.seq, synthesisStatus: 'ready', notices: dropSynthesisNotice(s.notices),
         acts: [item(e, 0, 'ok', 'Recommendation ready', 'Recommendation ready', e.synthesis.recommendation,
           'orchestrator', nodeId.recommendation)],
       }
 
     case 'synthesis.failed':
+      // DECISION: a failed re-synthesis keeps the last good recommendation on screen (status stays 'ready');
+      // the frozen store types have no "update error" field, so the error rides in `notices` under a fixed id.
       return {
-        synthesisStatus: 'failed',
+        synthesisStatus: s.synthesis ? 'ready' : 'failed',
+        notices: [...dropSynthesisNotice(s.notices), { id: SYNTHESIS_NOTICE_ID, level: 'error', message: e.error, ts: e.ts }],
         acts: [item(e, 0, 'bad', "Couldn't write the recommendation", 'Synthesis failed', e.error, 'orchestrator', nodeId.recommendation)],
       }
 
