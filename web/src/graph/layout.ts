@@ -16,6 +16,7 @@ export const L = {
   memoryW: 220, memoryH: 150, memoryGap: 40,
   quoteW: 420, quoteH: 76,
   recGap: 56, recH: { simple: 240, detailed: 280 },
+  pillH: 44, pillW: 300, memoryPillW: 200, auditorAttnH: 96, pillGap: 32,
 } as const
 
 export interface LaidNode {
@@ -32,6 +33,8 @@ export interface LayoutInput {
   plan: Plan | null
   findings: Record<string, Finding>
   viewMode: ViewMode
+  /** Contradictions the auditor found; in Simple mode only then is the auditor taller than a pill. */
+  contradictionCount?: number
 }
 
 export interface LayoutResult {
@@ -60,7 +63,7 @@ function rootOf(q: Question, plan: Plan, findings: Record<string, Finding>): str
   return null
 }
 
-export function layoutGraph({ plan, findings, viewMode }: LayoutInput): LayoutResult {
+export function layoutGraph({ plan, findings, viewMode, contradictionCount = 0 }: LayoutInput): LayoutResult {
   if (!plan) {
     const w = L.decisionMinW
     return {
@@ -140,25 +143,34 @@ export function layoutGraph({ plan, findings, viewMode }: LayoutInput): LayoutRe
   const recW = Math.max(totalW, L.decisionMinW)
   // DECISION: the contradiction auditor sits between the findings and the recommendation, same width.
   // DECISION: findings → code quote check → auditor → brief, so each hand-off is its own visible edge.
-  const qcY = bottom + L.recGap
-  nodes.push({ id: QUOTECHECK_ID, kind: 'quotecheck', refId: null, x: (totalW - L.quoteW) / 2, y: qcY, w: L.quoteW, h: L.quoteH })
-  const audY = qcY + L.quoteH + L.recGap
-  nodes.push({ id: AUDITOR_ID, kind: 'auditor', refId: null, x: (totalW - recW) / 2, y: audY, w: recW, h: L.auditorH })
+  // Simple mode: stage nodes are small pills; the auditor grows only when it found conflicts.
+  const gap = detailed ? L.recGap : L.pillGap
+  const quoteW = detailed ? L.quoteW : L.pillW
+  const quoteH = detailed ? L.quoteH : L.pillH
+  const audW = detailed || contradictionCount > 0 ? recW : L.pillW
+  const audH = detailed ? L.auditorH : contradictionCount > 0 ? L.auditorAttnH : L.pillH
+  const memW = detailed ? L.memoryW : L.memoryPillW
+  const memH = detailed ? L.memoryH : L.pillH
+  const qcY = bottom + gap
+  nodes.push({ id: QUOTECHECK_ID, kind: 'quotecheck', refId: null, x: (totalW - quoteW) / 2, y: qcY, w: quoteW, h: quoteH })
+  const audY = qcY + quoteH + gap
+  nodes.push({ id: AUDITOR_ID, kind: 'auditor', refId: null, x: (totalW - audW) / 2, y: audY, w: audW, h: audH })
+  const recY = audY + audH + gap
   nodes.push({
     id: nodeId.recommendation, kind: 'recommendation', refId: null,
-    x: (totalW - recW) / 2, y: audY + L.auditorH + L.recGap, w: recW, h: L.recH[viewMode],
+    x: (totalW - recW) / 2, y: recY, w: recW, h: L.recH[viewMode],
   })
 
   // DECISION: shared memory sits left of the agents row; dashed edges fan out to every agent and the brief.
+  const sideX = Math.min(0, (totalW - recW) / 2) - L.memoryGap
   nodes.push({
     id: MEMORY_ID, kind: 'memory', refId: null,
-    x: Math.min(0, (totalW - recW) / 2) - L.memoryGap - L.memoryW, y: L.decisionH + L.topGap, w: L.memoryW, h: L.memoryH,
+    x: sideX - memW, y: L.decisionH + L.topGap, w: memW, h: memH,
   })
   // DECISION: the conversation sits left of the brief, below where the memory edge turns in, so they never cross.
-  const recY = audY + L.auditorH + L.recGap
   nodes.push({
     id: CHAT_ID, kind: 'chatout', refId: null,
-    x: Math.min(0, (totalW - recW) / 2) - L.memoryGap - L.memoryW, y: recY + L.recH[viewMode] / 2 + 24, w: L.memoryW, h: 84,
+    x: sideX - L.memoryW, y: recY + L.recH[viewMode] / 2 + 24, w: L.memoryW, h: 84,
   })
 
   return { nodes, columns: colItems.map((items) => items.map((it) => it.id)), totalW }

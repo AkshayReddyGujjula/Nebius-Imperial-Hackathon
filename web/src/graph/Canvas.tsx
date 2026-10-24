@@ -77,7 +77,8 @@ function CanvasInner() {
   const flow = useReactFlow()
   FIT = viewMode === 'simple' ? FIT_SIMPLE : FIT_DETAILED
 
-  const layout = useMemo(() => layoutGraph({ plan, findings, viewMode }), [plan, findings, viewMode])
+  const contradictionCount = useCrux((s) => (s.contradictionsStatus === 'ready' ? s.contradictions.length : 0))
+  const layout = useMemo(() => layoutGraph({ plan, findings, viewMode, contradictionCount }), [plan, findings, viewMode, contradictionCount])
   const nodes = useMemo(() => buildNodes(layout), [layout])
   const edges = useMemo(
     () => buildEdges({ layout, detailed: viewMode === 'detailed', ...edgeState }),

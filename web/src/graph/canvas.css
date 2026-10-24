@@ -193,3 +193,25 @@
 .cx-qc-warn b { color: var(--crux-warn); }
 .cx-qc-bad b { color: var(--crux-bad); }
 .cx-qc-tot { margin-left: auto; }
+
+/* Simple mode stage pills (memory, quote check, auditor): one state each — waiting / working / ok / attention. */
+.cx-node.cx-node-pill { padding: 0; border-radius: 999px; box-shadow: none; justify-content: center; overflow: visible; }
+.cx-node.cx-node-pill.is-ok { border-color: color-mix(in srgb, var(--crux-ok) 40%, var(--crux-border)); background: var(--crux-ok-soft); }
+.cx-node.cx-node-pill.is-working { border-color: var(--crux-accent); background: var(--crux-surface); animation: cx-stage-glow 1.6s ease-in-out infinite; }
+.cx-node.cx-node-pill.is-attention { border-color: var(--crux-warn-border); background: var(--crux-warn-soft); }
+.cx-node.cx-node-pill.is-waiting { border-style: dashed; background: var(--crux-surface); }
+.cx-stage { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 0; padding: 0 16px; font-size: 14px; line-height: 18px; color: var(--crux-text-secondary); white-space: nowrap; }
+.cx-stage svg { width: 16px; height: 16px; flex: none; }
+.cx-stage b { font-weight: 600; color: var(--crux-text); flex: none; }
+.cx-stage-sep { color: var(--crux-text-quaternary); }
+.cx-stage-ok, .cx-stage-ok svg { color: var(--crux-ok); }
+.cx-stage-working svg { color: var(--crux-accent); }
+.cx-stage-attention, .cx-stage-attention svg { color: var(--crux-warn); }
+.cx-stage-waiting { color: var(--crux-text-tertiary); }
+.cx-spin { animation: cx-spin 1s linear infinite; }
+@keyframes cx-spin { to { transform: rotate(360deg); } }
+@keyframes cx-stage-glow { 50% { box-shadow: 0 0 0 4px var(--crux-accent-soft); } }
+.cx-node-auditor.is-attention { border-color: var(--crux-warn-border); background: color-mix(in srgb, var(--crux-warn-soft) 55%, var(--crux-surface)); }
+.cx-node-auditor.is-attention .cx-stage { justify-content: flex-start; padding: 0; }
+.cx-aud-list { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; font-size: 13.5px; line-height: 18px; color: var(--crux-text); }
+@media (prefers-reduced-motion: reduce) { .cx-spin, .cx-node.cx-node-pill.is-working { animation: none; } }
