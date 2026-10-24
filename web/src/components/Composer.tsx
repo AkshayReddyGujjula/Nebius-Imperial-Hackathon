@@ -27,11 +27,11 @@ export function Composer({ onSubmit, mic, error }: { onSubmit: (text: string) =>
 
   return (
     <div>
-      <div className="cx-composer">
+      <div className="ui-composer">
         <textarea
           ref={ref}
           id="crux-composer"
-          className="cx-textarea cx-scroll"
+          className="ui-textarea ui-scroll"
           rows={3}
           value={draft}
           placeholder="I have a hackathon tomorrow and my exam is the day after…"
@@ -43,11 +43,11 @@ export function Composer({ onSubmit, mic, error }: { onSubmit: (text: string) =>
         />
         <div className="mt-2 flex items-center gap-2">
           <span className="text-[12px] text-crux-text-quaternary">
-            <kbd className="cx-mono">Enter</kbd> to run · <kbd className="cx-mono">Shift</kbd>+<kbd className="cx-mono">Enter</kbd> new line
+            <kbd className="ui-mono">Enter</kbd> to run · <kbd className="ui-mono">Shift</kbd>+<kbd className="ui-mono">Enter</kbd> new line
           </span>
           <div className="flex-1" />
           {mic}
-          <button id="crux-run" type="button" className="cx-btn primary icon !size-9" disabled={!ready || busy}
+          <button id="crux-run" type="button" className="ui-btn primary icon !size-9" disabled={!ready || busy}
             onClick={submit} aria-label="Run" title={ready ? 'Run' : 'Write at least 10 characters'}>
             <ArrowUp className="!size-4" />
           </button>

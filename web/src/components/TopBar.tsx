@@ -41,20 +41,20 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
 
       {phase !== 'idle' ? (
         <div className="flex flex-none items-center gap-2">
-          {replay ? <span className="cx-pill">Replay</span> : null}
-          {mock ? <span className="cx-pill warn">Mock data</span> : null}
+          {replay ? <span className="ui-pill">Replay</span> : null}
+          {mock ? <span className="ui-pill warn">Mock data</span> : null}
           <span className={`inline-flex items-center gap-1.5 text-[13px] ${textTone}`}>
             <Dot kind={kind} />
             <span>{status.label || 'Starting'}</span>
             <span className="text-crux-text-quaternary">·</span>
-            <span className="cx-num">{fmtClock(Math.max(0, elapsed))}</span>
+            <span className="ui-num">{fmtClock(Math.max(0, elapsed))}</span>
           </span>
         </div>
       ) : null}
 
       <div className="flex-1" />
 
-      <div className="cx-seg" role="radiogroup" aria-label="View mode">
+      <div className="ui-seg" role="radiogroup" aria-label="View mode">
         {(['simple', 'detailed'] as const).map((m) => (
           <button key={m} type="button" role="radio" aria-checked={viewMode === m} data-on={viewMode === m}
             onClick={() => setViewMode(m)} title="Toggle with D">
@@ -63,12 +63,12 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
         ))}
       </div>
       {viewMode === 'detailed' && runId && !mock ? (
-        <a className="cx-btn icon" href={`${API}/api/runs/${runId}/export`} target="_blank" rel="noreferrer" title="Export run log" aria-label="Export run log">
+        <a className="ui-btn icon" href={`${API}/api/runs/${runId}/export`} target="_blank" rel="noreferrer" title="Export run log" aria-label="Export run log">
           <Download />
         </a>
       ) : null}
       {phase !== 'idle' ? (
-        <button type="button" className="cx-btn" onClick={onNewDecision}><Plus />New decision</button>
+        <button type="button" className="ui-btn" onClick={onNewDecision}><Plus />New decision</button>
       ) : null}
     </header>
   )

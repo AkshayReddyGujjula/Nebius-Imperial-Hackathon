@@ -7,7 +7,7 @@ export function EffortBadge({ effort, reason }: { effort: Effort; reason?: strin
   const n = FILLED[effort]
   return (
     <span className="inline-flex min-w-0 items-center gap-2">
-      <span className="cx-eff" aria-label={`${WORD[effort]} effort`}>
+      <span className="ui-eff" aria-label={`${WORD[effort]} effort`}>
         <i>{[0, 1, 2].map((i) => <s key={i} className={i < n ? 'on' : undefined} />)}</i>
         {WORD[effort]}
       </span>

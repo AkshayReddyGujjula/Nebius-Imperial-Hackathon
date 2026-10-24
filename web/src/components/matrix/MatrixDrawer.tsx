@@ -26,7 +26,7 @@ export function MatrixDrawer() {
           <Table2 className="!size-4 text-crux-text-secondary" />Trade-off matrix
         </button>
         {detailed ? (
-          <span className="cx-num truncate text-[12px] text-crux-text-tertiary">
+          <span className="ui-num truncate text-[12px] text-crux-text-tertiary">
             {o} options × {c} criteria · {k} of {o * c} scores proposed
           </span>
         ) : null}
@@ -35,13 +35,13 @@ export function MatrixDrawer() {
           <span className="flex min-w-0 items-center gap-2 text-[13px] text-crux-text-secondary">
             Leading:
             <b className="truncate font-semibold text-crux-text">{optionLetter(li)} · {leadOpt.label}</b>
-            {detailed ? <span className="cx-num font-medium text-crux-accent-text">{leader.point.toFixed(2)}</span> : null}
-            {leader.tooClose ? <span className="cx-pill warn">too close to call</span> : null}
+            {detailed ? <span className="ui-num font-medium text-crux-accent-text">{leader.point.toFixed(2)}</span> : null}
+            {leader.tooClose ? <span className="ui-pill warn">too close to call</span> : null}
           </span>
         ) : (
           <span className="text-[13px] text-crux-text-tertiary">Scores appear as research comes in</span>
         )}
-        <button type="button" className="cx-btn sm" onClick={() => setMatrixOpen(!open)} title="Toggle with M">
+        <button type="button" className="ui-btn sm" onClick={() => setMatrixOpen(!open)} title="Toggle with M">
           {open ? <><ChevronDown />Close</> : <><ChevronUp />Open</>}
         </button>
       </div>

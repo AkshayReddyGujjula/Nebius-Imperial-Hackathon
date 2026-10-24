@@ -62,8 +62,8 @@ function SimpleFeed() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="px-4 pt-4 pb-2"><div className="cx-label">What's happening</div></div>
-      <div ref={ref} onScroll={onScroll} className="cx-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4">
+      <div className="px-4 pt-4 pb-2"><div className="ui-label">What's happening</div></div>
+      <div ref={ref} onScroll={onScroll} className="ui-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4">
         <ul className="flex flex-col gap-3">
           {items.map((i) => (
             <li key={i.id} className="crux-node-enter grid grid-cols-[8px_minmax(0,1fr)] gap-2.5">
@@ -84,7 +84,7 @@ function SimpleFeed() {
             {trust.ok === trust.n ? `All ${trust.n} quotes checked` : `${trust.ok} of ${trust.n} quotes checked`}
             {trust.x > 0 ? ` · agents disagree on ${trust.x} point${trust.x === 1 ? '' : 's'}` : ''}
           </p>
-          <button type="button" className="cx-link mt-1 text-[12px]" onClick={() => setViewMode('detailed')}>Show details</button>
+          <button type="button" className="ui-link mt-1 text-[12px]" onClick={() => setViewMode('detailed')}>Show details</button>
         </div>
       ) : null}
     </div>
@@ -104,9 +104,9 @@ function TimelineItem({ item, startedTs, live }: { item: ActivityItem; startedTs
       </span>
     </>
   )
-  if (!item.nodeId) return <div className="cx-ev">{body}</div>
+  if (!item.nodeId) return <div className="ui-ev">{body}</div>
   const nodeId = item.nodeId
-  return <button type="button" className="cx-ev click" onClick={() => select(nodeId)}>{body}</button>
+  return <button type="button" className="ui-ev click" onClick={() => select(nodeId)}>{body}</button>
 }
 
 function Timeline() {
@@ -116,7 +116,7 @@ function Timeline() {
   const { ref, onScroll } = useAutoScroll(`${activity.length}|${[...live.values()].join('|')}`)
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div ref={ref} onScroll={onScroll} className="cx-scroll min-h-0 flex-1 overflow-y-auto px-4 py-1">
+      <div ref={ref} onScroll={onScroll} className="ui-scroll min-h-0 flex-1 overflow-y-auto px-4 py-1">
         {activity.map((i) => <TimelineItem key={i.id} item={i} startedTs={startedTs} live={live.get(i.id) ?? null} />)}
       </div>
       <div className="flex-none border-t border-crux-border px-4 py-3"><RunStats /></div>
@@ -133,7 +133,7 @@ export function ActivityRail() {
     <aside aria-label="Activity" className="flex min-h-0 flex-col border-r border-crux-border bg-crux-surface">
       {phase === 'idle' ? (
         <div className="px-4 py-5">
-          <div className="cx-label">What's happening</div>
+          <div className="ui-label">What's happening</div>
           <p className="mt-2 text-[13px] leading-[19px] text-crux-text-tertiary">Agents appear here once Crux splits your decision into questions.</p>
         </div>
       ) : viewMode === 'simple' ? (
@@ -141,7 +141,7 @@ export function ActivityRail() {
       ) : (
         <>
           <div className="flex-none px-4 pt-3 pb-2">
-            <div className="cx-seg" role="tablist">
+            <div className="ui-seg" role="tablist">
               <button type="button" role="tab" aria-selected={railTab === 'timeline'} data-on={railTab === 'timeline'} onClick={() => setRailTab('timeline')}>
                 <ListTree />Timeline
               </button>

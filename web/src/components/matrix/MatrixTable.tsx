@@ -10,7 +10,7 @@ import { useMatrix } from './useMatrix'
 
 export function Pips({ score }: { score: number | null }) {
   return (
-    <span className="cx-pips" aria-hidden>
+    <span className="ui-pips" aria-hidden>
       {[1, 2, 3, 4, 5].map((i) => (
         <s key={i} className={score === null ? undefined : score >= i ? 'f' : score >= i - 0.5 ? 'h' : undefined} />
       ))}
@@ -19,8 +19,8 @@ export function Pips({ score }: { score: number | null }) {
 }
 
 export function OriginTag({ origin }: { origin: MatrixCell['origin'] }) {
-  if (origin === 'ai') return <span className="cx-tag ai">AI</span>
-  if (origin === 'user') return <span className="cx-tag you">You</span>
+  if (origin === 'ai') return <span className="ui-tag ai">AI</span>
+  if (origin === 'user') return <span className="ui-tag you">You</span>
   return null
 }
 
@@ -40,13 +40,13 @@ function Cell({ cell, detailed, selected }: { cell: MatrixCell; detailed: boolea
       ) : (
         <div>
           <div className="flex items-center gap-2">
-            <span className="cx-num w-6 text-[14px] font-semibold">{fmtScore(cell.score)}</span>
+            <span className="ui-num w-6 text-[14px] font-semibold">{fmtScore(cell.score)}</span>
             <Pips score={cell.score} />
             <OriginTag origin={cell.origin} />
           </div>
           {detailed ? (
             <>
-              {cell.rationale ? <p className="cx-clamp-2 mt-1 text-[12px] leading-4 text-crux-text-tertiary">{cell.rationale}</p> : null}
+              {cell.rationale ? <p className="ui-clamp-2 mt-1 text-[12px] leading-4 text-crux-text-tertiary">{cell.rationale}</p> : null}
               {finding ? <div className="mt-1.5"><CitationChip finding={finding} /></div> : null}
             </>
           ) : null}
@@ -60,7 +60,7 @@ function WeightStepper({ criterionId, base }: { criterionId: string; base: numbe
   const w = useCrux((s) => s.weights[criterionId] ?? base)
   const setWeight = useCrux((s) => s.setWeight)
   return (
-    <span className="cx-wt" onClick={(e) => e.stopPropagation()}>
+    <span className="ui-wt" onClick={(e) => e.stopPropagation()}>
       <button type="button" aria-label="Lower weight" disabled={w <= 0} onClick={() => setWeight(criterionId, w - 1)}><Minus /></button>
       <b data-changed={w !== base} title={w !== base ? `Orchestrator suggested ${base}` : 'Weight 0–10'}>{w}</b>
       <button type="button" aria-label="Raise weight" disabled={w >= 10} onClick={() => setWeight(criterionId, w + 1)}><Plus /></button>
@@ -118,14 +118,14 @@ export function MatrixTable() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="cx-scroll min-h-0 flex-1 overflow-auto border-t border-crux-border">
-        <table className="cx-mx">
+      <div className="ui-scroll min-h-0 flex-1 overflow-auto border-t border-crux-border">
+        <table className="ui-mx">
           <thead>
             <tr>
               <th className="w-[200px] min-w-[180px]">Option</th>
               {plan.criteria.map((c) => (
                 <th key={c.id} className="min-w-[136px]">
-                  <div className="cx-clamp-2 text-[12px] leading-4 font-medium text-crux-text" title={c.description}>{c.label}</div>
+                  <div className="ui-clamp-2 text-[12px] leading-4 font-medium text-crux-text" title={c.description}>{c.label}</div>
                   <WeightStepper criterionId={c.id} base={c.weight} />
                 </th>
               ))}
@@ -141,7 +141,7 @@ export function MatrixTable() {
                 <motion.tr key={t.optionId} layout="position" transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}>
                   <td>
                     <div className="flex items-start gap-2">
-                      <span className={`cx-rank ${t.rank === 1 && t.point !== null ? 'one' : ''}`}>{t.rank}</span>
+                      <span className={`ui-rank ${t.rank === 1 && t.point !== null ? 'one' : ''}`}>{t.rank}</span>
                       <div className="min-w-0">
                         <div className="text-[13px] leading-5 font-medium">{letterOf(o.id)} · {o.label}</div>
                         {o.origin === 'ai' ? <span className="text-[11px] text-crux-text-tertiary">AI-suggested</span> : null}
@@ -154,14 +154,14 @@ export function MatrixTable() {
                     return cell ? <Cell key={c.id} cell={cell} detailed={detailed} selected={selectedCellKey === k} /> : <td key={c.id} />
                   })}
                   <td className="bg-crux-hover">
-                    <div className={`cx-num text-[15px] font-semibold ${isLead ? 'text-crux-accent-text' : ''}`}>
+                    <div className={`ui-num text-[15px] font-semibold ${isLead ? 'text-crux-accent-text' : ''}`}>
                       {t.point === null ? '–' : t.point.toFixed(2)}
                     </div>
-                    <div className={`cx-tbar ${isLead ? 'one' : ''}`}>
+                    <div className={`ui-tbar ${isLead ? 'one' : ''}`}>
                       <span style={{ width: `${t.point === null ? 0 : ((t.point - 1) / 4) * 100}%` }} />
                     </div>
                     {t.unknownCount > 0 && t.min !== null && t.max !== null ? (
-                      <div className="cx-num mt-1 text-[11px] text-crux-text-tertiary" title="Range if the unknown cells scored 1 or 5">
+                      <div className="ui-num mt-1 text-[11px] text-crux-text-tertiary" title="Range if the unknown cells scored 1 or 5">
                         {t.min.toFixed(2)}–{t.max.toFixed(2)}
                       </div>
                     ) : null}
@@ -176,8 +176,8 @@ export function MatrixTable() {
         <RerankNote leaderId={leader?.point != null ? leader.optionId : null} />
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-crux-text-tertiary">
           {detailed ? <span>Weighted total = Σ(weight × score) / Σ weight · computed in code{sumW === 0 ? ' · all weights are 0' : ''}</span> : null}
-          <span className="flex items-center gap-1.5"><span className="cx-tag ai">AI</span>proposed from cited findings</span>
-          <span className="flex items-center gap-1.5"><span className="cx-tag you">You</span>set by you</span>
+          <span className="flex items-center gap-1.5"><span className="ui-tag ai">AI</span>proposed from cited findings</span>
+          <span className="flex items-center gap-1.5"><span className="ui-tag you">You</span>set by you</span>
           {anyUnknown ? <span>Ranges show totals if unknown cells scored 1 to 5</span> : null}
         </div>
       </div>

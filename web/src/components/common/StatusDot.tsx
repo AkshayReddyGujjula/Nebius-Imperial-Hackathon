@@ -23,14 +23,14 @@ const STATUS_LABEL: Record<AgentStatus, string> = {
 }
 
 export function Dot({ kind, className }: { kind: DotKind; className?: string }) {
-  return <span aria-hidden className={cn('cx-dot', kind, className)} />
+  return <span aria-hidden className={cn('ui-dot', kind, className)} />
 }
 
 /** Status dot with its text label — the dot never appears without words. */
 export function StatusDot({ status, label, className }: { status: AgentStatus | null; label?: string; className?: string }) {
   const kind = dotForStatus(status)
   return (
-    <span className={cn('cx-st', kind, className)}>
+    <span className={cn('ui-st', kind, className)}>
       <Dot kind={kind} />
       {label ?? (status ? STATUS_LABEL[status] : 'Queued')}
     </span>

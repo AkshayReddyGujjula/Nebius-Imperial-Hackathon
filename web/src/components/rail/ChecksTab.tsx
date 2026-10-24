@@ -54,12 +54,12 @@ export function ChecksTab() {
   const maxBar = Math.max(wall, seq, 1)
 
   return (
-    <div className="cx-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-4">
+    <div className="ui-scroll min-h-0 flex-1 overflow-y-auto px-4 pt-2 pb-4">
       <div className="grid grid-cols-2 gap-2">
-        <div className="cx-kpi"><div className="l">Tokens</div><div className="v">{stats ? fmtTokens(stats.inputTokens + stats.outputTokens) : '–'}</div></div>
-        <div className="cx-kpi"><div className="l">Cost</div><div className="v">{stats ? fmtUsd(stats.costUsd) : '–'}</div></div>
-        <div className="cx-kpi"><div className="l">Calls</div><div className="v">{stats ? stats.llmCalls : '–'}</div></div>
-        <div className="cx-kpi"><div className="l">Speed-up</div><div className="v">{stats ? `${stats.speedup.toFixed(1)}×` : '–'}</div></div>
+        <div className="ui-kpi"><div className="l">Tokens</div><div className="v">{stats ? fmtTokens(stats.inputTokens + stats.outputTokens) : '–'}</div></div>
+        <div className="ui-kpi"><div className="l">Cost</div><div className="v">{stats ? fmtUsd(stats.costUsd) : '–'}</div></div>
+        <div className="ui-kpi"><div className="l">Calls</div><div className="v">{stats ? stats.llmCalls : '–'}</div></div>
+        <div className="ui-kpi"><div className="l">Speed-up</div><div className="v">{stats ? `${stats.speedup.toFixed(1)}×` : '–'}</div></div>
       </div>
 
       <div className="mt-4 flex flex-col gap-1.5 text-[12px] text-crux-text-secondary">
@@ -69,12 +69,12 @@ export function ChecksTab() {
             <span className="h-2 overflow-hidden rounded-[3px] bg-crux-subtle">
               <span className="block h-full rounded-[3px] transition-[width] duration-300" style={{ width: `${((v as number) / maxBar) * 100}%`, background: c as string }} />
             </span>
-            <span className="cx-num text-right">{fmtMs(v as number)}</span>
+            <span className="ui-num text-right">{fmtMs(v as number)}</span>
           </div>
         ))}
       </div>
 
-      <div className="mt-5 cx-label">Citations · {total}</div>
+      <div className="mt-5 ui-label">Citations · {total}</div>
       <div className="mt-2 flex h-2 overflow-hidden rounded-[3px] bg-crux-subtle">
         {SEGMENTS.map((sg) => counts[sg.key] > 0 ? (
           <span key={sg.key} style={{ width: `${(counts[sg.key] / Math.max(total, 1)) * 100}%`, background: sg.color }} className="h-full border-r border-crux-surface last:border-r-0" />
@@ -85,12 +85,12 @@ export function ChecksTab() {
           <li key={sg.key} className="flex items-center gap-1.5">
             <span className="size-2 flex-none rounded-[2px]" style={{ background: sg.color }} />
             <span className="min-w-0 flex-1 truncate">{sg.label}</span>
-            <span className="cx-num text-crux-text">{counts[sg.key]}</span>
+            <span className="ui-num text-crux-text">{counts[sg.key]}</span>
           </li>
         ))}
       </ul>
 
-      <div className="mt-5 cx-label">Needs attention · {attention.length}</div>
+      <div className="mt-5 ui-label">Needs attention · {attention.length}</div>
       <div className="mt-2 flex flex-col gap-2">
         {attention.length === 0 ? <p className="text-[13px] text-crux-text-tertiary">Nothing flagged so far.</p> : null}
         {attention.map((a) => {
@@ -99,20 +99,20 @@ export function ChecksTab() {
             const qa = findings[fa] ? labels[findings[fa].questionId] : '?'
             const qb = findings[fb] ? labels[findings[fb].questionId] : '?'
             return (
-              <button key={a.id} type="button" className="cx-ck" onClick={() => select(nodeId.finding(fa))}>
+              <button key={a.id} type="button" className="ui-ck" onClick={() => select(nodeId.finding(fa))}>
                 <div className="h text-crux-bad"><GitCompareArrows />Contradiction · {qa} ↔ {qb}</div>
-                <div className="b cx-clamp-3">{a.x.explanation}</div>
+                <div className="b ui-clamp-3">{a.x.explanation}</div>
               </button>
             )
           }
           const bad = a.kind === 'not_retrieved'
           return (
-            <button key={a.id} type="button" className="cx-ck" onClick={() => select(nodeId.finding(a.f.id))}>
+            <button key={a.id} type="button" className="ui-ck" onClick={() => select(nodeId.finding(a.f.id))}>
               <div className={`h ${bad ? 'text-crux-bad' : 'text-crux-warn'}`}>
                 {bad ? <CircleX /> : <TriangleAlert />}
                 {bad ? 'Source not retrieved' : 'Quote not found'} · {labels[a.f.questionId] ?? ''}
               </div>
-              <div className="b cx-clamp-2">{a.f.claim}</div>
+              <div className="b ui-clamp-2">{a.f.claim}</div>
               <div className="mt-2"><CitationChip finding={a.f} /></div>
             </button>
           )
@@ -121,7 +121,7 @@ export function ChecksTab() {
 
       {agents.length > 0 ? (
         <>
-          <div className="mt-5 cx-label">Effort used</div>
+          <div className="mt-5 ui-label">Effort used</div>
           <table className="mt-2 w-full text-[12px] text-crux-text-secondary">
             <thead>
               <tr className="text-left text-[11px] text-crux-text-tertiary">
@@ -134,8 +134,8 @@ export function ChecksTab() {
                 <tr key={a.id} className="border-t border-crux-border">
                   <td className="py-1.5 font-medium text-crux-text">{labels[a.questionId] ?? a.questionId}</td>
                   <td className="py-1.5"><EffortBadge effort={a.effort} /></td>
-                  <td className="cx-num py-1.5 text-right">{a.usage ? fmtTokens(a.usage.reasoningTokens) : '–'}</td>
-                  <td className="cx-num py-1.5 text-right">{a.usage ? fmtMs(a.usage.ms) : a.endedAt ? fmtMs(a.endedAt - a.startedAt) : '–'}</td>
+                  <td className="ui-num py-1.5 text-right">{a.usage ? fmtTokens(a.usage.reasoningTokens) : '–'}</td>
+                  <td className="ui-num py-1.5 text-right">{a.usage ? fmtMs(a.usage.ms) : a.endedAt ? fmtMs(a.endedAt - a.startedAt) : '–'}</td>
                 </tr>
               ))}
             </tbody>

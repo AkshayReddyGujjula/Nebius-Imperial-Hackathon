@@ -5,7 +5,7 @@ import { fmtMs, fmtTokens, fmtUsd } from '@/lib/format'
 export function RunStats() {
   const stats = useCrux((s) => s.stats)
   const k = (l: string, v: string, muted = false) => (
-    <div className="cx-kpi">
+    <div className="ui-kpi">
       <div className="l">{l}</div>
       <div className={`v ${muted ? '!text-crux-text-tertiary' : ''}`}>{v}</div>
     </div>
@@ -19,7 +19,7 @@ export function RunStats() {
         {k('Sequential', stats ? fmtMs(stats.agentMsSum) : '–', true)}
       </div>
       {stats ? (
-        <p className="cx-num mt-2 text-[12px] leading-4 text-crux-text-tertiary">
+        <p className="ui-num mt-2 text-[12px] leading-4 text-crux-text-tertiary">
           {stats.speedup.toFixed(1)}× faster in parallel · {stats.llmCalls} model calls · {stats.tavilySearches} searches
         </p>
       ) : null}

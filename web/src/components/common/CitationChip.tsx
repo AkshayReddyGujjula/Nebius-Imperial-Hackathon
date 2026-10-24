@@ -30,7 +30,7 @@ export function CitationChip({ finding, onClick, className }: { finding: Finding
       {state === 'not_found' ? <TriangleAlert /> : null}
       {state === 'not_retrieved' ? <CircleX /> : null}
       {state === 'no_quote' ? <Quote /> : null}
-      {state === 'pending' ? <Loader className="cx-spin" /> : null}
+      {state === 'pending' ? <Loader className="ui-spin" /> : null}
       <span>{domain}</span>
       {state === 'partial' ? <small>close match</small> : null}
       {state === 'no_quote' ? <small>no quote</small> : null}
@@ -38,9 +38,9 @@ export function CitationChip({ finding, onClick, className }: { finding: Finding
   )
   if (onClick) {
     return (
-      <button type="button" title={title} className={cn('cx-cite', tone, className)}
+      <button type="button" title={title} className={cn('ui-cite', tone, className)}
         onClick={(e) => { e.stopPropagation(); onClick() }}>{body}</button>
     )
   }
-  return <span title={title} className={cn('cx-cite', tone, className)}>{body}</span>
+  return <span title={title} className={cn('ui-cite', tone, className)}>{body}</span>
 }

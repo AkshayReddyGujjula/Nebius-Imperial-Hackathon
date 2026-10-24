@@ -35,10 +35,10 @@ export function EmptyState({ onRun, onReplay, error, mic }: {
   }
 
   return (
-    <div className="cx-canvas-bg cx-scroll relative h-full overflow-y-auto">
+    <div className="ui-canvas-bg ui-scroll relative h-full overflow-y-auto">
       <div className="mx-auto flex min-h-full w-[640px] max-w-[calc(100%-48px)] flex-col pt-[9vh] pb-20">
         <div className="rounded-[8px] border border-crux-border-strong bg-crux-surface p-5 shadow-base">
-          <div className="cx-label"><Split className="!size-3.5" />Decision</div>
+          <div className="ui-label"><Split className="!size-3.5" />Decision</div>
           <h1 className="mt-3 text-[24px] leading-8 font-semibold tracking-[-0.015em]">What are you deciding?</h1>
           <p className="mt-1 mb-4 text-[14px] leading-5 text-crux-text-secondary">
             Type it or say it. Include what matters: deadlines, stakes, what you value.
@@ -47,7 +47,7 @@ export function EmptyState({ onRun, onReplay, error, mic }: {
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-[12px] text-crux-text-tertiary">Try:</span>
             {EXAMPLES.map((ex) => (
-              <button key={ex.label} type="button" className="cx-pill" onClick={() => {
+              <button key={ex.label} type="button" className="ui-pill" onClick={() => {
                 setDraft(ex.text, 'text')
                 document.getElementById('crux-composer')?.focus()
               }}>{ex.label}</button>
@@ -56,7 +56,7 @@ export function EmptyState({ onRun, onReplay, error, mic }: {
         </div>
 
         <div className="mt-3 flex items-center gap-3 px-1">
-          <button type="button" className="cx-link inline-flex items-center gap-1.5 !font-normal !text-crux-text-tertiary hover:!text-crux-text" onClick={toggleReplays}>
+          <button type="button" className="ui-link inline-flex items-center gap-1.5 !font-normal !text-crux-text-tertiary hover:!text-crux-text" onClick={toggleReplays}>
             <RotateCcw className="!size-3.5" />Replay a recorded run
           </button>
         </div>
@@ -70,7 +70,7 @@ export function EmptyState({ onRun, onReplay, error, mic }: {
               <button key={r.file} type="button" onClick={() => onReplay(r.file)}
                 className="flex w-full items-center gap-3 border-t border-crux-border px-3 py-2.5 text-left first:border-t-0 hover:bg-crux-hover">
                 <span className="min-w-0 flex-1 truncate text-[13px]">{r.decision}</span>
-                <span className="cx-mono flex-none text-[11px] text-crux-text-quaternary">{r.recordedAt.slice(0, 16).replace('T', ' ')}</span>
+                <span className="ui-mono flex-none text-[11px] text-crux-text-quaternary">{r.recordedAt.slice(0, 16).replace('T', ' ')}</span>
               </button>
             ))}
           </div>
@@ -84,19 +84,19 @@ export function EmptyState({ onRun, onReplay, error, mic }: {
             {['Question', 'Question', 'Question', 'Blind spot'].map((k, i) => (
               <div key={i} className="flex flex-col items-center">
                 <div className="h-4 w-px bg-crux-edge" />
-                <div className={`cx-ghost w-full ${i === 3 ? '!border-crux-text-quaternary' : ''}`}>
-                  <div className="cx-label">{k}</div>
-                  <div className="cx-skel mt-2 w-[80%]" />
-                  <div className="cx-skel mt-1.5 w-[55%]" />
+                <div className={`ui-ghost w-full ${i === 3 ? '!border-crux-text-quaternary' : ''}`}>
+                  <div className="ui-label">{k}</div>
+                  <div className="ui-skel mt-2 w-[80%]" />
+                  <div className="ui-skel mt-1.5 w-[55%]" />
                 </div>
               </div>
             ))}
           </div>
-          <div className="cx-ghost mt-6"><div className="cx-label">Recommendation</div><div className="cx-skel mt-2 w-[40%]" /></div>
+          <div className="ui-ghost mt-6"><div className="ui-label">Recommendation</div><div className="ui-skel mt-2 w-[40%]" /></div>
         </div>
 
         <div className="mt-auto flex justify-center pt-10">
-          <span className="cx-pill"><Cpu />Open models on Nebius Token Factory</span>
+          <span className="ui-pill"><Cpu />Open models on Nebius Token Factory</span>
         </div>
       </div>
     </div>
