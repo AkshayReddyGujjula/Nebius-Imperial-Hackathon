@@ -132,7 +132,7 @@
 }
 
 .dl-feed-stats { container-type: inline-size; }
-@container (max-width: 300px) { .dl-feed-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container (max-width: 270px) { .dl-feed-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 .dl-feed-models-wrap { margin-top: 10px; border-top: 1px solid var(--crux-border); padding-top: 7px; }
 .dl-feed-models-wrap > summary { cursor: pointer; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; font-weight: 600; color: var(--crux-text-tertiary); }
 .dl-feed-models-wrap .dl-feed-models { margin-top: 6px; border-top: 0; padding-top: 0; }

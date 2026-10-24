@@ -12,6 +12,16 @@ import './feed.css'
 
 const STREAM_LIMIT = 80
 
+/** Order inside "Needs your attention": the brief first, then what blocks you, then what to distrust. */
+function urgency(it: FeedItem): number {
+  if (it.nodeId === 'recommendation') return 6
+  if (it.actor.kind === 'you') return 5
+  if (it.actor.kind === 'auditor') return 4
+  if (it.nodeId === 'blindspot') return 3
+  if (it.tone === 'bad') return 2
+  return 1
+}
+
 function useFeed(): FeedItem[] {
   const { feedLog, agents, plan, findings, chat, sources } = useCrux(useShallow((s) => ({
     feedLog: s.feedLog, agents: s.agents, plan: s.plan, findings: s.findings, chat: s.chat, sources: s.sources,
@@ -27,7 +37,7 @@ export function FeedRail() {
 
   const attention = useMemo(() => items
     .filter((it) => it.priority === 3 && !seen[it.id])
-    .sort((a, b) => b.ts - a.ts), [items, seen])
+    .sort((a, b) => urgency(b) - urgency(a) || b.ts - a.ts), [items, seen])
   const stream = useMemo(() => items.slice(-STREAM_LIMIT).reverse(), [items])
 
   if (!open) {
