@@ -1,10 +1,11 @@
-import { memo } from 'react'
+import { memo, useState } from 'react'
 import type { NodeProps } from '@xyflow/react'
 import { Sparkles, TriangleAlert } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { nodeId } from '@shared/index'
 import { useCrux } from '../../store/runStore'
 import { selectRecommendationStale } from '../../store/selectors'
+import { synthesize } from '../../lib/api'
 import type { CruxNode } from '../buildGraph'
 import { stop } from '../helpers'
 import { NodeShell } from './NodeShell'
@@ -26,11 +27,22 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
   }))
   const stale = useCrux(useShallow((s) => {
     const r = selectRecommendationStale(s)
-    return { stale: r.stale, reasons: r.reasons.join(' · ') }
+    return { stale: r.stale, reasons: r.reasons.join(' Â· ') }
   }))
   const select = useCrux((s) => s.select)
+  const runId = useCrux((s) => s.runId)
+  const mock = useCrux((s) => s.mock)
+  const weights = useCrux((s) => s.weights)
+  const [updating, setUpdating] = useState(false)
 
   const ready = status === 'ready' && synthesis
+  const live = !mock && !!runId
+  const update = async (e: { stopPropagation(): void }) => {
+    e.stopPropagation()
+    if (!runId) return
+    setUpdating(true)
+    try { await synthesize(runId, { weights }) } catch (err) { console.warn('Update failed', err) } finally { setUpdating(false) }
+  }
 
   return (
     <NodeShell id={id} className="cx-node-root" label="Recommendation">
@@ -42,6 +54,11 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
             <span className="cx-stale" title={stale.reasons}>
               <TriangleAlert style={{ width: 12, height: 12 }} />
               New information since this was written.
+              {live && (
+                <button type="button" className="cx-btn nodrag nopan" disabled={updating} onPointerDown={stop} onClick={update}>
+                  Update recommendation
+                </button>
+              )}
             </span>
           </span>
         )}
