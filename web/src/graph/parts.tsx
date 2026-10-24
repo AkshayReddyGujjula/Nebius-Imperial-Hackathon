@@ -1,6 +1,7 @@
 import { Handle, Position } from '@xyflow/react'
 import { BadgeCheck, CircleX, Loader, Quote, TriangleAlert } from 'lucide-react'
 import type { AgentStatus, Effort, Finding, Source } from '@shared/index'
+import { agentColor, agentNumber } from './helpers'
 
 /** Hidden handles every node carries (§13.1 step 6). */
 export function Handles() {
@@ -75,4 +76,13 @@ export function CitationChip({ finding, source }: { finding: Finding; source: So
     return <span className="cx-cite cx-cite-warn" title="Quote not found in source"><TriangleAlert /><span className="cx-cite-d">{domain}</span></span>
   }
   return <span className="cx-cite" title="No quote given"><Quote className="cx-muted-icon" /><span className="cx-cite-d">{domain}</span><em>no quote</em></span>
+}
+
+/** Small numbered agent badge: rounded square filled with the agent colour, white digit. */
+export function AgentBadge({ agentId, size = 16 }: { agentId: string; size?: number }) {
+  return (
+    <span className="cx-abadge" aria-hidden style={{ width: size, height: size, background: agentColor(agentId) }}>
+      {agentNumber(agentId)}
+    </span>
+  )
 }

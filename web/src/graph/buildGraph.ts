@@ -2,6 +2,7 @@ import type { Edge, Node } from '@xyflow/react'
 import { nodeId, type Contradiction } from '@shared/index'
 import type { AgentView } from '../store/types'
 import type { LayoutResult } from './layout'
+import { agentColor } from './helpers'
 
 export type CruxNodeData = { refId: string | null }
 export type CruxNode = Node<CruxNodeData>
@@ -78,7 +79,10 @@ export function buildEdges(input: EdgeInput): Edge[] {
 
   for (const col of layout.columns) {
     if (col.length === 0) continue
-    edges.push(tree(nodeId.decision, col[0], 'smoothstep', headQueued(col[0]), headWorking(col[0])))
+    const head = tree(nodeId.decision, col[0], 'smoothstep', headQueued(col[0]), headWorking(col[0]))
+    // A working agent's edge flows in that agent's colour (quiet earth tone); the dash animation stays in CSS.
+    if (head.className === 'edge-working') head.style = { stroke: agentColor(agentByQuestion[col[0].slice(2)]) }
+    edges.push(head)
     for (let i = 1; i < col.length; i++) edges.push(tree(col[i - 1], col[i], 'straight', false))
     edges.push(tree(col[col.length - 1], nodeId.recommendation, 'bus', !synthesisReady))
   }
