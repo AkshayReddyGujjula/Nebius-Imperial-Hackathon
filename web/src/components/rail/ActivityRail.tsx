@@ -165,7 +165,7 @@ export function ActivityRail() {
   const nChecks = useCrux(checksCount)
 
   return (
-    <aside aria-label="Activity" className="flex min-h-0 flex-col border-r border-crux-border bg-crux-surface"
+    <aside aria-label="Activity" className="flex h-full min-h-0 w-full min-w-0 flex-col border-r border-crux-border bg-crux-surface"
       style={{ background: 'var(--dl-frame-2, #EFEBE2)', color: 'var(--dl-frame-text, #1C1B17)', borderColor: 'var(--dl-frame-border, #E2DCCF)' }}>
       {phase === 'idle' ? (
         <div className="px-4 py-5">

@@ -14,6 +14,7 @@ const ROLE_LABEL: Record<ModelRole['key'], (n: number) => [string, string]> = {
   narrator: () => ['Narrator', 'Nemotron 3.5'],
   auditor: () => ['Auditor', 'MiniMax M3.1'],
   search: () => ['Search', 'Tavily'],
+  memory: () => ['Memory', 'user.md · shared by all agents'],
 }
 const ROLE_WORD: Record<RoleStatus, string> = { idle: 'Idle', working: 'Working', done: 'Done' }
 

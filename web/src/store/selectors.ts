@@ -120,7 +120,7 @@ export function selectQuestionLabel(s: S, questionId: string, depth = 0): string
 // ---------- rail: models at work + agent rows ----------
 
 export type RoleStatus = 'idle' | 'working' | 'done'
-export interface ModelRole { key: 'planner' | 'agents' | 'narrator' | 'auditor' | 'search'; status: RoleStatus; count: number }
+export interface ModelRole { key: 'planner' | 'agents' | 'narrator' | 'auditor' | 'search' | 'memory'; status: RoleStatus; count: number }
 
 const WORKING_AGENT: AgentStatus[] = ['searching', 'reading', 'thinking', 'writing']
 
@@ -138,6 +138,7 @@ export function selectModelRoles(s: S): ModelRole[] {
     { key: 'narrator', count: 0, status: st(!finished && (anyWorking || s.phase === 'planning' || s.synthesisStatus === 'running'), Object.keys(s.reasoning).length > 0) },
     { key: 'auditor', count: s.contradictions.length, status: st(s.phase === 'checking', s.contradictionsStatus !== 'idle') },
     { key: 'search', count: searches.length, status: st(searches.some((x) => x.status === 'running'), searches.length > 0) },
+    { key: 'memory', count: s.plan?.facts.length ?? 0, status: st(!finished && s.phase !== 'idle' && !s.plan, !!s.plan) },
   ]
 }
 
