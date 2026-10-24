@@ -5,74 +5,79 @@
    then restore new-york/zinc and the exact Crux tokens before adding components.
    shadcn --accent is a hover background; blue is --crux-accent. */
 :root {
-  /* Decision Lab "Paper & Forest": light paper frame, forest-green accent, near-zero shadows. */
-  --dl-frame: #FFFDF8;
-  --dl-frame-2: #EFEBE2;
-  --dl-frame-text: #1C1B17;
-  --dl-frame-text-2: #57524A;
-  --dl-frame-muted: #736D61;
-  --dl-frame-border: #E2DCCF;
-  --dl-frame-hover: #F4F1EA;
-  --dl-accent: #1F4D3A;
-  --dl-accent-hover: #173C2D;
-  --dl-accent-subtle: #DDE8E1;
+  /* Decision Lab "Graphite Night": dark graphite frame, deep-blue accent, subtle dark shadows. */
+  color-scheme: dark;
+  --dl-frame: #171C22;
+  --dl-frame-2: #1E252D;
+  --dl-frame-text: #E8ECF1;
+  --dl-frame-text-2: #AAB3C0;
+  --dl-frame-muted: #8A94A3;
+  --dl-frame-border: #2A323C;
+  --dl-frame-hover: #1E252D;
+  --dl-accent: #3B6EF5;
+  --dl-accent-hover: #2F5BD6;
+  --dl-accent-subtle: #16224A;
   --dl-accent-on: #FFFFFF;
-  --dl-focus: color-mix(in srgb, #1F4D3A 40%, transparent);
-  --dl-progress-track: #E6E0D3;
-  --dl-status-active: #1F4D3A;
-  --dl-status-reading: #3E5C76;
-  --dl-status-done: #4F6B47;
-  --dl-status-warn: #A26B12;
-  --dl-status-warn-soft: #F3E7CF;
-  --dl-status-failed: #A33B2B;
-  --dl-status-failed-soft: #F2DCD7;
-  --dl-agent-1: #3E5C76;
-  --dl-agent-2: #8B5E3C;
-  --dl-agent-3: #56704F;
-  --dl-agent-4: #7A4A5C;
-  --dl-agent-5: #5E6B7A;
-  --dl-agent-6: #9A7B3B;
-  --dl-agent-1-soft: color-mix(in srgb, var(--dl-agent-1) 14%, #FFFDF8);
-  --dl-agent-2-soft: color-mix(in srgb, var(--dl-agent-2) 14%, #FFFDF8);
-  --dl-agent-3-soft: color-mix(in srgb, var(--dl-agent-3) 14%, #FFFDF8);
-  --dl-agent-4-soft: color-mix(in srgb, var(--dl-agent-4) 14%, #FFFDF8);
-  --dl-agent-5-soft: color-mix(in srgb, var(--dl-agent-5) 14%, #FFFDF8);
-  --dl-agent-6-soft: color-mix(in srgb, var(--dl-agent-6) 14%, #FFFDF8);
-  --crux-page: #F4F1EA;
-  --crux-grid: #DCD5C6;
-  --crux-surface: #FFFDF8;
-  --crux-subtle: #F4F1EA;
-  --crux-hover: #F8F5EE;
-  --crux-border: #E2DCCF;
-  --crux-border-strong: #D4CCBB;
-  --crux-edge: #D4CCBB;
-  --crux-text: #1C1B17;
-  --crux-text-secondary: #57524A;
-  --crux-text-tertiary: #736D61;
-  --crux-text-quaternary: #A39C8E;
+  --dl-accent-text: #7EA2FF;
+  --dl-focus: color-mix(in srgb, #3B6EF5 55%, transparent);
+  --dl-progress-track: #232A33;
+  --dl-status-active: #3B6EF5;
+  --dl-status-reading: #6C8CC7;
+  --dl-status-done: #3FB98A;
+  --dl-status-done-soft: #13302A;
+  --dl-status-warn: #F2B544;
+  --dl-status-warn-soft: #3A2F17;
+  --dl-status-failed: #F06A5A;
+  --dl-status-failed-soft: #3A1E1C;
+  --dl-agent-1: #6C8CC7;
+  --dl-agent-2: #D29A6E;
+  --dl-agent-3: #7FB27A;
+  --dl-agent-4: #C584A0;
+  --dl-agent-5: #9AA8B8;
+  --dl-agent-6: #D4B25E;
+  --dl-agent-1-soft: color-mix(in srgb, var(--dl-agent-1) 18%, #171C22);
+  --dl-agent-2-soft: color-mix(in srgb, var(--dl-agent-2) 18%, #171C22);
+  --dl-agent-3-soft: color-mix(in srgb, var(--dl-agent-3) 18%, #171C22);
+  --dl-agent-4-soft: color-mix(in srgb, var(--dl-agent-4) 18%, #171C22);
+  --dl-agent-5-soft: color-mix(in srgb, var(--dl-agent-5) 18%, #171C22);
+  --dl-agent-6-soft: color-mix(in srgb, var(--dl-agent-6) 18%, #171C22);
+  --crux-page: #0F1216;
+  --crux-grid: #232A33;
+  --crux-surface: #171C22;
+  --crux-subtle: #1E252D;
+  --crux-hover: #1E252D;
+  --crux-raised: #1E252D;
+  --crux-border: #2A323C;
+  --crux-border-strong: #36404C;
+  --crux-edge: #4A5563;
+  --crux-text: #E8ECF1;
+  --crux-text-secondary: #AAB3C0;
+  --crux-text-tertiary: #8A94A3;
+  --crux-text-quaternary: #5E6876;
   --crux-accent: var(--dl-accent);
+  --crux-accent-hover: var(--dl-accent-hover);
   --crux-accent-soft: var(--dl-accent-subtle);
-  --crux-accent-border: #B9CFC2;
-  --crux-accent-text: var(--dl-accent);
-  --crux-ok: #4F6B47;
-  --crux-ok-soft: #E4EBDF;
-  --crux-ok-border: #C6D3BF;
-  --crux-warn: #A26B12;
-  --crux-warn-soft: #F3E7CF;
-  --crux-warn-border: #E3CC9F;
-  --crux-warn-bar: #A26B12;
-  --crux-bad: #A33B2B;
-  --crux-bad-soft: #F2DCD7;
-  --crux-bad-border: #E2B9B0;
-  --crux-contradiction: #A33B2B;
+  --crux-accent-border: #2C4796;
+  --crux-accent-text: var(--dl-accent-text);
+  --crux-ok: #3FB98A;
+  --crux-ok-soft: #13302A;
+  --crux-ok-border: #23604B;
+  --crux-warn: #F2B544;
+  --crux-warn-soft: #3A2F17;
+  --crux-warn-border: #6B5424;
+  --crux-warn-bar: #F2B544;
+  --crux-bad: #F06A5A;
+  --crux-bad-soft: #3A1E1C;
+  --crux-bad-border: #74352E;
+  --crux-contradiction: #F06A5A;
   --crux-radius-chip: 6px;
   --crux-radius-card: 8px;
   --crux-radius-composer: 12px;
   --crux-radius-pill: 999px;
   --crux-border-width: 1px;
-  --crux-shadow-sm: 0 1px 0 rgba(28,27,23,.04);
-  --crux-shadow: 0 1px 0 rgba(28,27,23,.04);
-  --crux-shadow-pop: 0 1px 0 rgba(28,27,23,.04), 0 4px 12px rgba(28,27,23,.05);
+  --crux-shadow-sm: 0 1px 0 rgba(0,0,0,.4);
+  --crux-shadow: 0 1px 0 rgba(0,0,0,.4);
+  --crux-shadow-pop: 0 1px 0 rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.35);
   --crux-selected-ring: 0 0 0 1px var(--crux-accent);
   --crux-pending-dash: 4 4;
   --crux-contradiction-dash: 3 3;
@@ -201,6 +206,14 @@
   html, body, #root { height: 100%; margin: 0; }
   body { font-family: var(--font-sans); font-size: 14px; line-height: 20px; color: var(--crux-text); background: var(--crux-page); font-variant-numeric: tabular-nums; -webkit-font-smoothing: antialiased; }
   button, input, textarea { font: inherit; }
+  ::selection { background: #2C4796; color: #FFFFFF; }
+  * { scrollbar-width: thin; scrollbar-color: #36404C transparent; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #36404C; border-radius: 999px; border: 2px solid transparent; background-clip: padding-box; }
+  ::-webkit-scrollbar-thumb:hover { background: #4A5563; background-clip: padding-box; }
+  ::-webkit-scrollbar-corner { background: transparent; }
+  input::placeholder, textarea::placeholder { color: var(--crux-text-quaternary); }
   .lucide { width: var(--crux-icon-size); height: var(--crux-icon-size); stroke-width: var(--crux-icon-stroke); }
 }
 
@@ -214,6 +227,27 @@
 .react-flow__node { transition: transform var(--crux-position-duration) var(--crux-ease); }
 .crux-node-enter { animation: crux-node-enter var(--crux-entry-duration) var(--crux-ease); }
 .crux-status-active { animation: crux-pulse var(--crux-pulse-duration) ease-in-out infinite; }
+/* React Flow defaults re-themed for the dark canvas. */
+.react-flow { --xy-background-color: var(--crux-page); --xy-background-pattern-color: var(--crux-grid); --xy-edge-stroke: var(--crux-edge); --xy-edge-stroke-selected: var(--dl-accent-text); --xy-connectionline-stroke: var(--crux-edge); --xy-attribution-background-color: transparent; --xy-minimap-background-color: var(--crux-surface); --xy-minimap-mask-background-color: rgba(15,18,22,.6); --xy-minimap-node-background-color: var(--crux-border-strong); --xy-controls-button-background-color: var(--crux-surface); --xy-controls-button-background-color-hover: var(--crux-raised); --xy-controls-button-color: var(--crux-text-secondary); --xy-controls-button-color-hover: var(--crux-text); --xy-controls-button-border-color: var(--crux-border); --xy-controls-box-shadow: var(--crux-shadow-pop); --xy-node-background-color: var(--crux-surface); --xy-node-color: var(--crux-text); --xy-node-border: 1px solid var(--crux-border); --xy-handle-background-color: var(--crux-border-strong); --xy-handle-border-color: var(--crux-surface); --xy-selection-background-color: rgba(59,110,245,.08); --xy-selection-border: 1px dotted var(--dl-accent-text); color-scheme: dark; }
+.react-flow__controls { box-shadow: var(--crux-shadow-pop); border: 1px solid var(--crux-border); border-radius: var(--crux-radius-chip); overflow: hidden; }
+.react-flow__controls-button { background: var(--crux-surface); color: var(--crux-text-secondary); fill: var(--crux-text-secondary); border-bottom: 1px solid var(--crux-border); }
+.react-flow__controls-button:hover { background: var(--crux-raised); color: var(--crux-text); fill: var(--crux-text); }
+.react-flow__controls-button svg { fill: currentColor; }
+.react-flow__controls-button:disabled { opacity: .4; }
+.react-flow__attribution { background: transparent; color: var(--crux-text-quaternary); }
+.react-flow__attribution a { color: var(--crux-text-quaternary); }
+.react-flow__background { background-color: var(--crux-page); }
+/* Canvas.tsx passes a light dot colour; keep the grid on the dark palette. */
+.react-flow__background-pattern.dots { fill: var(--crux-grid) !important; }
+.react-flow__edge-path, .react-flow__connection-path { stroke: var(--crux-edge); }
+.react-flow__edge.selected .react-flow__edge-path { stroke: var(--dl-accent-text); }
+.react-flow__edge-textbg { fill: var(--crux-surface); }
+.react-flow__edge-text { fill: var(--crux-text-secondary); }
+.react-flow__minimap { background: var(--crux-surface); border: 1px solid var(--crux-border); }
+.react-flow__minimap-mask { fill: rgba(15,18,22,.6); }
+.react-flow__minimap-node { fill: var(--crux-border-strong); stroke: none; }
+.react-flow__handle { background: var(--crux-border-strong); border-color: var(--crux-surface); }
+.react-flow__panel { color: var(--crux-text-secondary); }
 @keyframes crux-node-enter { from { opacity: 0; translate: 0 var(--crux-entry-rise); } to { opacity: 1; translate: 0 0; } }
 @keyframes crux-pulse { 0%,100% { opacity: 1; } 50% { opacity: var(--crux-pulse-opacity); } }
 @media (prefers-reduced-motion: reduce) {
@@ -257,5 +291,8 @@
   --color-dl-accent-hover: var(--dl-accent-hover);
   --color-dl-accent-subtle: var(--dl-accent-subtle);
   --color-dl-frame-2-bg: var(--dl-frame-2);
+  --color-dl-accent-text: var(--dl-accent-text);
+  --color-crux-raised: var(--crux-raised);
+  --color-crux-accent-hover: var(--crux-accent-hover);
 }
 

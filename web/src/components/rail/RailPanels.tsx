@@ -110,7 +110,7 @@ function AgentRowView({ row: r, selected, onClick }: { row: AgentRow; selected: 
           <span className="dl-time">{r.elapsedMs > 0 ? fmtClock(r.elapsedMs) : ''}</span>
         </span>
         <span className="dl-bar" aria-hidden>
-          <span style={{ width: `${pct}%`, background: failed ? 'var(--crux-bad, #A33B2B)' : agentColor(r.agentId) }} />
+          <span style={{ width: `${pct}%`, background: failed ? 'var(--crux-bad, #F06A5A)' : agentColor(r.agentId) }} />
         </span>
       </button>
     </li>
@@ -120,8 +120,8 @@ function AgentRowView({ row: r, selected, onClick }: { row: AgentRow; selected: 
 /** Who did a feed item: label + colour. */
 export function actorTag(actorId: string | null): { label: string; color: string } | null {
   if (!actorId) return null
-  if (actorId === 'orchestrator') return { label: 'Planner', color: 'var(--crux-accent, #1F4D3A)' }
-  if (actorId === 'auditor') return { label: 'Auditor', color: 'var(--dl-frame-text, #1C1B17)' }
+  if (actorId === 'orchestrator') return { label: 'Planner', color: 'var(--crux-accent-text, #7EA2FF)' }
+  if (actorId === 'auditor') return { label: 'Auditor', color: 'var(--dl-frame-text, #E8ECF1)' }
   if (/^a\d+$/.test(actorId)) return { label: `Agent ${agentNumber(actorId)}`, color: agentColor(actorId) }
   return null
 }

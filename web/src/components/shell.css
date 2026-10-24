@@ -121,7 +121,7 @@ button.ui-cite:hover { border-color: var(--crux-border-strong); }
 .ui-pips s.h { position: relative; overflow: hidden; border-color: var(--crux-text); }
 .ui-pips s.h::after { content: ''; position: absolute; top: 0; bottom: 0; left: 0; width: 50%; background: var(--crux-text); }
 .ui-rank { width: 20px; height: 20px; border-radius: 5px; display: grid; place-items: center; font-size: 11px; font-weight: 600; background: var(--crux-subtle); color: var(--crux-text-secondary); flex: none; }
-.ui-rank.one { background: var(--crux-text); color: #fff; }
+.ui-rank.one { background: var(--crux-text); color: var(--crux-page); }
 .ui-tbar { height: 4px; border-radius: 2px; background: var(--crux-subtle); margin-top: 6px; overflow: hidden; }
 .ui-tbar span { display: block; height: 100%; background: var(--crux-text-tertiary); border-radius: 2px; transition: width 250ms var(--crux-ease); }
 .ui-tbar.one span { background: var(--crux-accent); }
@@ -158,12 +158,12 @@ button.ui-cite:hover { border-color: var(--crux-border-strong); }
 .dl-mark { font-size: 9px; font-weight: 700; letter-spacing: .02em; line-height: 1; }
 .dl-topbar { background: var(--dl-frame); color: var(--dl-frame-text); border-bottom: 1px solid var(--dl-frame-border); }
 .dl-topbar-muted { color: var(--dl-frame-muted); }
-.dl-mark { background: var(--dl-accent); color: #F4F1EA; }
+.dl-mark { background: var(--dl-accent); color: var(--dl-accent-on); }
 .dl-progress { display: flex; flex-direction: column; gap: 4px; min-width: 220px; max-width: 320px; }
 .dl-progress-label { font-size: 12px; line-height: 14px; color: var(--dl-frame-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .dl-progress-track { display: block; position: relative; height: 4px; border-radius: 999px; background: var(--dl-progress-track); overflow: hidden; }
 .dl-progress-fill { display: block; position: relative; height: 100%; border-radius: 999px; background: var(--dl-accent); transition: width 400ms var(--crux-ease); overflow: hidden; }
-.dl-progress[data-active="true"] .dl-progress-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,253,248,.35), transparent); transform: translateX(-100%); animation: dl-shimmer 1.6s ease-in-out infinite; }
+.dl-progress[data-active="true"] .dl-progress-fill::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.18), transparent); transform: translateX(-100%); animation: dl-shimmer 1.6s ease-in-out infinite; }
 .dl-inline-progress { height: 3px; border-radius: 999px; background: var(--crux-subtle); overflow: hidden; position: relative; }
 .dl-inline-progress::after { content: ''; position: absolute; top: 0; bottom: 0; width: 35%; border-radius: 999px; background: var(--dl-accent); animation: dl-indeterminate 1.3s ease-in-out infinite; }
 @keyframes dl-indeterminate { from { left: -35%; } to { left: 100%; } }
