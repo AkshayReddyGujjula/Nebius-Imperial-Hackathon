@@ -2,6 +2,9 @@ import { nodeId, type Finding, type NodeKind, type Plan, type Question } from '@
 import type { ViewMode } from '../store/types'
 
 export const AUDITOR_ID = 'auditor'
+export const MEMORY_ID = 'memory'
+export const QUOTECHECK_ID = 'quotecheck'
+export const CHAT_ID = 'chatout'
 
 export const L = {
   colW: 232, colGap: 16, rowGap: 12,
@@ -10,12 +13,14 @@ export const L = {
   blindspotH: { simple: 188, detailed: 156 },
   findingH: 112,
   auditorH: 132,
+  memoryW: 220, memoryH: 150, memoryGap: 40,
+  quoteW: 420, quoteH: 76,
   recGap: 56, recH: { simple: 240, detailed: 280 },
 } as const
 
 export interface LaidNode {
   id: string
-  kind: NodeKind | 'auditor'
+  kind: NodeKind | 'auditor' | 'memory' | 'quotecheck' | 'chatout'
   refId: string | null
   x: number
   y: number
@@ -134,11 +139,26 @@ export function layoutGraph({ plan, findings, viewMode }: LayoutInput): LayoutRe
   // DECISION: centre the recommendation like the decision so it stays aligned when totalW < decisionMinW.
   const recW = Math.max(totalW, L.decisionMinW)
   // DECISION: the contradiction auditor sits between the findings and the recommendation, same width.
-  const audY = bottom + L.recGap
+  // DECISION: findings → code quote check → auditor → brief, so each hand-off is its own visible edge.
+  const qcY = bottom + L.recGap
+  nodes.push({ id: QUOTECHECK_ID, kind: 'quotecheck', refId: null, x: (totalW - L.quoteW) / 2, y: qcY, w: L.quoteW, h: L.quoteH })
+  const audY = qcY + L.quoteH + L.recGap
   nodes.push({ id: AUDITOR_ID, kind: 'auditor', refId: null, x: (totalW - recW) / 2, y: audY, w: recW, h: L.auditorH })
   nodes.push({
     id: nodeId.recommendation, kind: 'recommendation', refId: null,
     x: (totalW - recW) / 2, y: audY + L.auditorH + L.recGap, w: recW, h: L.recH[viewMode],
+  })
+
+  // DECISION: shared memory sits left of the agents row; dashed edges fan out to every agent and the brief.
+  nodes.push({
+    id: MEMORY_ID, kind: 'memory', refId: null,
+    x: Math.min(0, (totalW - recW) / 2) - L.memoryGap - L.memoryW, y: L.decisionH + L.topGap, w: L.memoryW, h: L.memoryH,
+  })
+  // DECISION: the conversation sits left of the brief, below where the memory edge turns in, so they never cross.
+  const recY = audY + L.auditorH + L.recGap
+  nodes.push({
+    id: CHAT_ID, kind: 'chatout', refId: null,
+    x: Math.min(0, (totalW - recW) / 2) - L.memoryGap - L.memoryW, y: recY + L.recH[viewMode] / 2 + 24, w: L.memoryW, h: 84,
   })
 
   return { nodes, columns: colItems.map((items) => items.map((it) => it.id)), totalW }
