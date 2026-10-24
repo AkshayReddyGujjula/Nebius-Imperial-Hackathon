@@ -4,7 +4,7 @@ import { useShallow } from 'zustand/react/shallow'
 import type { BlindSpotKind } from '@shared/index'
 import { nodeId } from '@shared/ids'
 import { useCrux } from '@/store/runStore'
-import { selectQuestionLabel, selectRecommendationStale } from '@/store/selectors'
+import { selectQuestionLabel, selectRecommendationStale, selectSynthesisError } from '@/store/selectors'
 import { optionLetter } from '@/lib/format'
 import { CitationChip } from '../common/CitationChip'
 import { CheckNote, ContradictionBoxes } from './FindingCard'
@@ -187,6 +187,7 @@ export function BlindSpotView({ onClose, actions }: { onClose: () => void; actio
 export function RecommendationView({ onClose, actions }: { onClose: () => void; actions?: ReactNode }) {
   const { syn, status, detailed, plan } = useCrux(useShallow((s) => ({ syn: s.synthesis, status: s.synthesisStatus, detailed: s.viewMode === 'detailed', plan: s.plan })))
   const stale = useCrux(useShallow((s) => { const r = selectRecommendationStale(s); return { stale: r.stale, reasons: r.reasons.join(' · ') } }))
+  const synError = useCrux(selectSynthesisError)
   const findings = useCrux((s) => s.findings)
   const select = useCrux((s) => s.select)
   const optIdx = syn?.optionId && plan ? plan.options.findIndex((o) => o.id === syn.optionId) : -1
@@ -197,11 +198,17 @@ export function RecommendationView({ onClose, actions }: { onClose: () => void; 
       <div className="ui-scroll min-h-0 flex-1 overflow-y-auto">
         {!syn ? (
           <Sec><p className="text-[13px] text-crux-text-tertiary">
-            {status === 'running' ? 'Writing your recommendation…' : status === 'failed' ? "Couldn't write the recommendation." : 'The recommendation is written once the research finishes.'}
+            {status === 'running' ? 'Writing your recommendation…' : status === 'failed' ? `Couldn't write the recommendation${synError ? ` (${synError})` : ''}.` : 'The recommendation is written once the research finishes.'}
           </p>{status === 'failed' && actions ? <div className="mt-2">{actions}</div> : null}</Sec>
         ) : (
           <>
-            {stale.stale ? (
+            {synError ? (
+              <div className="border-b border-crux-warn-border bg-crux-warn-soft px-4 py-2.5 text-[12.5px] leading-[18px] text-crux-warn">
+                Couldn't update the recommendation ({synError}). Showing the previous one.
+                {actions ? <div className="mt-2">{actions}</div> : null}
+              </div>
+            ) : null}
+            {stale.stale && !synError ? (
               <div className="border-b border-crux-warn-border bg-crux-warn-soft px-4 py-2.5 text-[12.5px] leading-[18px] text-crux-warn">
                 New information since this was written. <span className="text-crux-warn/80">({stale.reasons})</span>
                 {actions ? <div className="mt-2">{actions}</div> : null}

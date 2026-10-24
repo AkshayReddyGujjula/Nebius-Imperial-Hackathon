@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { MOCK_EVENTS } from '@/dev/mockRun'
-import { reduce, type ReducerState } from './reducer'
+import { reduce, SYNTHESIS_NOTICE_ID, type ReducerState } from './reducer'
 import { initialRun, initialUi } from './runStore'
 import { selectMatrix, selectQuestionLabel, selectQuestionTrust, selectRecommendationStale, selectTopStatus } from './selectors'
 
@@ -59,6 +59,22 @@ describe('reducer', () => {
     expect(reduce(s, { ...MOCK_EVENTS[3], runId: 'other' })).toBeNull()
   })
 
+  it('a failed re-synthesis keeps the previous recommendation and records the error', () => {
+    const s = play()
+    const base = { runId: s.runId!, ts: s.lastSeq + 1 }
+    const failed = play([
+      { ...base, seq: s.lastSeq + 1, type: 'synthesis.started', version: 2 },
+      { ...base, seq: s.lastSeq + 2, type: 'synthesis.failed', version: 2, error: 'Nebius returned 503' },
+    ] as typeof MOCK_EVENTS, s)
+    expect(failed.synthesis).toBe(s.synthesis)
+    expect(failed.synthesisStatus).toBe('ready')
+    expect(failed.notices.find((n) => n.id === SYNTHESIS_NOTICE_ID)?.message).toBe('Nebius returned 503')
+    const retried = play([{ ...base, seq: s.lastSeq + 3, type: 'synthesis.started', version: 3 }] as typeof MOCK_EVENTS, failed)
+    expect(retried.notices.some((n) => n.id === SYNTHESIS_NOTICE_ID)).toBe(false)
+    const first = play([{ runId: 'mock-run', ts: 1, seq: 1, type: 'synthesis.failed', version: 1, error: 'x' }] as typeof MOCK_EVENTS)
+    expect(first.synthesisStatus).toBe('failed')
+  })
+
   it('plan.ready initialises the weights', () => {
     const idx = MOCK_EVENTS.findIndex((e) => e.type === 'plan.ready')
     const s = play(MOCK_EVENTS.slice(0, idx + 1))
@@ -78,6 +94,15 @@ describe('selectors', () => {
     expect(selectQuestionTrust(s, 'q3').contradictions).toBe(1)
     expect(selectRecommendationStale(s)).toEqual({ stale: false, reasons: [] })
     expect(selectRecommendationStale({ ...s, weights: { ...s.weights, c1: 2 } }).reasons).toContain('Weights changed')
+  })
+
+  it('a done run reports its own wall time, even after a follow-up', () => {
+    const s = play()
+    const later = play([
+      { runId: s.runId!, seq: s.lastSeq + 1, ts: s.doneTs! + 300_000, type: 'run.phase', phase: 'done' },
+    ] as typeof MOCK_EVENTS, s)
+    expect(later.doneTs).toBe(s.doneTs)
+    expect(selectTopStatus(later, s.doneTs! + 400_000).elapsedMs).toBe(s.stats!.wallMs)
   })
 
   it('shows researching progress mid-run', () => {

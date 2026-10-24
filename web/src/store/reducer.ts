@@ -51,6 +51,11 @@ function upsertQuestion(qs: Question[], q: Question): Question[] {
   const next = qs.slice(); next[i] = q; return next
 }
 
+export const SYNTHESIS_NOTICE_ID = 'synthesis-failed'
+function dropSynthesisNotice(ns: RunData['notices']): RunData['notices'] {
+  return ns.some((n) => n.id === SYNTHESIS_NOTICE_ID) ? ns.filter((n) => n.id !== SYNTHESIS_NOTICE_ID) : ns
+}
+
 // ---------- reducer ----------
 
 /** Pure: returns the state patch for one event, or null when the event is ignored. */
@@ -80,13 +85,14 @@ function apply(s: ReducerState, e: CruxEvent): Patch {
 
     case 'run.phase': {
       const out: Patch = { phase: e.phase }
-      if (e.phase === 'done') out.doneTs = e.ts
+      // The first done freezes the run's duration; follow-ups (blind spot, re-synthesis) re-emit done later.
+      if (e.phase === 'done') out.doneTs = s.doneTs ?? e.ts
       const n = s.plan?.questions.length ?? Object.keys(s.agents).length
       const copy: Partial<Record<typeof e.phase, [string, string, ActivityTone]>> = {
         researching: [`Researching ${n} questions at once`, 'Research started', 'neutral'],
         checking: ['Double-checking the evidence', 'Checking citations and contradictions', 'neutral'],
         synthesizing: ['Writing your recommendation…', 'Synthesis started', 'neutral'],
-        done: [`Done in ${fmtMs(e.ts - (s.startedTs ?? e.ts))}`, 'Run finished', 'ok'],
+        done: [`Done in ${fmtMs((s.doneTs ?? e.ts) - (s.startedTs ?? e.ts))}`, 'Run finished', 'ok'],
       }
       const c = copy[e.phase]
       if (c) out.acts = [item(e, 0, c[2], c[0], c[1], null, null, e.phase === 'done' ? nodeId.recommendation : null)]
@@ -260,19 +266,22 @@ function apply(s: ReducerState, e: CruxEvent): Patch {
     }
 
     case 'synthesis.started':
-      return { synthesisStatus: 'running' }
+      return { synthesisStatus: 'running', notices: dropSynthesisNotice(s.notices) }
 
     case 'synthesis.ready':
       return {
-        synthesis: e.synthesis, synthesisSeq: e.seq, synthesisStatus: 'ready',
+        synthesis: e.synthesis, synthesisSeq: e.seq, synthesisStatus: 'ready', notices: dropSynthesisNotice(s.notices),
         acts: [item(e, 0, 'ok', 'Recommendation ready', 'Recommendation ready', e.synthesis.recommendation,
           'orchestrator', nodeId.recommendation)],
       }
 
     case 'synthesis.failed':
+      // DECISION: a failed re-synthesis keeps the last good recommendation on screen (status stays 'ready');
+      // the frozen store types have no "update error" field, so the error rides in `notices` under a fixed id.
       return {
-        synthesisStatus: 'failed',
-        acts: [item(e, 0, 'bad', "Couldn't write the recommendation", 'Synthesis failed', e.error, 'orchestrator', nodeId.recommendation)],
+        synthesisStatus: s.synthesis ? 'ready' : 'failed',
+        notices: [...dropSynthesisNotice(s.notices), { id: SYNTHESIS_NOTICE_ID, level: 'error', message: e.error, ts: e.ts }],
+        acts: [item(e, 0, 'bad', s.synthesis ? "Couldn't update the recommendation" : "Couldn't write the recommendation", 'Synthesis failed', e.error, 'orchestrator', nodeId.recommendation)],
       }
 
     case 'stats.updated':

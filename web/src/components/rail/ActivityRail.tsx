@@ -146,7 +146,7 @@ export function ActivityRail() {
                 <ListTree />Timeline
               </button>
               <button type="button" role="tab" aria-selected={railTab === 'checks'} data-on={railTab === 'checks'} onClick={() => setRailTab('checks')}>
-                <ShieldCheck />Checks<span className={`n ${nChecks > 0 ? 'warn' : ''}`}>{nChecks}</span>
+                <ShieldCheck />Checks{nChecks > 0 ? <span className="n warn">{nChecks}</span> : null}
               </button>
             </div>
           </div>

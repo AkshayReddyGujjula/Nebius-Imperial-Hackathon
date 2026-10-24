@@ -1,6 +1,6 @@
 import { buildCells, computeTotals, parseNodeId } from '@shared/index'
 import type { AgentStatus, MatrixCell, OptionTotal } from '@shared/index'
-import { qIndex } from './reducer'
+import { qIndex, SYNTHESIS_NOTICE_ID } from './reducer'
 import type { ActivityTone, RunData, UiState } from './types'
 
 type S = RunData & UiState
@@ -41,6 +41,14 @@ export function selectRecommendationStale(s: S): { stale: boolean; reasons: stri
   return { stale: reasons.length > 0, reasons }
 }
 
+/** Short reason for the last failed (re)synthesis, or null. Cleared when the next synthesis starts. */
+export function selectSynthesisError(s: Pick<S, 'notices'>): string | null {
+  const msg = s.notices.find((n) => n.id === SYNTHESIS_NOTICE_ID)?.message
+  if (msg === undefined) return null
+  const line = msg.split(/\r?\n/)[0].trim() || 'unknown error'
+  return line.length > 80 ? `${line.slice(0, 79).trimEnd()}…` : line
+}
+
 // ---------- per-question trust ----------
 
 export function selectQuestionTrust(s: S, questionId: string): {
@@ -68,7 +76,10 @@ export function selectQuestionTrust(s: S, questionId: string): {
 const TERMINAL: AgentStatus[] = ['done', 'failed', 'timeout']
 
 export function selectTopStatus(s: S, now: number = Date.now()): { label: string; tone: ActivityTone; elapsedMs: number } {
-  const elapsedMs = s.startedTs === null ? 0 : Math.max(0, (s.doneTs ?? now) - s.startedTs)
+  // A finished run shows its own wall time (server stats freeze at the first done), not time since submit.
+  const elapsedMs = s.startedTs === null ? 0
+    : s.phase === 'done' && s.stats ? s.stats.wallMs
+    : Math.max(0, (s.doneTs ?? now) - s.startedTs)
   switch (s.phase) {
     case 'idle': return { label: '', tone: 'neutral', elapsedMs: 0 }
     case 'planning': return { label: 'Planning', tone: 'accent', elapsedMs }

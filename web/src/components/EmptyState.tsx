@@ -97,7 +97,7 @@ export function EmptyState({ onRun, onReplay, error }: {
         </div>
 
         <div className="mt-auto flex justify-center pt-10">
-          <span className="ui-pill"><Cpu />Open models on Nebius Token Factory</span>
+          <span className="inline-flex items-center gap-1.5 text-[12px] leading-4 text-crux-text-tertiary [&_svg]:size-3.5"><Cpu />Open models on Nebius Token Factory</span>
         </div>
       </div>
     </div>

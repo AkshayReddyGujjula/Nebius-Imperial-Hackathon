@@ -9,9 +9,9 @@ import { useNow } from './useNow'
 const API = import.meta.env.VITE_API_BASE ?? ''
 
 export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
-  const { phase, title, replay, mock, startedTs, doneTs, runId, viewMode } = useCrux(useShallow((s) => ({
+  const { phase, title, replay, mock, runId, viewMode } = useCrux(useShallow((s) => ({
     phase: s.phase, title: s.plan?.title ?? s.decision, replay: s.replay, mock: s.mock,
-    startedTs: s.startedTs, doneTs: s.doneTs, runId: s.runId, viewMode: s.viewMode,
+    runId: s.runId, viewMode: s.viewMode,
   })))
   const status = useCrux(useShallow((s) => {
     const t = selectTopStatus(s)
@@ -20,7 +20,7 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
   const setViewMode = useCrux((s) => s.setViewMode)
   const running = phase !== 'idle' && phase !== 'done' && phase !== 'error'
   const now = useNow(running)
-  const elapsed = startedTs ? (doneTs ?? (running ? now : startedTs)) - startedTs : 0
+  const elapsed = useCrux((s) => selectTopStatus(s, running ? now : (s.doneTs ?? s.startedTs ?? now)).elapsedMs)
   const kind = phase === 'done' ? 'ok' : phase === 'error' ? 'bad' : dotForTone(status.tone)
   const textTone = kind === 'active' ? 'text-crux-accent-text' : kind === 'ok' ? 'text-crux-ok' : kind === 'bad' ? 'text-crux-bad' : 'text-crux-text-secondary'
 
