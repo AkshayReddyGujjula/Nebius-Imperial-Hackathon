@@ -198,7 +198,7 @@ export function RecommendationView({ onClose, actions }: { onClose: () => void; 
         {!syn ? (
           <Sec><p className="text-[13px] text-crux-text-tertiary">
             {status === 'running' ? 'Writing your recommendation…' : status === 'failed' ? "Couldn't write the recommendation." : 'The recommendation is written once the research finishes.'}
-          </p></Sec>
+          </p>{status === 'failed' && actions ? <div className="mt-2">{actions}</div> : null}</Sec>
         ) : (
           <>
             {stale.stale ? (
