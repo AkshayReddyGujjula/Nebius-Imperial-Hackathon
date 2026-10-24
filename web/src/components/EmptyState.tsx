@@ -3,6 +3,7 @@ import { Cpu, RotateCcw, Split } from 'lucide-react'
 import type { ReplayInfo } from '@shared/api'
 import { useCrux } from '@/store/runStore'
 import { listReplays } from '@/lib/api'
+import { fmtMs } from '@/lib/format'
 import { Composer } from './Composer'
 import { MicButton } from './MicButton'
 
@@ -80,7 +81,8 @@ export function EmptyState({ onRun, onReplay, error }: {
               <button key={r.file} type="button" onClick={() => onReplay(r.file)}
                 className="flex w-full items-center gap-3 border-t border-crux-border px-3 py-2.5 text-left first:border-t-0 hover:bg-crux-hover">
                 <span className="min-w-0 flex-1 truncate text-[13px]">{r.decision}</span>
-                <span className="ui-mono flex-none text-[11px] text-crux-text-quaternary">{r.recordedAt.slice(0, 16).replace('T', ' ')}</span>
+                <span className="ui-num flex-none text-[11px] text-crux-text-tertiary">{fmtMs(r.durationMs)}</span>
+                <span className="ui-mono flex-none text-[11px] text-crux-text-quaternary">{localTime(r.recordedAt)}</span>
               </button>
             ))}
           </div>
@@ -111,4 +113,9 @@ export function EmptyState({ onRun, onReplay, error }: {
       </div>
     </div>
   )
+}
+
+function localTime(iso: string): string {
+  const d = new Date(iso)
+  return Number.isNaN(d.getTime()) ? iso.slice(0, 16).replace('T', ' ') : d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 }
