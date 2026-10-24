@@ -119,7 +119,8 @@ export async function synthesize(ctx: RunContext, summarizer: Summarizer, weight
       summarizer.end("orchestrator");
     }
     const d = out.data;
-    const optionId = d.optionId && plan.options.some((o) => o.id === d.optionId) ? d.optionId : null;
+    // Neutral evidence brief: the synthesis never picks an option for the person.
+    const optionId = null;
     const reasons = d.reasons
       .map((r) => ({ text: r.text.trim(), findingIds: r.findingIds.filter((id) => state.findings.has(id)) }))
       .filter((r) => r.text);

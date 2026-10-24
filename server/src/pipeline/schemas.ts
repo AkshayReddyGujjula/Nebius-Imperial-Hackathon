@@ -64,6 +64,15 @@ export const SynthesisOut = z.object({
 });
 export type SynthesisOut = z.infer<typeof SynthesisOut>;
 
+export const ClarifyOut = z.object({
+  questions: z.array(z.object({
+    question: z.string().min(3),
+    why: z.string().default(""),
+    suggestions: z.array(z.string()).default([]),
+  })).min(1),
+});
+export type ClarifyOut = z.infer<typeof ClarifyOut>;
+
 export const ContradictionOut = z.object({
   contradictions: z.array(z.object({
     a: z.string(), b: z.string(), severity: z.enum(["direct", "tension"]).catch("tension"), explanation: z.string().default(""),
