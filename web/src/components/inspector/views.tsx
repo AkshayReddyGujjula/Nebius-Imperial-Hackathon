@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { Check, ExternalLink } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import type { BlindSpotKind } from '@shared/index'
