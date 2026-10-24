@@ -1,0 +1,30 @@
+/* Trade-off matrix: heat-tinted cells, sticky option column, importance sliders. */
+.ui-mx th:first-child, .ui-mx td:first-child { position: sticky; left: 0; z-index: 2; background: var(--crux-surface); box-shadow: inset -1px 0 0 var(--crux-border); }
+.ui-mx thead th:first-child { z-index: 3; background: var(--crux-hover); }
+.ui-mx td.cell { --fit: 0; background: color-mix(in srgb, var(--crux-accent) calc(var(--fit) * 24%), var(--crux-surface)); }
+.ui-mx td.cell:hover { background: color-mix(in srgb, var(--crux-accent) calc(var(--fit) * 24% + 5%), var(--crux-surface)); }
+.ui-mx td.cell[data-unknown="true"] { background: repeating-linear-gradient(135deg, var(--crux-surface) 0 6px, var(--crux-hover) 6px 7px); }
+.mx-why { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ui-mx td.cell:hover .mx-why, .ui-mx td.cell[data-sel="true"] .mx-why { -webkit-line-clamp: unset; display: block; }
+.mx-src { display: none; }
+.ui-mx td.cell:hover .mx-src, .ui-mx td.cell[data-sel="true"] .mx-src { display: block; }
+
+.mx-w { display: flex; align-items: center; gap: 6px; margin-top: 4px; }
+.mx-w input[type="range"] { flex: 1; min-width: 56px; height: 16px; accent-color: var(--crux-accent); cursor: pointer; margin: 0; }
+.mx-w b { min-width: 30px; font-size: 12px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--crux-text); text-align: right; }
+.mx-w b[data-changed="true"] { color: var(--crux-accent-text); }
+.mx-share { height: 3px; border-radius: 2px; background: var(--crux-subtle); margin-top: 3px; overflow: hidden; }
+.mx-share span { display: block; height: 100%; background: var(--crux-accent-border); transition: width 250ms var(--crux-ease); }
+
+.mx-legend { display: inline-flex; align-items: center; gap: 4px; }
+.mx-legend i { width: 18px; height: 12px; border-radius: 3px; border: 1px solid var(--crux-border); display: inline-block; }
+.mx-flip { display: flex; align-items: center; gap: 8px; font-size: 12.5px; color: var(--crux-text-secondary); }
+.mx-flip b { font-weight: 600; color: var(--crux-text); }
+.mx-neutral { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; font-weight: 500; color: var(--crux-text-tertiary); border: 1px solid var(--crux-border); border-radius: 999px; padding: 1px 8px; }
+
+/* Short viewports: keep the table visible — the explainer collapses to one line (hover the pill area to read it all). */
+@media (max-height: 820px) {
+  .mx-howto { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .mx-howto:hover { white-space: normal; }
+  .mx-extra { display: none !important; }
+}

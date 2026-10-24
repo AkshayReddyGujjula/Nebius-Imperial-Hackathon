@@ -1,4 +1,5 @@
 import { memo, useState } from 'react'
+import type React from 'react'
 import type { NodeProps } from '@xyflow/react'
 import { Sparkles, TriangleAlert } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
@@ -9,8 +10,53 @@ import { synthesize } from '../../lib/api'
 import type { CruxNode } from '../buildGraph'
 import { stop } from '../helpers'
 import { NodeShell } from './NodeShell'
+import { useMatrix } from '../../components/matrix/useMatrix'
+import { optionLetter } from '../../lib/format'
+import '../../components/matrix/brief.css'
 
 const EVIDENCE = { high: 'Evidence: strong', medium: 'Evidence: medium', low: 'Evidence: thin' } as const
+const EVIDENCE_BARS = { high: 3, medium: 2, low: 1 } as const
+
+function EvidenceMeter({ level }: { level: keyof typeof EVIDENCE }) {
+  return (
+    <span className="br-meter" title="How well the cited sources support this brief">
+      {[1, 2, 3].map((n) => <i key={n} data-on={n <= EVIDENCE_BARS[level]} />)}
+      {EVIDENCE[level]}
+    </span>
+  )
+}
+
+/** Per-option evidence from the matrix (computed in code): overall fit, best and weakest criterion. */
+function EvidenceSides() {
+  const plan = useCrux((s) => s.plan)
+  const { cells, totals, leader } = useMatrix()
+  if (!plan || plan.options.length === 0) return null
+  const sides = plan.options.slice(0, 3).map((o, i) => {
+    const t = totals.find((x) => x.optionId === o.id)
+    const known = plan.criteria
+      .map((c) => ({ c, cell: cells.find((x) => x.optionId === o.id && x.criterionId === c.id) }))
+      .filter((x) => x.cell && x.cell.score !== null)
+      .sort((a, b) => (b.cell!.score! - a.cell!.score!) || (b.c.weight - a.c.weight))
+    return { o, letter: optionLetter(i), t, best: known.slice(0, 2), worst: known.length > 2 && known[known.length - 1].cell!.score! < known[1].cell!.score! ? known[known.length - 1] : null }
+  })
+  return (
+    <div className="br-sides" style={{ '--n': sides.length } as React.CSSProperties}>
+      {sides.map(({ o, letter, t, best, worst }) => (
+        <div key={o.id} className="br-side" data-lead={leader?.optionId === o.id && t?.point != null}>
+          <h4 title={o.label}>{letter} · {o.label}</h4>
+          <div className="br-fit" title="Overall fit for your current weights, computed in code">
+            {t?.point != null ? <><b>{t.point.toFixed(1)}</b>/5</> : 'No scores yet'}
+            <span className="bar"><span style={{ width: `${t?.point != null ? ((t.point - 1) / 4) * 100 : 0}%` }} /></span>
+          </div>
+          {best.map(({ c, cell }) => (
+            <div key={c.id} className="br-stat" title={cell!.rationale}><span>{c.label}</span><span className="up">{cell!.score}/5</span></div>
+          ))}
+          {worst ? <div className="br-stat" title={worst.cell!.rationale}><span>{worst.c.label}</span><span className="dn">{worst.cell!.score}/5</span></div> : null}
+        </div>
+      ))}
+    </div>
+  )
+}
 
 /** "If you value X, then Y" → ["X", "Y"]; anything else stays one line. */
 function splitCondition(c: string): [string, string] | null {
@@ -90,50 +136,56 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
           <div className="cx-rec-main">
             <div className="cx-k" style={{ marginBottom: 2 }}>What it hinges on</div>
             <div className="cx-row" style={{ gap: 10, alignItems: 'flex-start' }}>
-              <span className="cx-title cx-title-lg cx-wrap" title={synthesis.cruxes[0] ?? synthesis.recommendation}>{synthesis.cruxes[0] ?? synthesis.recommendation}</span>
-              <span className="cx-pill">{EVIDENCE[synthesis.confidence]}</span>
+              <span className="cx-title cx-title-lg cx-wrap" style={{ flex: 1, minWidth: 0 }} title={synthesis.cruxes[0] ?? synthesis.recommendation}>{synthesis.cruxes[0] ?? synthesis.recommendation}</span>
+              <span style={{ paddingTop: 5 }}><EvidenceMeter level={synthesis.confidence} /></span>
             </div>
-            <div className="cx-body" style={{ marginTop: 6 }}>
+            <div className="cx-body" style={{ marginTop: 4 }}>
               {synthesis.summary}
             </div>
             {synthesis.conditions.length > 0 && (
-              <div className="cx-cond">
+              <div className="br-conds">
                 {synthesis.conditions.slice(0, 4).map((c, i) => {
                   const parts = splitCondition(c)
+                  if (!parts) return <div key={i} className="br-cond">{c}</div>
+                  const [head, ...rest] = parts[1].split(/\s+[—–-]\s+/)
                   return (
-                    <div key={i}>
-                      {parts ? <><b>If you value</b> {parts[0]} <b>→</b> {parts[1]}</> : c}
+                    <div key={i} className="br-cond">
+                      <span className="br-chip" title={c}>
+                        <span><b>If you value</b> {parts[0]}</span><em>→</em><span>{head}</span>
+                      </span>
+                      {rest.length > 0 && <span className="br-detail">{rest.join(' — ')}</span>}
                     </div>
                   )
                 })}
               </div>
             )}
           </div>
-          {synthesis.reasons.length > 0 && (
-            <div className="cx-rec-why">
-              <div className="cx-k" style={{ marginBottom: 0 }}>Why</div>
-              <ol>
+          <div className="cx-rec-why">
+            <div className="cx-k" style={{ marginBottom: 0 }}>The evidence on each side</div>
+            <EvidenceSides />
+            {synthesis.reasons.length > 0 && (
+              <ol style={{ marginTop: 2 }}>
                 {synthesis.reasons.slice(0, 4).map((r, i) => (
                   <li key={i}>
                     <span className="cx-num">{i + 1}</span>
                     <div style={{ minWidth: 0 }}>
-                      <div className="cx-body cx-body-strong">{r.text}</div>
-                      {detailed && r.findingIds.length > 0 && (
-                        <div className="cx-row nodrag nopan" style={{ marginTop: 3, gap: 4 }} onPointerDown={stop}>
-                          {r.findingIds.slice(0, 4).map((fid) => (
+                      <span className="cx-body cx-body-strong">{r.text}</span>
+                      {r.findingIds.length > 0 && (
+                        <span className="nodrag nopan" style={{ marginLeft: 6, display: 'inline-flex', gap: 4, verticalAlign: 'middle' }} onPointerDown={stop}>
+                          {r.findingIds.slice(0, detailed ? 4 : 2).map((fid) => (
                             <button
-                              key={fid} type="button" className="cx-fchip"
+                              key={fid} type="button" className="cx-fchip" title="Open this finding"
                               onClick={(e) => { e.stopPropagation(); select(nodeId.finding(fid)) }}
                             >{fid}</button>
                           ))}
-                        </div>
+                        </span>
                       )}
                     </div>
                   </li>
                 ))}
               </ol>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       ) : status === 'failed' ? (
         <div className="cx-row" style={{ gap: 10 }}>

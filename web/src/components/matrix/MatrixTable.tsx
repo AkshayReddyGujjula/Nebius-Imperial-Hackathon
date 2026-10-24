@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { ArrowUpDown, Minus, Plus } from 'lucide-react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { ArrowUpDown, Scale } from 'lucide-react'
 import { motion } from 'motion/react'
 import { useShallow } from 'zustand/react/shallow'
 import { cellKey, effectiveWeight, type MatrixCell } from '@shared/matrix'
@@ -7,6 +7,8 @@ import { useCrux } from '@/store/runStore'
 import { optionLetter } from '@/lib/format'
 import { CitationChip } from '../common/CitationChip'
 import { useMatrix } from './useMatrix'
+import { smallestRankFlip } from './whatIf'
+import './matrix.css'
 
 export function Pips({ score }: { score: number | null }) {
   return (
@@ -32,11 +34,15 @@ function Cell({ cell, detailed, selected }: { cell: MatrixCell; detailed: boolea
   const key = cellKey(cell.optionId, cell.criterionId)
   const pending = useCrux((s) => s.phase === 'planning' || s.phase === 'researching')
   return (
-    <td className="cell" data-sel={selected} onClick={() => selectCell(key)}>
+    <td
+      className="cell" data-sel={selected} data-unknown={cell.score === null}
+      style={{ '--fit': cell.score === null ? 0 : (cell.score - 1) / 4 } as CSSProperties}
+      onClick={() => selectCell(key)}
+    >
       {cell.score === null ? (
         <div>
           <div className="text-[14px] font-semibold text-crux-text-quaternary">–</div>
-          {pending ? <span className="ui-skel-cell mt-1" aria-label="Score pending" /> : <div className="text-[12px] text-crux-text-tertiary">No evidence yet</div>}
+          {pending ? <span className="ui-skel-cell mt-1" aria-label="Score pending" /> : <div className="text-[12px] text-crux-text-tertiary" title="No cited source scored this yet — it is left out of the overall fit, never counted as 0">Unknown · no evidence yet</div>}
         </div>
       ) : (
         <div>
@@ -45,27 +51,45 @@ function Cell({ cell, detailed, selected }: { cell: MatrixCell; detailed: boolea
             <Pips score={cell.score} />
             <OriginTag origin={cell.origin} />
           </div>
-          {cell.rationale ? <p className="mt-1 text-[12px] leading-4 text-crux-text-tertiary">{cell.rationale}</p> : null}
-          {detailed && finding ? <div className="mt-1.5"><CitationChip finding={finding} /></div> : null}
+          {cell.rationale ? <p className="mx-why mt-1 text-[12px] leading-4 text-crux-text-secondary" title={cell.rationale}>{cell.rationale}</p> : null}
+          {finding ? <div className={`mt-1.5 ${detailed ? '' : 'mx-src'}`}><CitationChip finding={finding} /></div> : null}
         </div>
       )}
     </td>
   )
 }
 
-function WeightStepper({ criterionId, base }: { criterionId: string; base: number }) {
+function WeightStepper({ criterionId, base, share }: { criterionId: string; base: number; share: number }) {
   const w = useCrux((s) => s.weights[criterionId] ?? base)
   const setWeight = useCrux((s) => s.setWeight)
   return (
-    <span className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] font-normal text-crux-text-tertiary" onClick={(e) => e.stopPropagation()}>
-    <span className="w-full whitespace-nowrap">Matters to you</span>
-    <span className="ui-wt">
-      <button type="button" aria-label="Lower weight" disabled={w <= 0} onClick={() => setWeight(criterionId, w - 1)}><Minus /></button>
-      <b data-changed={w !== base} title={w !== base ? `Orchestrator suggested ${base}` : 'Weight 0–10'}>{w}</b>
-      <button type="button" aria-label="Raise weight" disabled={w >= 10} onClick={() => setWeight(criterionId, w + 1)}><Plus /></button>
-    </span>
-    <span>/10</span>
-    </span>
+    <div className="mt-1 text-[11px] font-normal text-crux-text-tertiary" onClick={(e) => e.stopPropagation()}>
+      <div className="flex justify-between gap-2 whitespace-nowrap"><span>Matters to you</span><span className="ui-num">{Math.round(share * 100)}% of fit</span></div>
+      <div className="mx-w">
+        <input
+          type="range" min={0} max={10} step={1} value={w} aria-label="How much this matters to you, 0 to 10"
+          onChange={(e) => setWeight(criterionId, Number(e.target.value))}
+        />
+        <b data-changed={w !== base} title={w !== base ? `Orchestrator suggested ${base}` : 'Weight 0–10'}>{w}<span className="font-normal text-crux-text-tertiary">/10</span></b>
+      </div>
+      <div className="mx-share" title={`${Math.round(share * 100)}% of the overall fit`}><span style={{ width: `${share * 100}%` }} /></div>
+    </div>
+  )
+}
+
+function FlipLine({ flip, label, letterOf }: { flip: ReturnType<typeof smallestRankFlip>; label: (id: string) => string; letterOf: (id: string) => string }) {
+  if (!flip) {
+    return <div className="mx-flip"><Scale className="!size-3.5 text-crux-text-tertiary" />No single weight change (0–10) would change who ranks first.</div>
+  }
+  const n = Math.abs(flip.delta)
+  return (
+    <div className="mx-flip" title={`Computed in code: weight ${flip.from} → ${flip.to}`}>
+      <Scale className="!size-3.5 text-crux-accent" />
+      <span>
+        <b>What would change the ranking:</b> if “{label(flip.criterionId)}” mattered <b>{n} point{n === 1 ? '' : 's'} {flip.delta > 0 ? 'more' : 'less'}</b> ({flip.from} → {flip.to}),{' '}
+        <b>{letterOf(flip.newLeaderId)} · {label(flip.newLeaderId)}</b> would rank first.
+      </span>
+    </div>
   )
 }
 
@@ -116,10 +140,13 @@ export function MatrixTable() {
   const letterOf = (id: string) => optionLetter(plan.options.findIndex((o) => o.id === id))
   const anyUnknown = totals.some((t) => t.unknownCount > 0)
   const sumW = plan.criteria.reduce((s, c) => s + effectiveWeight(c, weights), 0)
+  const flip = smallestRankFlip(plan.options, plan.criteria, cells, weights)
+  const labelOf = (id: string) => plan.criteria.find((c) => c.id === id)?.label ?? plan.options.find((o) => o.id === id)?.label ?? id
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <p className="flex-none px-4 pb-2 text-[12.5px] leading-[18px] text-crux-text-secondary">
+      <p className="mx-howto flex-none px-4 pb-2 text-[12.5px] leading-[18px] text-crux-text-secondary">
+        <span className="mx-neutral mr-2">Ranked by YOUR weights — not a recommendation</span>
         <b className="font-semibold text-crux-text">How to read this:</b> each cell scores how well an option fits one thing you care about, from <b className="font-semibold">1 (poor)</b> to <b className="font-semibold">5 (great)</b>, proposed by the research agents from cited sources.
         Set how much each thing <b className="font-semibold">matters to you (0–10)</b>; the overall fit and ranking are recalculated in code. It's a lens on your priorities, not a verdict.
       </p>
@@ -127,11 +154,11 @@ export function MatrixTable() {
         <table className="ui-mx">
           <thead>
             <tr>
-              <th className="w-[200px] min-w-[180px]">Your options<div className="text-[11px] font-normal text-crux-text-tertiary">ranked by overall fit</div></th>
+              <th className="w-[200px] min-w-[180px]">Your options<div className="text-[11px] font-normal text-crux-text-tertiary">ranked by YOUR weights</div></th>
               {plan.criteria.map((c) => (
                 <th key={c.id} className="min-w-[136px]">
                   <div className="text-[12px] leading-4 font-medium text-crux-text" title={c.description}>{c.label}</div>
-                  <WeightStepper criterionId={c.id} base={c.weight} />
+                  <WeightStepper criterionId={c.id} base={c.weight} share={sumW > 0 ? effectiveWeight(c, weights) / sumW : 0} />
                 </th>
               ))}
               <th className="min-w-[132px]">Overall fit<div className="text-[11px] font-normal text-crux-text-tertiary">1–5, weighted by what matters to you</div></th>
@@ -179,11 +206,17 @@ export function MatrixTable() {
       </div>
       <div className="flex flex-none flex-col gap-1.5 border-t border-crux-border px-4 py-2.5">
         <RerankNote leaderId={leader?.point != null ? leader.optionId : null} />
+        {leader?.point != null ? <FlipLine flip={flip} label={labelOf} letterOf={letterOf} /> : null}
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-crux-text-tertiary">
+          <span className="mx-legend" title="Cell tint = fit score">Fit
+            {[1, 2, 3, 4, 5].map((n) => <i key={n} style={{ background: `color-mix(in srgb, var(--crux-accent) ${((n - 1) / 4) * 24}%, var(--crux-surface))` }} title={`${n}/5`} />)}
+            <span>1 poor → 5 great</span>
+            <i style={{ background: 'repeating-linear-gradient(135deg, var(--crux-surface) 0 3px, var(--crux-hover) 3px 4px)' }} /> unknown
+          </span>
           <span>Overall fit = Σ(matters × fit) / Σ matters · computed in code, not by the AI{sumW === 0 ? ' · all weights are 0' : ''}</span>
-          <span className="flex items-center gap-1.5"><span className="ui-tag ai">from research</span>score proposed by an agent from a cited source</span>
-          <span className="flex items-center gap-1.5"><span className="ui-tag you">your score</span>set by you</span>
-          {anyUnknown ? <span>Ranges show totals if unknown cells scored 1 to 5</span> : null}
+          <span className="mx-extra flex items-center gap-1.5"><span className="ui-tag ai">from research</span>score proposed by an agent from a cited source</span>
+          <span className="mx-extra flex items-center gap-1.5"><span className="ui-tag you">your score</span>set by you</span>
+          {anyUnknown ? <span className="mx-extra">Ranges show totals if unknown cells scored 1 to 5</span> : null}
         </div>
       </div>
     </div>
