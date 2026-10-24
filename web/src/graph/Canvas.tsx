@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo } from 'react'
+import { useCallback, useEffect, useMemo, useRef } from 'react'
 import {
   Background, BackgroundVariant, ReactFlow, ReactFlowProvider, useReactFlow,
   type EdgeTypes, type NodeMouseHandler, type NodeTypes, type OnMoveStart,
@@ -62,13 +62,30 @@ function CanvasInner() {
     [layout, viewMode, edgeState],
   )
 
-  // Refit whenever the set of nodes or the mode changes, unless the user has moved the view.
-  const nodeKey = useMemo(() => nodes.map((n) => n.id).sort().join('|'), [nodes])
+  // Refit whenever node ids, positions or sizes change (the tree grows, Simple/Detailed), unless the user moved the view.
+  const fitKey = useMemo(() => nodes.map((n) => `${n.id}:${n.position.x}:${n.position.y}:${n.width}:${n.height}`).join('|'), [nodes])
   useEffect(() => {
     if (userMovedViewport) return
     const raf = requestAnimationFrame(() => { void flow.fitView(FIT) })
     return () => cancelAnimationFrame(raf)
-  }, [nodeKey, viewMode, userMovedViewport, flow])
+  }, [fitKey, userMovedViewport, flow])
+
+  // DECISION: the pane changes size after mount (the rail and matrix bar appear once a run starts), and the
+  // initial fitView prop only fits once against the first size — so refit on every container resize too.
+  const paneRef = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = paneRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    let raf = 0
+    const ro = new ResizeObserver(() => {
+      cancelAnimationFrame(raf)
+      raf = requestAnimationFrame(() => {
+        if (!useCrux.getState().userMovedViewport) void flow.fitView({ ...FIT, duration: 0 })
+      })
+    })
+    ro.observe(el)
+    return () => { ro.disconnect(); cancelAnimationFrame(raf) }
+  }, [flow])
 
   const onMoveStart: OnMoveStart = useCallback((event) => {
     if (event) setUserMovedViewport(true)
@@ -81,7 +98,7 @@ function CanvasInner() {
   }, [flow, setUserMovedViewport])
 
   return (
-    <div className="cx-canvas" data-crux-canvas>
+    <div ref={paneRef} className="cx-canvas" data-crux-canvas>
       <ReactFlow
         nodes={nodes}
         edges={edges}
