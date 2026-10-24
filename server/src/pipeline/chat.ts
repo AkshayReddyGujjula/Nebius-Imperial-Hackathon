@@ -28,8 +28,37 @@ function say(ctx: RunContext, role: "user" | "assistant", text: string, suggesti
   const n = (counters.get(ctx.state) ?? 0) + 1;
   counters.set(ctx.state, n);
   const id = `m${n}`;
+  if (role === "assistant") text = shapeReply(text);
   ctx.state.chat.push({ id, role, text });
   ctx.emit({ type: "chat.message", id, role, text, suggestions, recommendedIndex });
+}
+
+/** Cuts a sentence to `max` words, re-ending it with `end`. */
+function clip(sentence: string, max: number, end: string): string {
+  const words = sentence.split(" ");
+  if (words.length <= max) return sentence;
+  return words.slice(0, max).join(" ").replace(/[\s,;:.!?—–-]+$/, "") + end;
+}
+
+/** Guard: forces a reply into lead (12 words) + up to 2 facts (12 words) + one "If you value…" (12 words) + one question (14 words). Trims, never fails. */
+export function shapeReply(raw: string): string {
+  const flat = raw.replace(/[*_#`]+/g, "").replace(/^\s*(?:[-•–]|\d+[.)])\s+/gm, "").replace(/\s+/g, " ").trim();
+  const parts = flat.split(/(?<=[.!?])\s+(?=["'(“]?[A-Z0-9])/).map((x) => x.trim()).filter(Boolean);
+  if (parts.length === 0) return flat;
+  const qi = parts.map((x) => /\?["'”)]?$/.test(x)).lastIndexOf(true);
+  const question = qi >= 0 ? parts[qi] : null;
+  const rest = parts.filter((_, i) => i !== qi);
+  const lead = rest.find((x) => !/^if you value/i.test(x));
+  const ifs = rest.filter((x) => /^if you value/i.test(x)).slice(0, 1);
+  const facts = rest.filter((x) => x !== lead && !ifs.includes(x)).slice(0, 2);
+  const end = (x: string) => (/[.!]$/.test(x) ? x.slice(-1) : ".");
+  const out = [
+    ...(lead ? [clip(lead, 12, end(lead))] : []),
+    ...facts.map((x) => clip(x, 12, end(x))),
+    ...ifs.map((x) => clip(x, 12, ".")),
+    ...(question ? [clip(question, 14, "?")] : []),
+  ];
+  return out.join(" ");
 }
 
 const GENERIC = ["Yes, a lot", "Somewhat", "Not really", "Not sure yet"];
@@ -46,9 +75,10 @@ function cleanSuggestions(raw: string[], rec: number | null): { suggestions: str
   const picked: { s: string; i: number }[] = [];
   raw.forEach((s, i) => {
     const t = String(s ?? "").replace(/\s+/g, " ").trim().replace(/\.$/, "");
-    if (!t || t.split(" ").length > 8 || seen.has(t.toLowerCase())) return;
-    seen.add(t.toLowerCase());
-    picked.push({ s: t, i });
+    const t5 = t.split(" ").slice(0, 5).join(" ").replace(/[,;:—-]+$/, "");
+    if (!t5 || seen.has(t5.toLowerCase())) return;
+    seen.add(t5.toLowerCase());
+    picked.push({ s: t5, i });
   });
   const top = picked.slice(0, 4);
   if (top.length < 2) return { suggestions: [], recommendedIndex: null };
