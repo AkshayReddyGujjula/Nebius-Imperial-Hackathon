@@ -1,13 +1,12 @@
 import { useState } from 'react'
-import { AnimatePresence, motion } from 'motion/react'
-import { Cpu, RotateCcw, Split } from 'lucide-react'
+import { motion } from 'motion/react'
+import { Cpu, RotateCcw } from 'lucide-react'
 import type { ReplayInfo } from '@shared/api'
 import { useCrux } from '@/store/runStore'
 import { listReplays } from '@/lib/api'
 import { fmtMs } from '@/lib/format'
 import { Composer } from './Composer'
 import { MicButton } from './MicButton'
-import { Interview } from './interview/Interview'
 
 export const EXAMPLES = [
   {
@@ -30,8 +29,6 @@ export function EmptyState({ onRun, onReplay, error }: {
   const [replays, setReplays] = useState<ReplayInfo[] | null>(null)
   const [replayError, setReplayError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
-  // The submitted decision while the pre-run interview runs; EmptyState unmounts once the run starts, which resets it.
-  const [pending, setPending] = useState<string | null>(null)
 
   const toggleReplays = async () => {
     if (open) { setOpen(false); return }
@@ -42,50 +39,36 @@ export function EmptyState({ onRun, onReplay, error }: {
 
   return (
     <div className="ui-canvas-bg ui-scroll relative h-full overflow-y-auto">
-      <div className="mx-auto flex min-h-full w-[640px] max-w-[calc(100%-48px)] flex-col pt-[9vh] pb-20">
-        <AnimatePresence mode="wait" initial={false}>
-        {pending !== null ? (
-          <motion.div key="interview" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}>
-            <Interview decision={pending} onStart={onRun} error={error}
-              onBack={() => { setDraft(pending); setPending(null) }} />
-          </motion.div>
-        ) : (
-        <motion.div key="composer" initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }} transition={{ duration: 0.18, ease: [0.2, 0, 0, 1] }}
-          className="rounded-[8px] border border-crux-border-strong bg-crux-surface p-5 shadow-base">
-          <div className="ui-label"><Split className="!size-3.5" />Decision</div>
-          <h1 className="mt-3 text-[24px] leading-8 font-semibold tracking-[-0.015em]">What are you deciding?</h1>
-          <p className="mt-1 mb-4 text-[14px] leading-5 text-crux-text-secondary">
-            Type it or say it. Include what matters: deadlines, stakes, what you value.
+      <div className="mx-auto flex min-h-full w-[680px] max-w-[calc(100%-48px)] flex-col pt-[16vh] pb-20">
+        <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}>
+          <h1 className="text-center text-[30px] leading-9 font-semibold tracking-[-0.02em]">What are you deciding?</h1>
+          <p className="mt-2 mb-6 text-center text-[15px] leading-6 text-crux-text-secondary">
+            Talk it through. Decision Lab researches while you chat, and never decides for you.
           </p>
-          <Composer onSubmit={setPending} error={error ?? micError} mic={<MicButton onError={setMicError} />} />
-          <div className="mt-3 flex items-start gap-2">
-            <span className="flex-none text-[12px] leading-[22px] text-crux-text-tertiary">Try:</span>
-            <div className="flex min-w-0 flex-wrap gap-2">
-              {EXAMPLES.map((ex) => (
-                <button key={ex.label} type="button" className="ui-pill" onClick={() => {
-                  setDraft(ex.text, 'text')
-                  // Caret at the end, after React has written the value, so Enter runs it straight away.
-                  requestAnimationFrame(() => {
-                    const el = document.getElementById('crux-composer') as HTMLTextAreaElement | null
-                    if (!el) return
-                    el.focus()
-                    el.setSelectionRange(el.value.length, el.value.length)
-                    el.scrollTop = el.scrollHeight
-                  })
-                }}>{ex.label}</button>
-              ))}
-            </div>
+          <Composer onSubmit={onRun} error={error ?? micError} mic={<MicButton onError={setMicError} />} />
+          <div className="mt-3 flex flex-wrap justify-center gap-2">
+            {EXAMPLES.map((ex) => (
+              <button key={ex.label} type="button" className="ui-pill" onClick={() => {
+                setDraft(ex.text, 'text')
+                // Caret at the end, after React has written the value, so Enter sends it straight away.
+                requestAnimationFrame(() => {
+                  const el = document.getElementById('crux-composer') as HTMLTextAreaElement | null
+                  if (!el) return
+                  el.focus()
+                  el.setSelectionRange(el.value.length, el.value.length)
+                  el.scrollTop = el.scrollHeight
+                })
+              }}>{ex.label}</button>
+            ))}
           </div>
         </motion.div>
-        )}
-        </AnimatePresence>
 
-        {pending === null ? <div className="mt-3 flex items-center gap-3 px-1">
+        <div className="mt-5 flex items-center justify-center gap-3 px-1">
           <button type="button" className="ui-link inline-flex items-center gap-1.5 !font-normal !text-crux-text-tertiary hover:!text-crux-text" onClick={toggleReplays}>
             <RotateCcw className="!size-3.5" />Replay a recorded run
           </button>
-        </div> : null}
-        {open && pending === null ? (
+        </div>
+        {open ? (
           <div className="mt-2 overflow-hidden rounded-[8px] border border-crux-border bg-crux-surface shadow-sm">
             {replays === null ? <p className="px-3 py-2.5 text-[13px] text-crux-text-tertiary">Loading…</p> : null}
             {replays && replays.length === 0 ? (
@@ -101,25 +84,6 @@ export function EmptyState({ onRun, onReplay, error }: {
             ))}
           </div>
         ) : null}
-
-        {/* Ghost tree: previews what Crux will build. */}
-        <div aria-hidden className="pointer-events-none mt-10 opacity-30 select-none">
-          <div className="mx-auto h-6 w-px bg-crux-edge" />
-          <div className="mx-[12.5%] h-px bg-crux-edge" />
-          <div className="grid grid-cols-4 gap-3">
-            {['Question', 'Question', 'Question', 'Blind spot'].map((k, i) => (
-              <div key={i} className="flex flex-col items-center">
-                <div className="h-4 w-px bg-crux-edge" />
-                <div className={`ui-ghost w-full ${i === 3 ? '!border-crux-text-quaternary' : ''}`}>
-                  <div className="ui-label">{k}</div>
-                  <div className="ui-skel mt-2 w-[80%]" />
-                  <div className="ui-skel mt-1.5 w-[55%]" />
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className="ui-ghost mt-6"><div className="ui-label">Recommendation</div><div className="ui-skel mt-2 w-[40%]" /></div>
-        </div>
 
         <div className="mt-auto flex justify-center pt-10">
           <span className="inline-flex items-center gap-1.5 text-[12px] leading-4 text-crux-text-tertiary [&_svg]:size-3.5"><Cpu />Open models on Nebius Token Factory</span>
