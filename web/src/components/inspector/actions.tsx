@@ -37,13 +37,16 @@ function Err({ text }: { text: string | null }) {
   return text ? <p className="text-[12px] leading-4 text-crux-warn">{text}</p> : null
 }
 
-function Btn({ busy, children, className, live, ...rest }: { busy: boolean; children: ReactNode; live?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function Btn({ busy, children, className, live, step, ...rest }: { busy: boolean; children: ReactNode; live?: boolean; step?: string } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   const replay = useCrux((s) => s.replay)
   const off = live && replay
   return (
-    <button type="button" className={`ui-btn inline-flex items-center justify-center gap-2 ${className ?? ''}`} {...rest} disabled={busy || rest.disabled || off} title={off ? REPLAY_NOTE : rest.title}>
-      {busy ? <Loader className="ui-spin" /> : null}{children}
-    </button>
+    <>
+      <button type="button" aria-busy={busy} className={`ui-btn inline-flex items-center justify-center gap-2 ${className ?? ''}`} {...rest} disabled={busy || rest.disabled || off} title={off ? REPLAY_NOTE : rest.title}>
+        {busy ? <><Loader className="ui-spin" />{step ?? children}</> : children}
+      </button>
+      {busy ? <div className="dl-inline-progress dl-fade-in" role="progressbar" aria-label={step ?? 'Working'} /> : null}
+    </>
   )
 }
 
@@ -58,11 +61,12 @@ export function QuestionActions({ questionId }: { questionId: string }) {
   const select = useCrux((s) => s.select)
   const deeper = useAction()
   const ladder = useAction()
+  const ladderRunning = useCrux((s) => Object.values(s.ladders).some((l) => l.questionId === questionId && Object.values(l.arms).some((a) => a?.status === 'running')))
   if (!q) return null
   const finished = status === 'done' || status === 'failed' || status === 'timeout'
   return (
     <>
-      <Btn live busy={deeper.busy} className="primary wide" disabled={!finished}
+      <Btn live busy={deeper.busy} step="Starting a deeper agent…" className="primary wide" disabled={!finished}
         title={finished ? undefined : 'Available once this branch finishes'}
         onClick={() => deeper.run(async (runId) => {
           const r = await digDeeper(runId, { nodeId: nodeId.question(questionId) })
@@ -74,7 +78,7 @@ export function QuestionActions({ questionId }: { questionId: string }) {
       <ReplayNote />
       {detailed ? (
         <>
-          <Btn live busy={ladder.busy} className="wide" disabled={!finished}
+          <Btn live busy={ladder.busy || ladderRunning} step="Comparing Low, High and Max…" className="wide" disabled={!finished}
             onClick={() => ladder.run((runId) => runLadder(runId, { questionId }))}>
             Compare effort levels
           </Btn>
@@ -129,7 +133,7 @@ export function FindingActions({ findingId }: { findingId: string }) {
   const a = useAction()
   return (
     <div className="flex flex-col gap-2">
-      <Btn live busy={a.busy} className="wide" onClick={() => a.run(async (runId) => {
+      <Btn live busy={a.busy} step="Starting a deeper agent…" className="wide" onClick={() => a.run(async (runId) => {
         const r = await digDeeper(runId, { nodeId: nodeId.finding(findingId) })
         select(nodeId.question(r.questionId))
       })}><Search />Dig deeper on this claim</Btn>
@@ -153,7 +157,7 @@ export function BlindSpotActions() {
     // The stale banner's button sits under this overlay, so offer the update right where the answer was saved.
     return (
       <div className="flex flex-col gap-2">
-        <p className="text-[12.5px] leading-[18px] text-crux-text-secondary">Saved. Update the recommendation to take your answer into account.</p>
+        <p className="text-[12.5px] leading-[18px] text-crux-text-secondary">Saved. Update the brief to take your answer into account.</p>
         <UpdateRecommendation primary />
       </div>
     )
@@ -201,16 +205,16 @@ export function BlindSpotActions() {
   )
 }
 
-// ---------- Recommendation: update ----------
+// ---------- Decision brief: update ----------
 
 export function UpdateRecommendation({ primary = false }: { primary?: boolean }) {
   const a = useAction()
   const running = useCrux((s) => s.synthesisStatus === 'running')
   return (
     <div className="flex flex-col gap-1.5">
-      <Btn live busy={a.busy || running} className={primary ? 'primary self-start' : 'sm self-start'}
+      <Btn live busy={a.busy || running} step={running ? 'Updating the brief…' : 'Sending your weights…'} className={primary ? 'primary self-start' : 'sm self-start'}
         onClick={() => a.run((runId) => synthesize(runId, { weights: useCrux.getState().weights }))}>
-        {running ? 'Updating…' : 'Update recommendation'}
+        Update the brief
       </Btn>
       <Err text={a.error} />
       <ReplayNote />
