@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion } from 'motion/react'
-import { Cpu, RotateCcw } from 'lucide-react'
+import { Check, Cpu, RotateCcw, X } from 'lucide-react'
 import type { ReplayInfo } from '@shared/api'
 import { useCrux } from '@/store/runStore'
 import { listReplays } from '@/lib/api'
@@ -27,6 +27,30 @@ export const EXAMPLES = [
     text: "We're a five-person startup building an AI customer-support agent. Should we run open models on Nebius Token Factory or use closed APIs like OpenAI? We care about cost at scale, answer quality, data privacy for our EU customers, and not getting locked in.",
   },
 ]
+
+const VERSUS: [chatbot: string, lab: string][] = [
+  ['One model, one answer', '4 agents research in parallel'],
+  ['Tends to agree with you', 'A rival model (MiniMax) cross-examines'],
+  ['Quotes can be made up', 'Every quote checked against its source'],
+  ['Its opinion', 'Your priorities pick the answer, maths in code'],
+]
+
+function Versus() {
+  return (
+    <div className="mx-auto mt-6 w-full max-w-[620px] overflow-hidden rounded-[10px] border border-crux-border bg-crux-surface/60 text-[12.5px] leading-[18px]" aria-label="A chatbot compared with Decision Lab">
+      <div className="grid grid-cols-2 text-[11px] font-medium tracking-[0.04em] uppercase">
+        <div className="px-3 py-1.5 text-crux-text-quaternary">A chatbot</div>
+        <div className="border-l border-crux-border px-3 py-1.5 text-crux-accent-text">Decision Lab</div>
+      </div>
+      {VERSUS.map(([a, b]) => (
+        <div key={a} className="grid grid-cols-2 border-t border-crux-border">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 text-crux-text-tertiary"><X className="size-3 flex-none text-crux-text-quaternary" aria-hidden />{a}</div>
+          <div className="flex items-center gap-1.5 border-l border-crux-border bg-crux-accent-soft/40 px-3 py-1.5 text-crux-text"><Check className="size-3 flex-none text-crux-accent-text" aria-hidden />{b}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
 
 export function EmptyState({ onRun, onReplay, error }: {
   onRun: (text: string) => void
@@ -71,6 +95,7 @@ export function EmptyState({ onRun, onReplay, error }: {
               }}>{ex.label}</button>
             ))}
           </div>
+          <Versus />
         </motion.div>
 
         <div className="mt-5 flex items-center justify-center gap-3 px-1">
