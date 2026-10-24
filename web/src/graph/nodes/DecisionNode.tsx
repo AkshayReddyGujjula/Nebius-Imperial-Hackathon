@@ -25,9 +25,9 @@ function DecisionNodeImpl({ id }: NodeProps<CruxNode>) {
       <div className="cx-k">
         <Split />
         Decision
-        <span className="cx-byline cx-ellipsis" title="Planner: DeepSeek V4.1 Flash, max reasoning">
+        {detailed && <span className="cx-byline cx-ellipsis" title="Planner: DeepSeek V4.1 Flash, max reasoning">
           · Planner · DeepSeek V4.1 Flash · max{plan ? ` — split into ${plan.questions.filter((q) => q.parentNodeId === null).length} questions, set each agent's effort` : ''}
-        </span>
+        </span>}
         {detailed && !plan && (
           <span className="cx-right cx-meta-mono">{fmtTokens(reasoningTok)} reasoning tok</span>
         )}
@@ -36,12 +36,12 @@ function DecisionNodeImpl({ id }: NodeProps<CruxNode>) {
       <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 6 }}>
         {plan ? (
           <>
-            <div className="cx-chips">
+            {detailed && <div className="cx-chips">
               {facts.slice(0, MAX_FACTS).map((f) => (
                 <span key={f.id} className="cx-chip" title={f.text}><span>{f.text}</span></span>
               ))}
               {extra > 0 && <span className="cx-chip cx-chip-more">+{extra}</span>}
-            </div>
+            </div>}
             <div className="cx-chips">
               {plan.options.map((o, i) => (
                 <span key={o.id} className="cx-chip" title={o.description}>

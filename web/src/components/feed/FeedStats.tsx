@@ -59,7 +59,7 @@ export function FeedStats() {
         <div className="dl-feed-kpis is-3">
           <Kpi label="Time" value={startedTs ? fmtClock(elapsed) : '–'} />
           <Kpi label="Cost" value={stats ? fmtUsd(stats.costUsd) : '–'} />
-          <Kpi label="Quotes ✓" value={total ? `${checked}/${total}` : '–'} hint="Quotes found word-for-word in the cited source" />
+          <Kpi label="Quotes" value={total ? `${checked}/${total}` : '–'} hint="Quotes found word-for-word in the cited source" />
         </div>
       </section>
     )

@@ -140,9 +140,9 @@
 /* Simple mode: fewer, bigger blocks. */
 .dl-feed-kpis.is-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .dl-feed-stats.is-simple { padding: 8px; }
-.dl-feed-stats.is-simple .dl-feed-kpi { padding: 8px 10px; }
+.dl-feed-stats.is-simple .dl-feed-kpi { padding: 7px 8px; }
 .dl-feed-stats.is-simple .dl-feed-kpi .l { font-size: 11px; }
-.dl-feed-stats.is-simple .dl-feed-kpi .v { font-size: 20px; line-height: 26px; }
+.dl-feed-stats.is-simple .dl-feed-kpi .v { font-size: 18px; line-height: 24px; text-overflow: clip; }
 .dl-feed.is-simple .dl-feed-label { font-size: 12px; }
 .dl-feed.is-simple .dl-feed-card { padding: 11px 28px 11px 11px; }
 .dl-feed.is-simple .dl-feed-card-title { font-size: 15px; line-height: 20px; font-weight: 600; }
