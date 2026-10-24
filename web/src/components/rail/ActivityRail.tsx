@@ -9,8 +9,9 @@ import { RunStats } from './RunStats'
 import { ChecksTab, checksCount } from './ChecksTab'
 import { AgentsList, ModelsPanel, actorTag } from './RailPanels'
 
-function Who({ actorId }: { actorId: string | null }) {
+function Who({ actorId, text }: { actorId: string | null; text?: string | null }) {
   const t = actorTag(actorId)
+  if (t && text?.startsWith(t.label)) return null
   return t ? <span className="dl-who" style={{ color: t.color }}>{t.label}</span> : null
 }
 
@@ -90,7 +91,7 @@ function SimpleFeed() {
             <li key={i.id} className="dl-enter grid grid-cols-[8px_minmax(0,1fr)] gap-2.5">
               <Dot kind={dotForTone(i.tone)} className="mt-[6px]" />
               <div className="min-w-0">
-                <p className="text-[13px] leading-[19px]"><Who actorId={i.actorId} />{i.simple}</p>
+                <p className="text-[13px] leading-[19px]"><Who actorId={i.actorId} text={i.simple} />{i.simple}</p>
                 {live.has(i.id) ? (
                   <p key={live.get(i.id)} className="crux-node-enter mt-0.5 text-[12px] leading-4 italic" style={{ color: 'var(--dl-frame-muted, #736D61)' }}>{live.get(i.id)}{NARRATED}</p>
                 ) : null}
@@ -129,7 +130,7 @@ function TimelineItem({ item, startedTs, live }: { item: ActivityItem; startedTs
       <span className="tm">{startedTs ? fmtClock(Math.max(0, item.ts - startedTs)) : '00:00'}</span>
       <span className="mk"><Dot kind={dotForTone(item.tone)} /></span>
       <span className="tx">
-        <Who actorId={item.actorId} />{item.title}
+        <Who actorId={item.actorId} text={item.title} />{item.title}
         {item.detail ? <small>{item.detail}</small> : null}
         {live ? <small key={live} className="crux-node-enter italic">{live}{NARRATED}</small> : null}
       </span>

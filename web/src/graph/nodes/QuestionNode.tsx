@@ -34,7 +34,7 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
       <div className="cx-k">
         {agentId && <AgentBadge agentId={agentId} />}
         <span className="cx-agent-line cx-ellipsis" title={agentLine(agentId, agent?.model, question.effort, false)}>
-          {agentLine(agentId, agent?.model, question.effort, !detailed)}
+          {agentLine(agentId, agent?.model, question.effort, true)}
         </span>
         {detailed && <span className="cx-mono">{deeper ? `${label} · deeper` : label}</span>}
         {!detailed && deeper && <span>Deeper</span>}

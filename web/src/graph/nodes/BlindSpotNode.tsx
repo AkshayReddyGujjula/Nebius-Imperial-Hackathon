@@ -44,7 +44,7 @@ function BlindSpotNodeImpl({ id }: NodeProps<CruxNode>) {
       <div className="cx-k">
         <EyeOff />
         Blind spot
-        <span className="cx-byline">· Spotted by the planner</span>
+        <span className="cx-byline cx-ellipsis">· Spotted by the planner</span>
         <span className="cx-right">
           {bs.status === 'researching' && <StatusDot tone="active" label="Researching" />}
           {bs.status === 'answered' && <StatusDot tone="done" label="Answered" />}
