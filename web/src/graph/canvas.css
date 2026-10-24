@@ -168,3 +168,6 @@
 .cx-foot-col { flex-direction: column; align-items: flex-start; gap: 2px; }
 .cx-foot-col > * { max-width: 100%; }
 .cx-model { font-size: 11px; line-height: 14px; color: var(--crux-text-tertiary); letter-spacing: 0; }
+
+.cx-node-auditor { border-color: var(--crux-border-strong); padding: 10px 16px; }
+.cx-aud-pulse { background: var(--crux-accent); animation: crux-pulse var(--crux-pulse-duration) ease-in-out infinite; }

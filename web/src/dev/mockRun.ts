@@ -271,6 +271,7 @@ playAgent({
 at(16, { type: 'notice', level: 'info', message: 'Search for Q4 timed out once; retried successfully.' })
 
 at(50, { type: 'run.phase', phase: 'checking' })
+at(50.2, { type: 'reasoning.chunk', actorId: 'auditor', text: 'Comparing F6 and F7: sleep loss vs recall recovery. ' })
 at(50.5, { type: 'reasoning.summary', actorId: 'auditor', text: 'Comparing findings across agents for conflicts' })
 at(53, {
   type: 'contradictions.ready', usage: usage(M.audit, 2400, 3100, 260, 0, 0.0004), error: null,
