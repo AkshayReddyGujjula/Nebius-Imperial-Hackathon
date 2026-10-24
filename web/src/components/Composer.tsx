@@ -31,6 +31,7 @@ export function Composer({ onSubmit, mic, error }: { onSubmit: (text: string) =>
         <textarea
           ref={ref}
           id="crux-composer"
+          autoFocus
           className="ui-textarea ui-scroll"
           rows={3}
           maxLength={4000}
@@ -43,7 +44,7 @@ export function Composer({ onSubmit, mic, error }: { onSubmit: (text: string) =>
           }}
         />
         <div className="mt-2 flex items-center gap-2">
-          <span className="text-[12px] text-crux-text-quaternary">
+          <span className="text-[12px] text-crux-text-tertiary">
             <kbd className="ui-mono">Enter</kbd> to run · <kbd className="ui-mono">Shift</kbd>+<kbd className="ui-mono">Enter</kbd> new line
           </span>
           <div className="flex-1" />

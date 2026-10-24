@@ -100,7 +100,7 @@ function TrustLine({ questionId }: { questionId: string }) {
   const warn = t.unverified > 0 || others.length > 0
   const text = t.unverified > 0
     ? `${t.unverified} of ${t.findings} quotes couldn't be verified`
-    : `${t.sources} sources · all quotes checked`
+    : `${t.sources} source${t.sources === 1 ? '' : 's'} · all quotes checked`
   const full = text + suffix
   return (
     <span className={`cx-trust ${warn ? 'cx-trust-warn' : 'cx-trust-ok'}`} title={full}>
