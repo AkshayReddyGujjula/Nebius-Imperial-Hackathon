@@ -85,13 +85,14 @@ function apply(s: ReducerState, e: CruxEvent): Patch {
 
     case 'run.phase': {
       const out: Patch = { phase: e.phase }
-      if (e.phase === 'done') out.doneTs = e.ts
+      // The first done freezes the run's duration; follow-ups (blind spot, re-synthesis) re-emit done later.
+      if (e.phase === 'done') out.doneTs = s.doneTs ?? e.ts
       const n = s.plan?.questions.length ?? Object.keys(s.agents).length
       const copy: Partial<Record<typeof e.phase, [string, string, ActivityTone]>> = {
         researching: [`Researching ${n} questions at once`, 'Research started', 'neutral'],
         checking: ['Double-checking the evidence', 'Checking citations and contradictions', 'neutral'],
         synthesizing: ['Writing your recommendation…', 'Synthesis started', 'neutral'],
-        done: [`Done in ${fmtMs(e.ts - (s.startedTs ?? e.ts))}`, 'Run finished', 'ok'],
+        done: [`Done in ${fmtMs((s.doneTs ?? e.ts) - (s.startedTs ?? e.ts))}`, 'Run finished', 'ok'],
       }
       const c = copy[e.phase]
       if (c) out.acts = [item(e, 0, c[2], c[0], c[1], null, null, e.phase === 'done' ? nodeId.recommendation : null)]

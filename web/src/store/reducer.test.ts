@@ -96,6 +96,15 @@ describe('selectors', () => {
     expect(selectRecommendationStale({ ...s, weights: { ...s.weights, c1: 2 } }).reasons).toContain('Weights changed')
   })
 
+  it('a done run reports its own wall time, even after a follow-up', () => {
+    const s = play()
+    const later = play([
+      { runId: s.runId!, seq: s.lastSeq + 1, ts: s.doneTs! + 300_000, type: 'run.phase', phase: 'done' },
+    ] as typeof MOCK_EVENTS, s)
+    expect(later.doneTs).toBe(s.doneTs)
+    expect(selectTopStatus(later, s.doneTs! + 400_000).elapsedMs).toBe(s.stats!.wallMs)
+  })
+
   it('shows researching progress mid-run', () => {
     const idx = MOCK_EVENTS.findIndex((e) => e.type === 'agent.done')
     const s = play(MOCK_EVENTS.slice(0, idx))

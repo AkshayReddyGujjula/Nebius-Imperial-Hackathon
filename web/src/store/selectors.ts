@@ -76,7 +76,10 @@ export function selectQuestionTrust(s: S, questionId: string): {
 const TERMINAL: AgentStatus[] = ['done', 'failed', 'timeout']
 
 export function selectTopStatus(s: S, now: number = Date.now()): { label: string; tone: ActivityTone; elapsedMs: number } {
-  const elapsedMs = s.startedTs === null ? 0 : Math.max(0, (s.doneTs ?? now) - s.startedTs)
+  // A finished run shows its own wall time (server stats freeze at the first done), not time since submit.
+  const elapsedMs = s.startedTs === null ? 0
+    : s.phase === 'done' && s.stats ? s.stats.wallMs
+    : Math.max(0, (s.doneTs ?? now) - s.startedTs)
   switch (s.phase) {
     case 'idle': return { label: '', tone: 'neutral', elapsedMs: 0 }
     case 'planning': return { label: 'Planning', tone: 'accent', elapsedMs }
