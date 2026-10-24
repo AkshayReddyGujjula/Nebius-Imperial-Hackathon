@@ -201,7 +201,7 @@ async function fakeAgent(run: RunContext, q: Question, b: FakeBranch, startDelay
   status("searching", 1);
   const half = Math.ceil(b.sources.length / 2);
   const seeded = await Promise.all(b.queries.map((query, i) =>
-    fakeSearch(run, rt, 1, query, i === 0 ? b.sources.slice(0, half) : b.sources.slice(half), 900 + i * 400)));
+    fakeSearch(run, rt, 1, query, i === 0 ? b.sources.slice(0, half) : b.sources.slice(half), 1500 + i * 600)));
   rt.promptSourcesText = seeded.flat().map((s) => `[${s.id}] ${s.title}`).join("\n");
   status("reading", 1);
   await sleep(800 * pace);
@@ -275,7 +275,7 @@ export async function fakePipeline(run: RunContext): Promise<void> {
   // Research: all agents concurrently.
   run.emit({ type: "run.phase", phase: "researching" });
   run.flushStats();
-  const pace: Record<Effort, number> = { low: 1, high: 1.4, max: 1.8 };
+  const pace: Record<Effort, number> = { low: 1.6, high: 2.2, max: 2.8 };
   await Promise.all(plan.questions.map((q, i) => fakeAgent(run, q, BRANCHES[i], i * 250, pace[q.effort])));
 
   // Checking.
