@@ -73,6 +73,27 @@ const ctx: RunContext = {
 
 await runPipeline(ctx);
 
+// FOLLOWUPS=1 also exercises the P1 follow-ups: dig deeper, blind spot, effort ladder, re-synthesis.
+if (process.env.FOLLOWUPS === "1" && state.plan) {
+  const f = await import("../src/pipeline/followups");
+  const plan = state.plan;
+  console.log("\n──── follow-ups ────");
+  const tryIt = async (name: string, fn: () => Promise<unknown>) => {
+    try { console.log(`${sec()}s  >> ${name} → ${JSON.stringify(await fn())}`); }
+    catch (err: any) { console.log(`${sec()}s  >> ${name} ERR ${err?.message}`); }
+  };
+  await tryIt("digDeeper q:" + plan.questions[0].id, () => f.digDeeper(ctx, `q:${plan.questions[0].id}`));
+  const firstFinding = [...state.findings.keys()][0];
+  if (firstFinding) await tryIt(`digDeeper f:${firstFinding}`, () => f.digDeeper(ctx, `f:${firstFinding}`));
+  await tryIt("runLadder " + plan.questions[1].id, () => f.runLadder(ctx, plan.questions[1].id));
+  if (plan.blindSpot?.researchable) await tryIt("researchBlindSpot", () => f.researchBlindSpot(ctx));
+  else await tryIt("answerBlindSpot", () => f.answerBlindSpot(ctx, "I already know the exam format well."));
+  const settled = () => [...state.agents.values()].every((a) => a.endedAt !== null) &&
+    log.filter((e) => e.type === "ladder.arm" && e.arm.status !== "running").length >= 3;
+  while (!settled()) await new Promise((r) => setTimeout(r, 500));
+  await tryIt("resynthesize", () => f.resynthesize(ctx, Object.fromEntries(plan.criteria.map((c, i) => [c.id, i === 0 ? 10 : 2]))));
+}
+
 const count = (t: string) => log.filter((e) => e.type === t).length;
 const done = log.filter((e) => e.type === "agent.done");
 const byModel = new Map<string, { calls: number; cost: number; out: number; reasoning: number }>();
