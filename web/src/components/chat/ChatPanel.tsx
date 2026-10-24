@@ -64,16 +64,13 @@ function Conversation() {
       <MemoryCard />
       <div ref={threadRef} className="dl-thread ui-scroll">
         <AnimatePresence initial={false}>
-          {chat.map((m, i) => (
+          {chat.map((m) => (
             <motion.div key={m.id} layout="position" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: EASE }}
               className={m.role === 'user' ? 'flex flex-col' : ''}>
               {m.role === 'user' ? <div className="dl-user">{m.text}</div> : (
                 <div>
                   <div className="dl-asst-label">Decision Lab · DeepSeek V4.1 Flash</div>
                   <div className="dl-asst">{m.text}</div>
-                  {i === chat.length - 1 && !answered && m.suggestions.length > 0 ? (
-                    <Options suggestions={m.suggestions} recommended={m.recommendedIndex} disabled={!live} onSent={onSent} />
-                  ) : null}
                 </div>
               )}
             </motion.div>
@@ -92,6 +89,11 @@ function Conversation() {
           </motion.div>
         ) : null}
       </div>
+      <AnimatePresence initial={false}>
+        {latest?.role === 'assistant' && !answered && latest.suggestions.length > 0 ? (
+          <QuestionPopup key={latest.id} text={latest.text} suggestions={latest.suggestions} recommended={latest.recommendedIndex} disabled={!live} onSent={onSent} />
+        ) : null}
+      </AnimatePresence>
       <ChatInput disabled={!live} onSent={onSent} />
     </>
   )
@@ -144,30 +146,55 @@ function MemoryCard() {
 
 const KEYS = 'ABCDEFGH'
 
-function Options({ suggestions, recommended, disabled, onSent }: {
-  suggestions: string[]; recommended: number | null; disabled: boolean; onSent: (text: string) => void
+/** The question: last sentence of the assistant text ending in "?". */
+function questionOf(text: string): string {
+  const parts = text.replace(/\s+/g, ' ').trim().match(/[^.!?]+[.!?]+|[^.!?]+$/g) ?? []
+  const q = [...parts].reverse().find((p) => p.trim().endsWith('?'))
+  return q ? q.trim() : 'Your answer'
+}
+
+function QuestionPopup({ text, suggestions, recommended, disabled, onSent }: {
+  text: string; suggestions: string[]; recommended: number | null; disabled: boolean; onSent: (text: string) => void
 }) {
+  const [open, setOpen] = useState(true)
   const [busy, setBusy] = useState(false)
+  const [own, setOwn] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const pick = async (text: string) => {
-    if (busy || disabled) return
+  const pick = async (t: string) => {
+    const v = t.trim()
+    if (!v || busy || disabled) return
     setBusy(true); setError(null)
-    try { await send(text, 'text'); onSent(text) } catch (e) { setError(errText(e)) } finally { setBusy(false) }
+    try { await send(v, 'text'); onSent(v) } catch (e) { setError(errText(e)) } finally { setBusy(false) }
   }
   return (
-    <div className="dl-opts">
-      {suggestions.map((s, i) => (
-        <button key={i} type="button" className={`dl-opt ${i === recommended ? 'rec' : ''}`} disabled={busy || disabled} onClick={() => void pick(s)}>
-          <span className="dl-key">{KEYS[i] ?? i + 1}</span>
-          <span className="min-w-0 flex-1">{s}</span>
-          {i === recommended ? <span className="dl-likely">Likely</span> : null}
-        </button>
-      ))}
-      <button type="button" className="dl-opt own" disabled={disabled} onClick={() => document.getElementById(INPUT_ID)?.focus()}>
-        <span className="dl-key">…</span><span>Type my own answer…</span>
-      </button>
-      {error ? <p className="dl-err">{error}</p> : null}
-    </div>
+    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.22, ease: EASE }} className="dl-pop-wrap">
+      {open ? (
+        <section className="dl-pop" aria-label="Answer options">
+          <div className="dl-pop-head">
+            <div className="dl-pop-title">{questionOf(text)}</div>
+            <button type="button" className="dl-pop-x" aria-label="Collapse answer options" onClick={() => setOpen(false)}>×</button>
+          </div>
+          <div className="dl-pop-body ui-scroll">
+            <div className="dl-opts !mt-0">
+              {suggestions.map((s, i) => (
+                <button key={i} type="button" className={`dl-opt ${i === recommended ? 'rec' : ''}`} disabled={busy || disabled} onClick={() => void pick(s)}>
+                  <span className="dl-key">{KEYS[i] ?? i + 1}</span>
+                  <span className="min-w-0 flex-1">{s}</span>
+                  {i === recommended ? <span className="dl-likely">Likely</span> : null}
+                </button>
+              ))}
+            </div>
+            <form className="dl-pop-own" onSubmit={(e) => { e.preventDefault(); void pick(own) }}>
+              <input value={own} maxLength={4000} disabled={busy || disabled} onChange={(e) => setOwn(e.target.value)} placeholder="Or type your own answer…" aria-label="Your own answer" />
+              <button type="submit" className="ui-btn primary" disabled={busy || disabled || !own.trim()}>Send</button>
+            </form>
+            {error ? <p className="dl-err">{error}</p> : null}
+          </div>
+        </section>
+      ) : (
+        <button type="button" className="dl-chip dl-pop-chip" onClick={() => setOpen(true)}>Answer options ({suggestions.length})</button>
+      )}
+    </motion.div>
   )
 }
 
