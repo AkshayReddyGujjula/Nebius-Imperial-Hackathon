@@ -19,6 +19,7 @@ import { transcribe } from "./stt/elevenlabs";
 import { fakePipeline } from "./dev/fakePipeline";
 import { clarify } from "./pipeline/clarify";
 import { userTurn } from "./pipeline/chat";
+import { streamChat } from "./llm/nebius";
 
 const app = new Hono();
 
@@ -275,4 +276,11 @@ if (existsSync(CONFIG.webDist)) {
 }
 
 serve({ fetch: app.fetch, port: CONFIG.port });
+// Warm every model once at boot so the first live reply in a demo is not a cold start.
+if (process.env.FAKE_PIPELINE !== "1" && CONFIG.keys.nebius) {
+  for (const model of new Set(Object.values(CONFIG.models))) {
+    streamChat({ model, messages: [{ role: "user", content: "Reply with OK." }], maxTokens: 5, timeoutMs: 20_000 })
+      .then(() => console.log(`warmed ${model}`), () => console.log(`warm-up failed for ${model}`));
+  }
+}
 console.log(`Decision Lab server on :${CONFIG.port}${process.env.FAKE_PIPELINE === "1" ? " (FAKE_PIPELINE)" : ""}`);
