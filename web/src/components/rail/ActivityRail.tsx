@@ -49,6 +49,18 @@ function useAutoScroll(dep: unknown) {
   return { ref, onScroll }
 }
 
+/** Agents that failed or timed out, out of all agents in the run. */
+function useFailedAgents(): { k: number; n: number } {
+  return useCrux(useShallow((s) => {
+    const all = Object.values(s.agents)
+    return { k: all.filter((a) => a.status === 'failed' || a.status === 'timeout').length, n: all.length }
+  }))
+}
+
+function FailedLine({ k, n }: { k: number; n: number }) {
+  return <li className="flex items-center gap-1.5 text-crux-warn"><TriangleAlert />{k} of {n} question{n === 1 ? '' : 's'} couldn't finish</li>
+}
+
 function SimpleFeed() {
   const activity = useCrux((s) => s.activity)
   const items = useMemo(() => activity.filter((i) => i.simple !== null), [activity])
@@ -57,6 +69,7 @@ function SimpleFeed() {
     const fs = Object.values(s.findings)
     return { n: fs.length, ok: fs.filter((f) => f.checks.supported).length, x: s.contradictions.length }
   }))
+  const failed = useFailedAgents()
   const setViewMode = useCrux((s) => s.setViewMode)
   const { ref, onScroll } = useAutoScroll(`${items.length}|${[...live.values()].join('|')}`)
 
@@ -78,15 +91,16 @@ function SimpleFeed() {
           ))}
         </ul>
       </div>
-      {trust.n > 0 ? (
+      {trust.n > 0 || failed.k > 0 ? (
         <div className="flex-none border-t border-crux-border px-4 py-3">
           <ul className="flex flex-col gap-1 text-[13px] leading-[19px] [&_svg]:size-3.5 [&_svg]:flex-none">
-            <li className={`flex items-center gap-1.5 ${trust.ok === trust.n ? 'text-crux-ok' : 'text-crux-warn'}`}>
+            {failed.k > 0 ? <FailedLine {...failed} /> : null}
+            {trust.n > 0 ? <li className={`flex items-center gap-1.5 ${trust.ok === trust.n ? 'text-crux-ok' : 'text-crux-warn'}`}>
               {trust.ok === trust.n ? <BadgeCheck /> : <TriangleAlert />}
               {trust.ok === trust.n
                 ? (trust.n === 1 ? '1 quote checked' : `All ${trust.n} quotes checked`)
                 : `${trust.n - trust.ok} of ${trust.n} quotes couldn't be verified`}
-            </li>
+            </li> : null}
             {trust.x > 0 ? (
               <li className="flex items-center gap-1.5 text-crux-warn">
                 <TriangleAlert />Agents disagree on {trust.x} point{trust.x === 1 ? '' : 's'}
@@ -122,13 +136,17 @@ function Timeline() {
   const activity = useCrux((s) => s.activity)
   const startedTs = useCrux((s) => s.startedTs)
   const live = useLiveSummaries(activity)
+  const failed = useFailedAgents()
   const { ref, onScroll } = useAutoScroll(`${activity.length}|${[...live.values()].join('|')}`)
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div ref={ref} onScroll={onScroll} className="ui-scroll min-h-0 flex-1 overflow-y-auto px-4 py-1">
         {activity.map((i) => <TimelineItem key={i.id} item={i} startedTs={startedTs} live={live.get(i.id) ?? null} />)}
       </div>
-      <div className="flex-none border-t border-crux-border px-4 py-3"><RunStats /></div>
+      <div className="flex-none border-t border-crux-border px-4 py-3">
+        {failed.k > 0 ? <ul className="mb-2 text-[13px] leading-[19px] [&_svg]:size-3.5 [&_svg]:flex-none"><FailedLine {...failed} /></ul> : null}
+        <RunStats />
+      </div>
     </div>
   )
 }
