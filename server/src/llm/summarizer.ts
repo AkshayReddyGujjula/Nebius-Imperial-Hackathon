@@ -21,6 +21,7 @@ export function cleanSummary(text: string): string {
   let s = (text ?? "").trim().split(/\r?\n/).map((l) => l.trim()).find(Boolean) ?? "";
   s = s.replace(/["“”'‘’*`]/g, "").trim().replace(/\.+$/, "").trim();
   if (s.length > 80) s = s.slice(0, 80).trim();
+  if (!/\p{L}{3,}.*\s.*\p{L}{2,}/u.test(s)) return "";   // fragments like "{" are not status lines
   return s;
 }
 
@@ -66,6 +67,7 @@ export class Summarizer {
     if (!a) return;
     this.flush(actorId);
     a.active = false;
+    a.buffer = "";   // the next use of this actor id (e.g. synthesis after planning) starts fresh
     if (a.tick) { clearInterval(a.tick); a.tick = null; }
     a.sinceLast = 0;
   }
