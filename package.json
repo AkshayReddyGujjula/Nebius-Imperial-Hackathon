@@ -1,0 +1,14 @@
+{
+  "name": "crux",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "concurrently -k -n server,web -c blue,green \"npm --prefix server run dev\" \"npm --prefix web run dev\"",
+    "smoke": "npm --prefix server run smoke",
+    "test": "npm --prefix server run test && npm --prefix web run test",
+    "typecheck": "npm --prefix server run typecheck && npm --prefix web run typecheck",
+    "build": "npm --prefix web run build",
+    "start": "npm --prefix server run start"
+  },
+  "devDependencies": { "concurrently": "^9.0.0" }
+}

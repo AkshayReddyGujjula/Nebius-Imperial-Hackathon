@@ -79,7 +79,7 @@ One **research agent** per question then runs in parallel. Each agent searches T
 2. **Visible, variable reasoning.** The orchestrator assigns each branch an effort level and explains why. You can see the cost of thinking: tokens, time and dollars per branch.
 3. **Trust is computed, not claimed.** Every quote is checked against its source in code. Contradictions are audited by a different model family. Failures are shown, not hidden. This answers "where models struggle".
 4. **Your priorities, not the AI's.** Drag a weight and the ranking flips, because code recalculates it. "The AI didn't change its mind; my priorities did."
-5. **Three open model families routed by job** (DeepSeek researches and decides, GLM narrates, MiniMax audits), all on one Token Factory key and base URL.
+5. **Three open model families routed by job** (DeepSeek researches and decides, Nemotron narrates, MiniMax audits), all on one Token Factory key and base URL.
 
 ### 2.3 Demo scenarios (exact input text — rehearse these)
 
@@ -124,7 +124,7 @@ One **research agent** per question then runs in parallel. Each agent searches T
 | State | Event-sourced: the server appends events to an in-memory log and to `server/runs/<runId>.jsonl`; the client reduces events into a zustand store | Replay, reconnect and debugging come almost for free |
 | Citation checks | **Deterministic code** (set membership + normalized substring + 4-word-shingle overlap) | Costs nothing and runs instantly; the honest "caught it" moment |
 | Contradiction audit | **MiniMaxAI/MiniMax-M3.1-Flash** (a different family) | Avoids the model checking its own homework |
-| Reasoning summaries | **zai-org/GLM-5.3-Flash** with `reasoning_effort: "none"` | Fastest on the catalog (349 tok/s); ~$0 |
+| Reasoning summaries | **nvidia/Nemotron-3_5-Lightning** with `reasoning_effort: "none"` (smoke test: GLM-5.3-Flash returned empty lines 3 of 6 times because it spent its budget on hidden reasoning) | ~300 ms per line; ~$0 |
 | Canvas | `@xyflow/react` 12 with a **deterministic column layout and fixed node heights** (no dagre/elk) | No layout jitter; text is line-clamped and the full text lives in the inspector |
 | Styling | Tailwind v4 + shadcn/ui primitives + design tokens from `design/options/README.md` | Consistent and fast |
 | Fonts | `@fontsource-variable/inter`, `@fontsource/jetbrains-mono` (bundled, no CDN) | Venue Wi-Fi |
@@ -269,7 +269,7 @@ Canvas · Rail · Drawer · Inspector                pipeline/agent.ts runAgent(
 Buttons ── POST /api/runs/:id/* (P1) ──────────▶   tools/tavily.ts search() ───────────────────────▶ Tavily POST /search (advanced)
                                                   checks/quote.ts (pure code)
                                                   checks/contradictions.ts ─────────────────────────▶ Nebius · MiniMax-M3.1-Flash
-                                                  llm/summarizer.ts ────────────────────────────────▶ Nebius · GLM-5.3-Flash (effort none)
+                                                  llm/summarizer.ts ────────────────────────────────▶ Nebius · Nemotron-3.5-Lightning (effort none)
                                                   pipeline/orchestrator.ts synthesize() ───────────▶ Nebius · DeepSeek-V4.1-Flash-1017 (max)
 ```
 
@@ -299,7 +299,7 @@ Buttons ── POST /api/runs/:id/* (P1) ──────────▶   too
 | Orchestrator · plan | `deepseek-ai/DeepSeek-V4.1-Flash-1017` | `max` (on failure, retry once at `high`) | 32000 | 90 s (retry 60 s) | JSON (json_object if `JSON_MODE`) |
 | Research agent | `deepseek-ai/DeepSeek-V4.1-Flash-1017` | per branch: `low` / `high` / `max` | 8000 / 16000 / 32000 | per turn 45 / 60 / 90 s; per agent 70 / 110 / 150 s | tools (or JSON actions) |
 | Orchestrator · synthesis | `deepseek-ai/DeepSeek-V4.1-Flash-1017` | `max` (on failure, retry once at `high`) | 32000 | 90 s (retry 60 s) | JSON |
-| Reasoning summaries | `zai-org/GLM-5.3-Flash` | `none` (`SUMMARY_EFFORT=omit` drops the param) | 40 | 6 s | plain text, one line |
+| Reasoning summaries | `nvidia/Nemotron-3_5-Lightning` | `none` (`SUMMARY_EFFORT=omit` drops the param) | 40 | 6 s | plain text, one line |
 | Contradiction audit (P1) | `MiniMaxAI/MiniMax-M3.1-Flash` | `low` | 6000 | 60 s | JSON |
 | JSON repair (fallback) | `deepseek-ai/DeepSeek-V4.1-Flash-1017` | `low` | 6000 | 40 s | JSON |
 | Effort ladder arms (P1) | `deepseek-ai/DeepSeek-V4.1-Flash-1017` | `low`, `high`, `max` | 8000 / 16000 / 32000 | 90 s | JSON |
@@ -332,6 +332,13 @@ Backup models, used only if the smoke test fails a primary:
 - Retry a request on HTTP 429/502/503/504 or a network error **only if no token has streamed yet**: wait `Retry-After` seconds (default 2 s, plus 0–500 ms jitter), at most 2 retries.
 - Tavily: at most 6 concurrent searches, per-search timeout 15 s, no retry on 4xx, 1 retry on 5xx/timeout.
 - Phase 0's smoke test records `x-ratelimit-*` headers in `SMOKE.md`. If they show a higher limit, the integrator may raise the window.
+
+> **Smoke-test overrides (13:15, these win over anything above or in §9):**
+> - Measured limits are **1000 requests/min and 2M tokens/min**. Use **16 concurrent** and **300 starts per 60 s**; summaries are skipped at ≥ 250 starts or when anything is queued.
+> - The summary model is **`nvidia/Nemotron-3_5-Lightning`** (`SUMMARY_MODEL` in `.env`). GLM-5.3-Flash returned empty lines. The summarizer must treat an empty or whitespace-only reply as "skip" and emit nothing.
+> - `reasoning_effort` is honoured, but max varies a lot between runs (1.3k–12k reasoning tokens on the same problem).
+> - In tools mode, turn 2 sometimes searches again instead of calling `submit_findings`. The agent loop's budget enforcement and FINISH_RULE (§9.6) must handle that.
+> - JSON mode (`json_object`) works on 1017. ElevenLabs accepts `keyterms`. MiniMax audit works (one 9 s cold start).
 
 ---
 
@@ -2750,7 +2757,7 @@ Use the `jev-browser` skill (the user's real Chrome) or Playwright to click thro
 |---|---|---|
 | 0:00 | Empty state on screen | "Quick question for the room: how many of you have an exam this week? Tomorrow I have a hackathon… and the day after, my ML exam. Should I even be here? That's the kind of decision Crux is for." |
 | 0:15 | Click the mic and speak the primary scenario, or click the example chip; then Run | "You just say it the way you'd say it out loud." |
-| 0:25 | The Decision node appears; point at the summary lines in the rail | "An orchestrator — DeepSeek V4.1 Flash on Nebius Token Factory, at max reasoning — works out what this decision actually hinges on. These lines are live summaries of its reasoning, written by a second open model, GLM." |
+| 0:25 | The Decision node appears; point at the summary lines in the rail | "An orchestrator — DeepSeek V4.1 Flash on Nebius Token Factory, at max reasoning — works out what this decision actually hinges on. These lines are live summaries of its reasoning, written by a second open model, NVIDIA Nemotron." |
 | 0:40 | Branches appear; switch to **Detailed** (`D`) | "It split my decision into four research questions and a blind spot. Notice the effort badges: it gave the sleep-science question *high* effort because the evidence is mixed, and the career question *low*. Variable reasoning, chosen per branch." |
 | 0:55 | Agents working; point at the timeline | "Four agents are now researching in parallel through Tavily, which Nebius is acquiring, so this is Nebius's own stack: Token Factory reasons, Tavily grounds." |
 | 1:15 | Findings appear; click an amber **quote not found** chip | "**This is where the model struggles.** DeepSeek 1017 only avoids hallucinating about a third of the time when it doesn't know something. So we don't trust it: every quote is checked against the page in code. This one isn't on the page; the model paraphrased and called it a quote. We show that instead of hiding it." |
@@ -2768,7 +2775,7 @@ Use the `jev-browser` skill (the user's real Chrome) or Playwright to click thro
 
 ### 16.3 Pitch talking points (Nebius-tailored)
 
-1. **All on Token Factory**, one OpenAI-compatible base URL. Three open model families routed by job: DeepSeek (plan, research, decide), GLM (live narration), MiniMax (audit).
+1. **All on Token Factory**, one OpenAI-compatible base URL. Three open model families routed by job: DeepSeek (plan, research, decide), NVIDIA Nemotron (live narration), MiniMax (audit).
 2. **Variable reasoning is a product feature.** The orchestrator assigns `reasoning_effort` per branch; code caps the budget; the effort ladder shows what max effort buys on the same evidence.
 3. **Grounded by Tavily**, Nebius's agentic-search acquisition.
 4. **Trust is computed.** Deterministic quote and URL checks, a cross-family contradiction audit, and failures shown openly.
@@ -2820,7 +2827,7 @@ Smoke-test the deployed URL with one live run and one replay. Put the URL in `RE
 | Nebius ignores or rejects `reasoning_effort` values | Low/med | The smoke test proves it. If it is ignored, keep the badges and tell the honest story; never fake differences. |
 | Tools + thinking mode broken on Nebius | Medium | `AGENT_MODE=json`, a fully specified fallback loop |
 | Max-effort plan or synthesis is slow (20–40 s) | High | Live summaries in the rail; a 90 s timeout with a `high` fallback; pre-warm; the soft deadline for agents |
-| Rate limits (about 60 RPM baseline) | Medium | The limiter (8 concurrent / 50 per minute); summaries are best effort; at most 4 agents |
+| Rate limits (measured: 1000 RPM, 2M TPM) | Low | The limiter (16 concurrent / 300 per minute); summaries are best effort; at most 4 agents |
 | Invalid JSON | Medium | `json_object` mode (if the smoke test passes), `parseJsonLoose` + jsonrepair, one repair call, `.catch()` defaults in schemas |
 | Tavily slow or failing | Low | 15 s timeouts, one retry, a visible failed search; agents salvage what they have |
 | Venue Wi-Fi drops | Medium | Hotspot; recorded replays (the server is local, fonts are bundled) |
