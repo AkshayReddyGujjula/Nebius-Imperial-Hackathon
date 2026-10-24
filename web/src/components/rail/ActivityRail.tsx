@@ -93,7 +93,7 @@ function SimpleFeed() {
               <div className="min-w-0">
                 <p className="text-[13px] leading-[19px]"><Who actorId={i.actorId} text={i.simple} />{i.simple}</p>
                 {live.has(i.id) ? (
-                  <p key={live.get(i.id)} className="crux-node-enter mt-0.5 text-[12px] leading-4 italic" style={{ color: 'var(--dl-frame-muted, #736D61)' }}>{live.get(i.id)}{NARRATED}</p>
+                  <p key={live.get(i.id)} className="crux-node-enter mt-0.5 text-[12px] leading-4 italic" style={{ color: 'var(--dl-frame-muted, #8A94A3)' }}>{live.get(i.id)}{NARRATED}</p>
                 ) : null}
               </div>
             </li>
@@ -167,7 +167,7 @@ export function ActivityRail() {
 
   return (
     <aside aria-label="Activity" className="flex h-full min-h-0 w-full min-w-0 flex-col border-r border-crux-border bg-crux-surface"
-      style={{ background: 'var(--dl-frame-2, #EFEBE2)', color: 'var(--dl-frame-text, #1C1B17)', borderColor: 'var(--dl-frame-border, #E2DCCF)' }}>
+      style={{ background: 'var(--dl-frame-2, #1E252D)', color: 'var(--dl-frame-text, #E8ECF1)', borderColor: 'var(--dl-frame-border, #2A323C)' }}>
       {phase === 'idle' ? (
         <div className="px-4 py-5">
           <div className="ui-label">What's happening</div>
