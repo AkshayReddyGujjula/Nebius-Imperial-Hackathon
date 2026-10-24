@@ -13,8 +13,10 @@ function useAction() {
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const mock = useCrux((s) => s.mock)
+  const replay = useCrux((s) => s.replay)
   const run = async (fn: (runId: string) => Promise<unknown>) => {
     const runId = useCrux.getState().runId
+    if (replay) { setError('Not available on a replay — start a live run.'); return }
     if (mock || !runId) { setError('Not available on mock data — start a live run.'); return }
     setBusy(true); setError(null)
     try { await fn(runId) } catch (e) { setError(e instanceof Error ? e.message : 'Request failed') } finally { setBusy(false) }
@@ -28,7 +30,7 @@ function Err({ text }: { text: string | null }) {
 
 function Btn({ busy, children, className, ...rest }: { busy: boolean; children: ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
   return (
-    <button type="button" className={`ui-btn ${className ?? ''}`} disabled={busy || rest.disabled} {...rest}>
+    <button type="button" className={`ui-btn inline-flex items-center justify-center gap-2 ${className ?? ''}`} disabled={busy || rest.disabled} {...rest}>
       {busy ? <Loader className="ui-spin" /> : null}{children}
     </button>
   )

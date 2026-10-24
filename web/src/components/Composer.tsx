@@ -33,6 +33,7 @@ export function Composer({ onSubmit, mic, error }: { onSubmit: (text: string) =>
           id="crux-composer"
           className="ui-textarea ui-scroll"
           rows={3}
+          maxLength={4000}
           value={draft}
           placeholder="I have a hackathon tomorrow and my exam is the day after…"
           aria-label="Describe your decision"

@@ -232,6 +232,8 @@ function apply(s: ReducerState, e: CruxEvent): Patch {
       const out: Patch = { plan: { ...s.plan, blindSpot: e.blindSpot } }
       if (e.blindSpot.status === 'answered' && e.blindSpot.questionId)
         out.acts = [item(e, 0, 'ok', 'Blind spot researched', 'Blind spot researched', e.blindSpot.answer, null, nodeId.blindspot)]
+      else if (e.blindSpot.status === 'answered')
+        out.acts = [item(e, 0, 'ok', 'You answered the blind spot', 'Blind spot answered', e.blindSpot.answer, null, nodeId.blindspot)]
       return out
     }
 

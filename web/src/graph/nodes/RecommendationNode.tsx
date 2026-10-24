@@ -33,15 +33,17 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
   const runId = useCrux((s) => s.runId)
   const mock = useCrux((s) => s.mock)
   const weights = useCrux((s) => s.weights)
+  const replay = useCrux((s) => s.replay)
   const [updating, setUpdating] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const ready = status === 'ready' && synthesis
-  const live = !mock && !!runId
+  const live = !mock && !replay && !!runId
   const update = async (e: { stopPropagation(): void }) => {
     e.stopPropagation()
     if (!runId) return
-    setUpdating(true)
-    try { await synthesize(runId, { weights }) } catch (err) { console.warn('Update failed', err) } finally { setUpdating(false) }
+    setUpdating(true); setError(null)
+    try { await synthesize(runId, { weights }) } catch (err) { setError(err instanceof Error ? err.message : 'Update failed') } finally { setUpdating(false) }
   }
 
   return (
@@ -54,15 +56,15 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
             <span className="cx-stale" title={stale.reasons}>
               <TriangleAlert style={{ width: 12, height: 12 }} />
               New information since this was written.
-              {live && (
-                <button type="button" className="cx-btn nodrag nopan" disabled={updating} onPointerDown={stop} onClick={update}>
-                  Update recommendation
-                </button>
-              )}
+              <button type="button" className="cx-btn nodrag nopan" disabled={updating || !live} onPointerDown={stop} onClick={update}
+                title={replay ? 'Not available on a replay — start a live run.' : undefined}>
+                Update recommendation
+              </button>
             </span>
           </span>
         )}
       </div>
+      {error && <p className="text-xs" style={{ color: 'var(--crux-bad)', margin: '0 0 4px' }}>{error}</p>}
 
       {ready ? (
         <div className="cx-rec">

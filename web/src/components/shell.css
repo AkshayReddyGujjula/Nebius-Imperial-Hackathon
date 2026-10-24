@@ -17,6 +17,7 @@
 .ui-btn.icon { width: 32px; padding: 0; }
 .ui-btn.sm.icon { width: 28px; }
 .ui-btn.wide { width: 100%; }
+.ui-btn svg { width: 14px; height: 14px; flex: none; }
 
 .ui-pill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--crux-border); background: var(--crux-surface); font-size: 12px; color: var(--crux-text-secondary); white-space: nowrap; }
 .ui-pill.warn { background: var(--crux-warn-soft); border-color: var(--crux-warn-border); color: var(--crux-warn); }
