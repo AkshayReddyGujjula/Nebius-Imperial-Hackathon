@@ -76,6 +76,9 @@ function BlindSpotNodeImpl({ id }: NodeProps<CruxNode>) {
             )}
           </div>
         ) : null}
+        {replay && bs.status === 'open' && bs.researchable && !error && (
+          <p className="text-xs" style={{ color: 'var(--crux-text-tertiary)', margin: '4px 0 0' }}>{offNote}</p>
+        )}
         {error && <p className="text-xs" style={{ color: 'var(--crux-bad)', margin: '4px 0 0' }}>{error}</p>}
       </div>
     </NodeShell>
