@@ -2,6 +2,7 @@ import { parseNodeId, type Fact, type Question } from "@shared/index";
 import { bumpEffort } from "../config";
 import type { RunContext } from "../runs/types";
 import { runAgent } from "./agent";
+import { isSynthesizing, synthesize } from "./orchestrator";
 import { summarizerFor } from "./runPipeline";
 
 function requirePlan(ctx: RunContext) {
@@ -87,8 +88,18 @@ export async function answerBlindSpot(ctx: RunContext, answer: string): Promise<
   ctx.emit({ type: "blindspot.updated", blindSpot: { ...bs } });
 }
 
+/** §9.8: re-writes the recommendation with the person's current weights (routes check isSynthesizing → 409). */
 export async function resynthesize(ctx: RunContext, weights: Record<string, number>): Promise<void> {
-  throw new Error("not implemented: resynthesize");
+  requirePlan(ctx);
+  if (isSynthesizing(ctx)) throw new Error("A recommendation is already being written");
+  const setPhase = (phase: "synthesizing" | "done") => { ctx.state.phase = phase; ctx.emit({ type: "run.phase", phase }); };
+  setPhase("synthesizing");
+  try {
+    await synthesize(ctx, summarizerFor(ctx), weights);
+  } finally {
+    setPhase("done");
+    ctx.flushStats();
+  }
 }
 
 export async function runLadder(ctx: RunContext, questionId: string): Promise<{ ladderId: string }> {
