@@ -23,11 +23,11 @@ export function MatrixDrawer() {
       style={{ height: open ? 'min(440px, 55%)' : 48, transition: 'height 220ms var(--crux-ease)' }}>
       <div className="flex h-12 flex-none items-center gap-3 px-4">
         <button type="button" className="flex items-center gap-2 text-[13px] font-semibold" onClick={() => setMatrixOpen(!open)}>
-          <Table2 className="!size-4 text-crux-text-secondary" />Trade-off matrix
+          <Table2 className="!size-4 text-crux-text-secondary" />Trade-off matrix<span className="hidden font-normal text-crux-text-tertiary xl:inline">· how each option fits what matters to you</span>
         </button>
         {detailed ? (
           <span className="ui-num truncate text-[12px] text-crux-text-tertiary">
-            {o} options × {c} criteria · {k} of {o * c} scores proposed
+            {o} options × {c} things you care about · {k} of {o * c} fit scores in
           </span>
         ) : null}
         <div className="flex-1" />

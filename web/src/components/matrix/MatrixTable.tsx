@@ -19,8 +19,8 @@ export function Pips({ score }: { score: number | null }) {
 }
 
 export function OriginTag({ origin }: { origin: MatrixCell['origin'] }) {
-  if (origin === 'ai') return <span className="ui-tag ai">AI</span>
-  if (origin === 'user') return <span className="ui-tag you">You</span>
+  if (origin === 'ai') return <span className="ui-tag ai" title="Proposed by a research agent from a cited source">from research</span>
+  if (origin === 'user') return <span className="ui-tag you" title="You set this score">your score</span>
   return null
 }
 
@@ -40,17 +40,13 @@ function Cell({ cell, detailed, selected }: { cell: MatrixCell; detailed: boolea
         </div>
       ) : (
         <div>
-          <div className="flex items-center gap-2">
-            <span className="ui-num w-6 text-[14px] font-semibold">{fmtScore(cell.score)}</span>
+          <div className="flex flex-wrap items-center gap-2" title={`Fit score ${fmtScore(cell.score)} out of 5 (1 = poor fit, 5 = great fit)`}>
+            <span className="ui-num text-[14px] font-semibold">{fmtScore(cell.score)}<span className="text-[11px] font-normal text-crux-text-tertiary">/5</span></span>
             <Pips score={cell.score} />
             <OriginTag origin={cell.origin} />
           </div>
-          {detailed ? (
-            <>
-              {cell.rationale ? <p className="ui-clamp-2 mt-1 text-[12px] leading-4 text-crux-text-tertiary">{cell.rationale}</p> : null}
-              {finding ? <div className="mt-1.5"><CitationChip finding={finding} /></div> : null}
-            </>
-          ) : null}
+          {cell.rationale ? <p className="mt-1 text-[12px] leading-4 text-crux-text-tertiary">{cell.rationale}</p> : null}
+          {detailed && finding ? <div className="mt-1.5"><CitationChip finding={finding} /></div> : null}
         </div>
       )}
     </td>
@@ -61,10 +57,14 @@ function WeightStepper({ criterionId, base }: { criterionId: string; base: numbe
   const w = useCrux((s) => s.weights[criterionId] ?? base)
   const setWeight = useCrux((s) => s.setWeight)
   return (
-    <span className="ui-wt" onClick={(e) => e.stopPropagation()}>
+    <span className="mt-1 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11px] font-normal text-crux-text-tertiary" onClick={(e) => e.stopPropagation()}>
+    <span className="w-full whitespace-nowrap">Matters to you</span>
+    <span className="ui-wt">
       <button type="button" aria-label="Lower weight" disabled={w <= 0} onClick={() => setWeight(criterionId, w - 1)}><Minus /></button>
       <b data-changed={w !== base} title={w !== base ? `Orchestrator suggested ${base}` : 'Weight 0–10'}>{w}</b>
       <button type="button" aria-label="Raise weight" disabled={w >= 10} onClick={() => setWeight(criterionId, w + 1)}><Plus /></button>
+    </span>
+    <span>/10</span>
     </span>
   )
 }
@@ -119,18 +119,22 @@ export function MatrixTable() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
+      <p className="flex-none px-4 pb-2 text-[12.5px] leading-[18px] text-crux-text-secondary">
+        <b className="font-semibold text-crux-text">How to read this:</b> each cell scores how well an option fits one thing you care about, from <b className="font-semibold">1 (poor)</b> to <b className="font-semibold">5 (great)</b>, proposed by the research agents from cited sources.
+        Set how much each thing <b className="font-semibold">matters to you (0–10)</b>; the overall fit and ranking are recalculated in code. It's a lens on your priorities, not a verdict.
+      </p>
       <div className="ui-scroll min-h-0 flex-1 overflow-auto border-t border-crux-border">
         <table className="ui-mx">
           <thead>
             <tr>
-              <th className="w-[200px] min-w-[180px]">Option</th>
+              <th className="w-[200px] min-w-[180px]">Your options<div className="text-[11px] font-normal text-crux-text-tertiary">ranked by overall fit</div></th>
               {plan.criteria.map((c) => (
                 <th key={c.id} className="min-w-[136px]">
-                  <div className="ui-clamp-2 text-[12px] leading-4 font-medium text-crux-text" title={c.description}>{c.label}</div>
+                  <div className="text-[12px] leading-4 font-medium text-crux-text" title={c.description}>{c.label}</div>
                   <WeightStepper criterionId={c.id} base={c.weight} />
                 </th>
               ))}
-              <th className="min-w-[132px]">Weighted total</th>
+              <th className="min-w-[132px]">Overall fit<div className="text-[11px] font-normal text-crux-text-tertiary">1–5, weighted by what matters to you</div></th>
             </tr>
           </thead>
           <tbody>
@@ -142,7 +146,7 @@ export function MatrixTable() {
                 <motion.tr key={t.optionId} layout="position" transition={{ duration: 0.25, ease: [0.2, 0, 0, 1] }}>
                   <td>
                     <div className="flex items-start gap-2">
-                      <span className={`ui-rank ${t.rank === 1 && t.point !== null ? 'one' : ''}`}>{t.rank}</span>
+                      <span className={`ui-rank ${t.rank === 1 && t.point !== null ? 'one' : ''}`} title={`Ranked #${t.rank} for your current weights`}>{t.rank}</span>
                       <div className="min-w-0">
                         <div className="text-[13px] leading-5 font-medium">{letterOf(o.id)} · {o.label}</div>
                         {o.origin === 'ai' ? <span className="text-[11px] text-crux-text-tertiary">AI-suggested</span> : null}
@@ -156,14 +160,14 @@ export function MatrixTable() {
                   })}
                   <td className="bg-crux-hover">
                     <div className={`ui-num text-[15px] font-semibold ${isLead ? 'text-crux-accent-text' : ''}`}>
-                      {t.point === null ? '–' : t.point.toFixed(2)}
+                      {t.point === null ? '–' : <>{t.point.toFixed(2)}<span className="text-[11px] font-normal text-crux-text-tertiary"> /5</span></>}
                     </div>
                     <div className={`ui-tbar ${isLead ? 'one' : ''}`}>
                       <span style={{ width: `${t.point === null ? 0 : ((t.point - 1) / 4) * 100}%` }} />
                     </div>
                     {t.unknownCount > 0 && t.min !== null && t.max !== null ? (
                       <div className="ui-num mt-1 text-[11px] text-crux-text-tertiary" title="Range if the unknown cells scored 1 or 5">
-                        {t.min.toFixed(2)}–{t.max.toFixed(2)}
+                        could be {t.min.toFixed(2)}–{t.max.toFixed(2)}
                       </div>
                     ) : null}
                   </td>
@@ -176,9 +180,9 @@ export function MatrixTable() {
       <div className="flex flex-none flex-col gap-1.5 border-t border-crux-border px-4 py-2.5">
         <RerankNote leaderId={leader?.point != null ? leader.optionId : null} />
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[12px] text-crux-text-tertiary">
-          {detailed ? <span>Weighted total = Σ(weight × score) / Σ weight · computed in code{sumW === 0 ? ' · all weights are 0' : ''}</span> : null}
-          <span className="flex items-center gap-1.5"><span className="ui-tag ai">AI</span>proposed from cited findings</span>
-          <span className="flex items-center gap-1.5"><span className="ui-tag you">You</span>set by you</span>
+          <span>Overall fit = Σ(matters × fit) / Σ matters · computed in code, not by the AI{sumW === 0 ? ' · all weights are 0' : ''}</span>
+          <span className="flex items-center gap-1.5"><span className="ui-tag ai">from research</span>score proposed by an agent from a cited source</span>
+          <span className="flex items-center gap-1.5"><span className="ui-tag you">your score</span>set by you</span>
           {anyUnknown ? <span>Ranges show totals if unknown cells scored 1 to 5</span> : null}
         </div>
       </div>

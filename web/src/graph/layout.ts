@@ -7,7 +7,7 @@ export const L = {
   questionH: { simple: 188, detailed: 156 },
   blindspotH: { simple: 188, detailed: 156 },
   findingH: 112,
-  recGap: 56, recH: { simple: 140, detailed: 184 },
+  recGap: 56, recH: { simple: 240, detailed: 280 },
 } as const
 
 export interface LaidNode {

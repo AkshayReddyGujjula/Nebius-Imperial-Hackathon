@@ -168,3 +168,9 @@
 .cx-foot-col { flex-direction: column; align-items: flex-start; gap: 2px; }
 .cx-foot-col > * { max-width: 100%; }
 .cx-model { font-size: 11px; line-height: 14px; color: var(--crux-text-tertiary); letter-spacing: 0; }
+
+/* Decision brief: wrap instead of clipping; the card scrolls when the brief is long. */
+.cx-title.cx-wrap { flex: 1 1 auto; min-width: 0; white-space: normal; overflow-wrap: anywhere; }
+.cx-rec { overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
+.cx-rec-main, .cx-rec-why { min-height: min-content; }
+.cx-cond > div { white-space: normal; }

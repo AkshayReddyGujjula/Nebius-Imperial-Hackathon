@@ -86,22 +86,22 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
         <p className="text-xs" style={{ color: 'var(--crux-text-tertiary)', margin: '0 0 4px' }}>Not available on a replay — start a live run.</p>
       )}
       {ready ? (
-        <div className="cx-rec">
+        <div className="cx-rec ui-scroll nowheel nodrag" onPointerDown={stop}>
           <div className="cx-rec-main">
             <div className="cx-k" style={{ marginBottom: 2 }}>What it hinges on</div>
-            <div className="cx-row" style={{ gap: 10 }}>
-              <span className="cx-title cx-title-lg cx-ellipsis" title={synthesis.cruxes[0] ?? synthesis.recommendation}>{synthesis.cruxes[0] ?? synthesis.recommendation}</span>
+            <div className="cx-row" style={{ gap: 10, alignItems: 'flex-start' }}>
+              <span className="cx-title cx-title-lg cx-wrap" title={synthesis.cruxes[0] ?? synthesis.recommendation}>{synthesis.cruxes[0] ?? synthesis.recommendation}</span>
               <span className="cx-pill">{EVIDENCE[synthesis.confidence]}</span>
             </div>
-            <div className={`cx-body ${detailed ? 'cx-clamp-3' : 'cx-clamp-2'}`} style={{ marginTop: 6 }} title={synthesis.summary}>
+            <div className="cx-body" style={{ marginTop: 6 }}>
               {synthesis.summary}
             </div>
             {synthesis.conditions.length > 0 && (
               <div className="cx-cond">
-                {synthesis.conditions.slice(0, detailed ? 3 : 2).map((c, i) => {
+                {synthesis.conditions.slice(0, 4).map((c, i) => {
                   const parts = splitCondition(c)
                   return (
-                    <div key={i} className="cx-ellipsis" title={c}>
+                    <div key={i}>
                       {parts ? <><b>If you value</b> {parts[0]} <b>→</b> {parts[1]}</> : c}
                     </div>
                   )
@@ -113,11 +113,11 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
             <div className="cx-rec-why">
               <div className="cx-k" style={{ marginBottom: 0 }}>Why</div>
               <ol>
-                {synthesis.reasons.slice(0, 2).map((r, i) => (
+                {synthesis.reasons.slice(0, 4).map((r, i) => (
                   <li key={i}>
                     <span className="cx-num">{i + 1}</span>
                     <div style={{ minWidth: 0 }}>
-                      <div className="cx-body cx-body-strong cx-clamp-2" title={r.text}>{r.text}</div>
+                      <div className="cx-body cx-body-strong">{r.text}</div>
                       {detailed && r.findingIds.length > 0 && (
                         <div className="cx-row nodrag nopan" style={{ marginTop: 3, gap: 4 }} onPointerDown={stop}>
                           {r.findingIds.slice(0, 4).map((fid) => (
