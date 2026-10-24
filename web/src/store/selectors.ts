@@ -1,6 +1,6 @@
 import { clip } from '@/lib/format'
 import { buildCells, computeTotals, parseNodeId } from '@shared/index'
-import type { AgentStatus, MatrixCell, OptionTotal } from '@shared/index'
+import type { AgentStatus, Effort, MatrixCell, OptionTotal } from '@shared/index'
 import { qIndex, SYNTHESIS_NOTICE_ID } from './reducer'
 import type { ActivityTone, RunData, UiState } from './types'
 
@@ -115,4 +115,58 @@ export function selectQuestionLabel(s: S, questionId: string, depth = 0): string
     }
   }
   return `Q${qIndex(s, questionId) + 1}`
+}
+
+// ---------- rail: models at work + agent rows ----------
+
+export type RoleStatus = 'idle' | 'working' | 'done'
+export interface ModelRole { key: 'planner' | 'agents' | 'narrator' | 'auditor' | 'search' | 'memory'; status: RoleStatus; count: number }
+
+const WORKING_AGENT: AgentStatus[] = ['searching', 'reading', 'thinking', 'writing']
+
+/** One status per model role for the "Models at work" panel. Primitive-only fields, so useShallow on a mapped string works. */
+export function selectModelRoles(s: S): ModelRole[] {
+  const agents = Object.values(s.agents)
+  const anyWorking = agents.some((a) => WORKING_AGENT.includes(a.status))
+  const allDone = agents.length > 0 && agents.every((a) => TERMINAL.includes(a.status))
+  const searches = Object.values(s.searches)
+  const finished = s.phase === 'done' || s.phase === 'error'
+  const st = (working: boolean, done: boolean): RoleStatus => (working ? 'working' : done ? 'done' : 'idle')
+  return [
+    { key: 'planner', count: 0, status: st(s.phase === 'planning' || s.synthesisStatus === 'running', !!s.plan) },
+    { key: 'agents', count: agents.length, status: st(anyWorking, allDone) },
+    { key: 'narrator', count: 0, status: st(!finished && (anyWorking || s.phase === 'planning' || s.synthesisStatus === 'running'), Object.keys(s.reasoning).length > 0) },
+    { key: 'auditor', count: s.contradictions.length, status: st(s.phase === 'checking', s.contradictionsStatus !== 'idle') },
+    { key: 'search', count: searches.length, status: st(searches.some((x) => x.status === 'running'), searches.length > 0) },
+    { key: 'memory', count: s.plan?.facts.length ?? 0, status: st(!finished && s.phase !== 'idle' && !s.plan, !!s.plan) },
+  ]
+}
+
+export interface AgentRow {
+  agentId: string; questionId: string; question: string; effort: Effort; model: string; status: AgentStatus;
+  searches: number; budget: number; sourcesRead: number; findings: number; elapsedMs: number;
+}
+
+/** Searches an agent may run at its effort: seeded queries plus 2 per extra round (server EFFORT profile). */
+export function searchBudget(effort: Effort, extraRounds: number): number {
+  return (effort === 'max' ? 3 : 2) + 2 * Math.max(0, extraRounds)
+}
+
+/** One row per research agent, ordered by agent number. */
+export function selectAgentRows(s: S, now: number = Date.now()): AgentRow[] {
+  return Object.values(s.agents)
+    .map((a) => ({
+      agentId: a.id,
+      questionId: a.questionId,
+      question: s.plan?.questions.find((q) => q.id === a.questionId)?.text ?? '',
+      effort: a.effort,
+      model: a.model,
+      status: a.status,
+      searches: a.searchIds.length,
+      budget: searchBudget(a.effort, a.extraRounds),
+      sourcesRead: a.sourcesRead,
+      findings: a.findingIds.length,
+      elapsedMs: a.status === 'queued' ? 0 : Math.max(0, (a.endedAt ?? s.doneTs ?? now) - a.startedAt),
+    }))
+    .sort((x, y) => Number(x.agentId.replace(/\D/g, '')) - Number(y.agentId.replace(/\D/g, '')))
 }

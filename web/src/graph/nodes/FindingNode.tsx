@@ -3,6 +3,7 @@ import type { NodeProps } from '@xyflow/react'
 import { GitCompareArrows } from 'lucide-react'
 import { useCrux } from '../../store/runStore'
 import type { CruxNode } from '../buildGraph'
+import { agentColor } from '../helpers'
 import { CitationChip } from '../parts'
 import { NodeShell } from './NodeShell'
 
@@ -16,12 +17,12 @@ function FindingNodeImpl({ id, data }: NodeProps<CruxNode>) {
   const unsupported = !finding.checks.supported
   const cls = unsupported ? 'is-warn' : ''
   return (
-    <NodeShell id={id} className={cls} dim={finding.stale} label={finding.claim}>
+    <NodeShell id={id} className={cls} dim={finding.stale} label={finding.claim} accent={agentColor(finding.agentId)}>
       <div className="cx-body cx-body-strong cx-clamp-3">{finding.claim}</div>
       <div className="cx-foot">
         <CitationChip finding={finding} source={source} />
         {contradicted && (
-          <span className="cx-flag cx-flag-bad"><GitCompareArrows />Contradiction</span>
+          <span className="cx-flag cx-flag-bad" title="Flagged by MiniMax M3.1 (auditor)"><GitCompareArrows />Contradiction</span>
         )}
       </div>
     </NodeShell>

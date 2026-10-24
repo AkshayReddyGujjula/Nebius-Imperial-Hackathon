@@ -25,8 +25,9 @@ function DecisionNodeImpl({ id }: NodeProps<CruxNode>) {
       <div className="cx-k">
         <Split />
         Decision
+        <span className="cx-byline cx-ellipsis">· Planned by DeepSeek V4.1 Flash · max reasoning</span>
         {detailed && !plan && (
-          <span className="cx-right cx-meta-mono">DeepSeek V4.1 Flash · max · {fmtTokens(reasoningTok)} reasoning tok</span>
+          <span className="cx-right cx-meta-mono">{fmtTokens(reasoningTok)} reasoning tok</span>
         )}
       </div>
       <div className="cx-title cx-title-lg cx-clamp-2" title={title}>{title}</div>

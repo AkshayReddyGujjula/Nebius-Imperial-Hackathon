@@ -7,6 +7,15 @@ import { fmtClock } from '@/lib/format'
 import { Dot, dotForTone } from '../common/StatusDot'
 import { RunStats } from './RunStats'
 import { ChecksTab, checksCount } from './ChecksTab'
+import { AgentsList, ModelsPanel, actorTag } from './RailPanels'
+
+function Who({ actorId, text }: { actorId: string | null; text?: string | null }) {
+  const t = actorTag(actorId)
+  if (t && text?.startsWith(t.label)) return null
+  return t ? <span className="dl-who" style={{ color: t.color }}>{t.label}</span> : null
+}
+
+const NARRATED = <span className="dl-by">· summarised by Nemotron</span>
 
 const ACTIVE = new Set(['searching', 'reading', 'thinking', 'writing'])
 
@@ -79,12 +88,12 @@ function SimpleFeed() {
       <div ref={ref} onScroll={onScroll} className="ui-scroll min-h-0 flex-1 overflow-y-auto px-4 pb-4">
         <ul className="flex flex-col gap-3">
           {items.map((i) => (
-            <li key={i.id} className="crux-node-enter grid grid-cols-[8px_minmax(0,1fr)] gap-2.5">
+            <li key={i.id} className="dl-enter grid grid-cols-[8px_minmax(0,1fr)] gap-2.5">
               <Dot kind={dotForTone(i.tone)} className="mt-[6px]" />
               <div className="min-w-0">
-                <p className="text-[13px] leading-[19px] text-crux-text">{i.simple}</p>
+                <p className="text-[13px] leading-[19px]"><Who actorId={i.actorId} text={i.simple} />{i.simple}</p>
                 {live.has(i.id) ? (
-                  <p key={live.get(i.id)} className="crux-node-enter mt-0.5 text-[12px] leading-4 text-crux-text-tertiary italic">{live.get(i.id)}</p>
+                  <p key={live.get(i.id)} className="crux-node-enter mt-0.5 text-[12px] leading-4 italic" style={{ color: 'var(--dl-frame-muted, #736D61)' }}>{live.get(i.id)}{NARRATED}</p>
                 ) : null}
               </div>
             </li>
@@ -121,9 +130,9 @@ function TimelineItem({ item, startedTs, live }: { item: ActivityItem; startedTs
       <span className="tm">{startedTs ? fmtClock(Math.max(0, item.ts - startedTs)) : '00:00'}</span>
       <span className="mk"><Dot kind={dotForTone(item.tone)} /></span>
       <span className="tx">
-        {item.title}
+        <Who actorId={item.actorId} text={item.title} />{item.title}
         {item.detail ? <small>{item.detail}</small> : null}
-        {live ? <small key={live} className="crux-node-enter italic">{live}</small> : null}
+        {live ? <small key={live} className="crux-node-enter italic">{live}{NARRATED}</small> : null}
       </span>
     </>
   )
@@ -157,16 +166,23 @@ export function ActivityRail() {
   const nChecks = useCrux(checksCount)
 
   return (
-    <aside aria-label="Activity" className="flex min-h-0 flex-col border-r border-crux-border bg-crux-surface">
+    <aside aria-label="Activity" className="flex h-full min-h-0 w-full min-w-0 flex-col border-r border-crux-border bg-crux-surface"
+      style={{ background: 'var(--dl-frame-2, #EFEBE2)', color: 'var(--dl-frame-text, #1C1B17)', borderColor: 'var(--dl-frame-border, #E2DCCF)' }}>
       {phase === 'idle' ? (
         <div className="px-4 py-5">
           <div className="ui-label">What's happening</div>
-          <p className="mt-2 text-[13px] leading-[19px] text-crux-text-tertiary">Agents appear here once Crux splits your decision into questions.</p>
+          <p className="mt-2 text-[13px] leading-[19px] text-crux-text-tertiary">Agents appear here once Decision Lab splits your decision into questions.</p>
         </div>
       ) : viewMode === 'simple' ? (
-        <SimpleFeed />
+        <>
+          <ModelsPanel />
+          <AgentsList />
+          <SimpleFeed />
+        </>
       ) : (
         <>
+          <ModelsPanel />
+          <AgentsList />
           <div className="flex-none px-4 pt-3 pb-2">
             <div className="ui-seg" role="tablist">
               <button type="button" role="tab" aria-selected={railTab === 'timeline'} data-on={railTab === 'timeline'} onClick={() => setRailTab('timeline')}>

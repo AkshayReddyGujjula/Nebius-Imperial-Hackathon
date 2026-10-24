@@ -52,7 +52,7 @@ export default function App() {
 
   const idle = phase === 'idle'
   return (
-    <div className={`grid h-dvh grid-rows-[52px_minmax(0,1fr)] overflow-hidden bg-crux-page text-crux-text transition-[grid-template-columns] duration-[240ms] ease-[cubic-bezier(.2,0,0,1)] ${idle ? 'grid-cols-[0px_minmax(0,1fr)]' : 'grid-cols-[420px_minmax(0,1fr)]'}`}>
+    <div className={`dl-app grid h-dvh grid-rows-[52px_minmax(0,1fr)] overflow-hidden bg-crux-page text-crux-text transition-[grid-template-columns] duration-[240ms] ease-[cubic-bezier(.2,0,0,1)] ${idle ? 'grid-cols-[0px_minmax(0,1fr)]' : 'grid-cols-[420px_minmax(0,1fr)]'}`}>
       <TopBar onNewDecision={newDecision} />
       <div className="min-h-0 min-w-0 overflow-hidden">{idle ? null : <ChatPanel />}</div>
       <main className="relative flex min-h-0 min-w-0 flex-col">
@@ -60,7 +60,7 @@ export default function App() {
           <EmptyState onRun={run} onReplay={replay} error={error} />
         ) : (
           <>
-            <div className="relative min-h-0 flex-1"><Canvas /></div>
+            <div className="dl-fade-in relative min-h-0 flex-1"><Canvas /></div>
             <MatrixDrawer />
           </>
         )}

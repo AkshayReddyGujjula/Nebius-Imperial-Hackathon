@@ -10,7 +10,13 @@ import type { CruxNode } from '../buildGraph'
 import { stop } from '../helpers'
 import { NodeShell } from './NodeShell'
 
-const CONFIDENCE = { high: 'High confidence', medium: 'Medium confidence', low: 'Low confidence' } as const
+const EVIDENCE = { high: 'Evidence: strong', medium: 'Evidence: medium', low: 'Evidence: thin' } as const
+
+/** "If you value X, then Y" → ["X", "Y"]; anything else stays one line. */
+function splitCondition(c: string): [string, string] | null {
+  const m = /^\s*if\s+(.+?),\s*(?:then\s+)?(.+)$/i.exec(c)
+  return m ? [m[1].replace(/^you value\s+/i, ''), m[2]] : null
+}
 
 function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
   const detailed = useCrux((s) => s.viewMode === 'detailed')
@@ -48,15 +54,16 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
   }
 
   return (
-    <NodeShell id={id} className="cx-node-root" label="Recommendation">
+    <NodeShell id={id} className="cx-node-root" label="Decision brief">
       <div className="cx-k">
         <Sparkles />
-        Recommendation
+        Decision brief
+        {!(ready && (failure || stale.stale)) && <span className="cx-byline cx-ellipsis">· Written by DeepSeek V4.1 Flash · max</span>}
         {ready && failure && (
           <span className="cx-right" style={{ minWidth: 0 }}>
             <span className="cx-stale" style={{ minWidth: 0 }}>
               <TriangleAlert style={{ width: 12, height: 12, flex: 'none' }} />
-              <span className="cx-ellipsis" title={failure}>Couldn't update the recommendation ({failure}). Showing the previous one.</span>
+              <span className="cx-ellipsis" title={failure}>Couldn't update the brief ({failure}). Showing the previous one.</span>
               <RetryButton disabled={updating || !live} replay={replay} onClick={update} />
             </span>
           </span>
@@ -68,7 +75,7 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
               New information since this was written.
               <button type="button" className="cx-btn nodrag nopan" disabled={updating || !live} onPointerDown={stop} onClick={update}
                 title={replay ? 'Not available on a replay — start a live run.' : undefined}>
-                Update recommendation
+                Update the brief
               </button>
             </span>
           </span>
@@ -81,16 +88,24 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
       {ready ? (
         <div className="cx-rec">
           <div className="cx-rec-main">
+            <div className="cx-k" style={{ marginBottom: 2 }}>What it hinges on</div>
             <div className="cx-row" style={{ gap: 10 }}>
-              <span className="cx-title cx-title-lg cx-ellipsis" title={synthesis.recommendation}>{synthesis.recommendation}</span>
-              <span className="cx-pill">{CONFIDENCE[synthesis.confidence]}</span>
+              <span className="cx-title cx-title-lg cx-ellipsis" title={synthesis.cruxes[0] ?? synthesis.recommendation}>{synthesis.cruxes[0] ?? synthesis.recommendation}</span>
+              <span className="cx-pill">{EVIDENCE[synthesis.confidence]}</span>
             </div>
             <div className={`cx-body ${detailed ? 'cx-clamp-3' : 'cx-clamp-2'}`} style={{ marginTop: 6 }} title={synthesis.summary}>
               {synthesis.summary}
             </div>
-            {detailed && synthesis.conditions[0] && (
-              <div className="cx-body cx-muted cx-ellipsis" style={{ marginTop: 'auto', fontStyle: 'italic' }} title={synthesis.conditions[0]}>
-                {synthesis.conditions[0]}
+            {synthesis.conditions.length > 0 && (
+              <div className="cx-cond">
+                {synthesis.conditions.slice(0, detailed ? 3 : 2).map((c, i) => {
+                  const parts = splitCondition(c)
+                  return (
+                    <div key={i} className="cx-ellipsis" title={c}>
+                      {parts ? <><b>If you value</b> {parts[0]} <b>→</b> {parts[1]}</> : c}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
@@ -123,12 +138,12 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
       ) : status === 'failed' ? (
         <div className="cx-row" style={{ gap: 10 }}>
           <span className="cx-body" style={{ color: 'var(--crux-bad)' }} title={failure ?? undefined}>
-            Couldn't write a recommendation{failure ? ` (${failure})` : ''}.
+            Couldn't write the brief{failure ? ` (${failure})` : ''}.
           </span>
           <RetryButton disabled={updating || !live} replay={replay} onClick={update} />
         </div>
       ) : status === 'running' ? (
-        <Pending text="Writing your recommendation…" live={summary} />
+        <Pending text="Writing your decision brief…" live={summary} />
       ) : (
         <Pending text={waiting.m ? `Waiting on ${waiting.k} of ${waiting.m} questions` : 'Waiting on research'} live={null} />
       )}

@@ -182,7 +182,7 @@ export function BlindSpotView({ onClose, actions }: { onClose: () => void; actio
   )
 }
 
-// ---------- Recommendation ----------
+// ---------- Decision brief ----------
 
 export function RecommendationView({ onClose, actions }: { onClose: () => void; actions?: ReactNode }) {
   const { syn, status, detailed, plan } = useCrux(useShallow((s) => ({ syn: s.synthesis, status: s.synthesisStatus, detailed: s.viewMode === 'detailed', plan: s.plan })))
@@ -194,17 +194,17 @@ export function RecommendationView({ onClose, actions }: { onClose: () => void; 
 
   return (
     <>
-      <Header kind="Recommendation" onClose={onClose} />
+      <Header kind="Decision brief" onClose={onClose} />
       <div className="ui-scroll min-h-0 flex-1 overflow-y-auto">
         {!syn ? (
           <Sec><p className="text-[13px] text-crux-text-tertiary">
-            {status === 'running' ? 'Writing your recommendation…' : status === 'failed' ? `Couldn't write the recommendation${synError ? ` (${synError})` : ''}.` : 'The recommendation is written once the research finishes.'}
+            {status === 'running' ? 'Writing the decision brief…' : status === 'failed' ? `Couldn't write the brief${synError ? ` (${synError})` : ''}.` : 'The decision brief is written once the research finishes.'}
           </p>{status === 'failed' && actions ? <div className="mt-2">{actions}</div> : null}</Sec>
         ) : (
           <>
             {synError ? (
               <div className="border-b border-crux-warn-border bg-crux-warn-soft px-4 py-2.5 text-[12.5px] leading-[18px] text-crux-warn">
-                Couldn't update the recommendation ({synError}). Showing the previous one.
+                Couldn't update the brief ({synError}). Showing the previous one.
                 {actions ? <div className="mt-2">{actions}</div> : null}
               </div>
             ) : null}
@@ -214,17 +214,28 @@ export function RecommendationView({ onClose, actions }: { onClose: () => void; 
                 {actions ? <div className="mt-2">{actions}</div> : null}
               </div>
             ) : null}
-            <Sec>
-              <h2 className="text-[17px] leading-6 font-semibold">{syn.recommendation}</h2>
+            <Sec title="What it hinges on">
+              <h2 className="text-[17px] leading-6 font-semibold">{syn.cruxes[0] ?? syn.recommendation}</h2>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="ui-pill">{syn.confidence[0].toUpperCase() + syn.confidence.slice(1)} confidence</span>
-                {optIdx >= 0 && plan ? <span className="ui-pill">Option {optionLetter(optIdx)} · {plan.options[optIdx].label}</span> : <span className="ui-pill">Hybrid of the options</span>}
+                <span className="ui-pill" title="How well-sourced the facts below are. Not a verdict.">Evidence strength: {syn.confidence}</span>
+                {optIdx >= 0 && plan ? <span className="ui-pill" title="Ranked by your weights, not by Decision Lab">Top for your weights: {optionLetter(optIdx)} · {plan.options[optIdx].label}</span> : null}
               </div>
               <p className="mt-3 text-[14px] leading-5 text-crux-text-secondary">{syn.summary}</p>
+              {syn.cruxes.length > 1 ? <div className="mt-3"><List items={syn.cruxes.slice(1)} /></div> : null}
             </Sec>
-            {syn.conditions.length ? <Sec title="Conditions"><List items={syn.conditions} /></Sec> : null}
+            {syn.conditions.length ? (
+              <Sec title="Depends on what you value">
+                <ul className="flex flex-col gap-2">
+                  {syn.conditions.map((c, i) => (
+                    <li key={i} className="rounded-[8px] border border-crux-border bg-crux-hover px-3 py-2 text-[13px] leading-[19px] text-crux-text">
+                      {/^if\b/i.test(c.trim()) ? c : <>If {c.charAt(0).toLowerCase() + c.slice(1)}</>}
+                    </li>
+                  ))}
+                </ul>
+              </Sec>
+            ) : null}
             {syn.reasons.length ? (
-              <Sec title="Why">
+              <Sec title="Key facts">
                 <ol className="flex flex-col gap-2.5">
                   {syn.reasons.map((r, i) => (
                     <li key={i} className="text-[13px] leading-[19px]">
@@ -241,8 +252,7 @@ export function RecommendationView({ onClose, actions }: { onClose: () => void; 
                 </ol>
               </Sec>
             ) : null}
-            {syn.cruxes.length ? <Sec title="What it hinges on"><List items={syn.cruxes} /></Sec> : null}
-            {syn.nextSteps.length ? <Sec title="Next steps"><List items={syn.nextSteps} /></Sec> : null}
+            {syn.nextSteps.length ? <Sec title="Ways to firm up the evidence"><List items={syn.nextSteps} /></Sec> : null}
             {syn.uncertainties.length ? <Sec title="Uncertainties"><List items={syn.uncertainties} /></Sec> : null}
             <Sec>
               <p className="text-[12px] text-crux-text-tertiary">

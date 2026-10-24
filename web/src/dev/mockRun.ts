@@ -8,9 +8,9 @@ export const MOCK_RUN_ID = 'mock-run'
 const BASE_TS = 1_761_300_000_000
 
 const M = {
-  orchestrator: 'deepseek-ai/DeepSeek-V4.1-Flash',
-  agent: 'Qwen/Qwen3.5-35B-A3B',
-  summary: 'nvidia/Nemotron-Nano-9B-v3',
+  orchestrator: 'deepseek-ai/DeepSeek-V4.1-Flash-1017',
+  agent: 'deepseek-ai/DeepSeek-V4.1-Flash-1017',
+  summary: 'nvidia/Nemotron-3_5-Lightning',
   audit: 'MiniMaxAI/MiniMax-M3.1-Flash',
 }
 
@@ -236,10 +236,10 @@ playAgent({
   proposals: [
     prop('a3', 'o1', 'c4', 4, 'Most rest, but a full day of revision is itself tiring.', ['F6']),
     prop('a3', 'o2', 'c4', 2, 'A 9-hour intense day risks a late, poor night.', ['F6', 'F7']),
-    prop('a3', 'o3', 'c4', 4, 'Leaving at 15:00 protects the evening and sleep.', ['F7', 'F8']),
+    prop('a3', 'o3', 'c4', 4, 'Leaving at 15:00 leaves the evening free for sleep.', ['F7', 'F8']),
     prop('a3', 'o2', 'c1', 3, 'Fatigue mostly recovers, but sleep loss hurts consolidation.', ['F6', 'F7']),
   ],
-  answer: 'Protect tomorrow night’s sleep; a long day only hurts if it costs you sleep.',
+  answer: 'A long day only hurts recall if it costs you sleep tomorrow night.',
   gaps: ['Evidence is from lab tasks, not real exams.'],
   usage: usage(M.agent, 39400, 15800, 3900, 2600, 0.0071),
 })
@@ -279,7 +279,7 @@ at(53, {
 })
 at(54, { type: 'run.phase', phase: 'synthesizing' })
 at(54.2, { type: 'synthesis.started', version: 1 })
-const synthThoughts = ['Weighing exam performance against CV value', 'The partial day keeps most upside and protects sleep', 'Writing the conditions and next steps']
+const synthThoughts = ['Weighing exam performance against CV value', 'Sleep is the factor that swings the exam side', 'Writing the if-you-value lines and questions to ask yourself']
 synthThoughts.forEach((text, i) => {
   at(55 + i * 3, { type: 'reasoning.chunk', actorId: 'orchestrator', text: `${text}. ` })
   at(55.3 + i * 3, { type: 'reasoning.summary', actorId: 'orchestrator', text })
@@ -288,23 +288,91 @@ at(65, {
   type: 'synthesis.ready', usage: usage(M.orchestrator, 10600, 6900, 1700, 1100, 0.0039),
   synthesis: {
     version: 1,
-    recommendation: 'Go to the hackathon, but leave by 15:00 and sleep early',
-    optionId: 'o3', confidence: 'medium',
-    summary: 'Your existing spaced prep matters more than one extra revision day, and the morning holds most of the hackathon’s value. The real risk is sleep, so a partial day protects the exam while keeping most of the CV and learning upside.',
-    conditions: ['If your team needs you until the end, then skip it and revise instead.', 'If you’re well below 70% on past papers tonight, then skip it.'],
+    recommendation: 'It hinges on whether the hackathon costs you sleep before the exam',
+    optionId: null, confidence: 'medium',
+    summary: 'Your existing spaced prep matters more than one extra revision day, and the morning holds most of the hackathon’s value. The biggest swing factor is sleep: a long day only hurts the exam if it costs you a good night.',
+    conditions: [
+      'If you value the exam result most, skipping fits best — sleep explains nearly a quarter of the variance in grades.',
+      'If you value the CV and recruiters most, the full day fits best — hiring managers rate hackathon experience above GPA for many entry-level roles.',
+      'If you want a balance, leaving at 15:00 fits best — team formation, workshops and mentoring mostly happen in the first half.',
+    ],
     reasons: [
       { text: 'An extra cramming day adds little for a test two days out.', findingIds: ['F1', 'F2'] },
-      { text: 'Sleep before the exam matters a lot; leaving early protects it.', findingIds: ['F3', 'F6'] },
+      { text: 'Sleep before the exam matters a lot; one poor night can cut new-memory formation by up to 40%.', findingIds: ['F3', 'F6'] },
       { text: 'Most mentoring and networking happens before mid-afternoon.', findingIds: ['F9', 'F10'] },
     ],
     cruxes: ['Whether the hackathon costs you sleep tomorrow night', 'Whether your team is fine with you leaving early'],
-    nextSteps: ['Tell your team tonight you’re leaving at 15:00', 'Do one timed past paper this evening', 'Plan revision 16:00–20:00 and lights out by 23:00'],
+    nextSteps: ['Would your team be fine with you leaving early?', 'How did a timed past paper go when you last tried one?', 'Can you realistically be asleep by 23:00 after a hackathon day?'],
     uncertainties: ['Sleep evidence comes from lab tasks, not real exams', 'One CV statistic could not be verified'],
     basedOnWeights: { c1: 9, c2: 6, c3: 5, c4: 7, c5: 3 },
     basedOnFactIds: ['f1', 'f2', 'f3', 'f4', 'f5'],
     createdAt: BASE_TS + 65_000,
   },
 })
+
+// ---------- conversation + shared memory (user.md) ----------
+
+const userMd = (about: string[], matters: string[], constraints: string[], unknown: string[]) => [
+  '# user.md',
+  '',
+  '## The decision',
+  '- Go to a 10:00–19:00 hackathon tomorrow, or revise for an ML exam the day after?',
+  '',
+  '## About you',
+  ...about.map((x) => `- ${x}`),
+  '',
+  '## What matters to you',
+  ...matters.map((x) => `- ${x}`),
+  '',
+  '## Constraints',
+  ...constraints.map((x) => `- ${x}`),
+  '',
+  '## Still unknown',
+  ...unknown.map((x) => `- ${x}`),
+].join('\n')
+
+const ABOUT0 = ['Student, about 70% prepared for the exam']
+const MATTERS0 = ['CV and learning from the hackathon', 'Not tanking the exam']
+const CONSTRAINTS0 = ['Hackathon tomorrow 10:00–19:00', 'Exam the day after, worth 40% of the module']
+const UNKNOWN0 = ['How big the hackathon is', 'How past exams have gone', 'Whether this is a resit', 'Whether the team would mind you leaving early']
+
+let chatN = 0
+const say = (t: number, role: 'user' | 'assistant', text: string, suggestions: string[] = [], recommendedIndex: number | null = null) =>
+  at(t, { type: 'chat.message', id: `m${++chatN}`, role, text, suggestions, recommendedIndex })
+const remember = (t: number, markdown: string, changes: string[], by: string) =>
+  at(t, { type: 'memory.updated', markdown, changes, by })
+
+say(0.05, 'user', MOCK_DECISION)
+remember(0.1, userMd(ABOUT0, MATTERS0, CONSTRAINTS0, UNKNOWN0), ['Started user.md from your first message'], 'orchestrator')
+
+say(2, 'assistant', "I've started looking into revision, sleep and how much hackathons help a CV. While that runs — how big is this hackathon for you?",
+  ['Just for fun', 'Decent prizes', 'Big: sponsors and recruiters'], null)
+
+say(10, 'user', 'Big: sponsors and recruiters')
+const MATTERS1 = [...MATTERS0, 'Big hackathon with recruiters: the career upside is real']
+remember(10.2, userMd(ABOUT0, MATTERS1, CONSTRAINTS0, UNKNOWN0.slice(1)), ['Big hackathon with recruiters'], 'orchestrator')
+say(11, 'assistant', 'That raises the career side. How did your last ML-style exam go?',
+  ['Comfortable pass', 'Scraped through', 'Failed it', 'First one'], 1)
+
+say(20, 'user', 'Scraped through')
+const ABOUT2 = [...ABOUT0, 'Scraped through the last ML-style exam']
+remember(20.2, userMd(ABOUT2, MATTERS1, CONSTRAINTS0, UNKNOWN0.slice(2)), ['Scraped through the last ML-style exam: exam risk is higher'], 'orchestrator')
+say(21, 'assistant', 'Noted. That makes the exam side heavier. Is this a resit?',
+  ['First attempt', "It's a resit", 'Resit possible if I fail'], null)
+
+say(66, 'assistant', [
+  'The research is in. Here is what your decision hinges on:',
+  '',
+  '- **Sleep tomorrow night.** One poor night can cut new-memory formation by up to 40%, and sleep explains nearly a quarter of the variance in grades. A long day only hurts if it costs you sleep.',
+  '- **The extra revision day is worth less than it feels.** For a test two days out, an extra cramming day gave only a small advantage over the spaced study you have already done.',
+  '- **The career side is real.** Hiring managers rank hackathon experience above GPA for many entry-level tech roles, and most mentoring and team formation happens in the first half of the day.',
+  '',
+  'If you value the exam result most → a full revision day and an early night protects it best.',
+  'If you value the CV and recruiters most → the full day gives the strongest story, as long as you still sleep.',
+  'If you want a balance → the morning holds most of the hackathon’s value, and leaving mid-afternoon protects the evening.',
+  '',
+  'One thing only you can answer: would your team be fine with you leaving early?',
+].join('\n'), ['Yes, they would be fine', 'They would rely on me', "I don't have a team yet"], null)
 
 // stats.updated every 2 s
 const END = 66
@@ -322,9 +390,9 @@ for (let t = 2; t <= END; t += 2) {
     llmCalls: Math.round(2 + 18 * f), tavilySearches: searchesSoFar, tavilyCredits: searchesSoFar,
     inputTokens: Math.round(55_000 * f), outputTokens: Math.round(14_000 * f), reasoningTokens: Math.round(7_300 * f),
     costUsd: Math.round(cost * 10_000) / 10_000,
+    // Planner, synthesizer and research agents all run on the same DeepSeek model, so they share one entry.
     byModel: {
-      [M.orchestrator]: { calls: t >= 65 ? 2 : 1, inputTokens: Math.round(8_700 * f), outputTokens: Math.round(3_800 * f), reasoningTokens: Math.round(2_600 * f), costUsd: Math.round(0.008 * f * 10_000) / 10_000 },
-      [M.agent]: { calls: Math.round(16 * f), inputTokens: Math.round(43_500 * f), outputTokens: Math.round(10_100 * f), reasoningTokens: Math.round(4_700 * f), costUsd: Math.round(0.0172 * f * 10_000) / 10_000 },
+      [M.agent]: { calls: (t >= 65 ? 2 : 1) + Math.round(16 * f), inputTokens: Math.round(52_200 * f), outputTokens: Math.round(13_900 * f), reasoningTokens: Math.round(7_300 * f), costUsd: Math.round(0.0252 * f * 10_000) / 10_000 },
     },
     findings: findingsSoFar.length,
     quoteVerified: findingsSoFar.filter((x) => x.checks.quote === 'verified').length,
