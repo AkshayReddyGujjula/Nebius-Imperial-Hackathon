@@ -6,7 +6,7 @@
 .cx-canvas .react-flow__node.selected,
 .cx-canvas .react-flow__node:focus,
 .cx-canvas .react-flow__node:focus-visible { outline: none; box-shadow: none; }
-.cx-canvas .react-flow__attribution { display: none; }
+.cx-canvas .react-flow__attribution { background: transparent; font-size: 10px; opacity: .6; }
 
 .cx-handle { opacity: 0; pointer-events: none; width: 1px !important; height: 1px !important; min-width: 0 !important; min-height: 0 !important; border: 0 !important; background: transparent !important; }
 
@@ -53,6 +53,7 @@
 
 /* Citation chip */
 .cx-cite { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 7px; max-width: 100%; min-width: 0; border-radius: var(--crux-radius-chip); border: 1px solid var(--crux-border); background: var(--crux-surface); font-family: var(--font-mono); font-size: 11px; color: var(--crux-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cx-cite-d { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .cx-cite svg { width: 12px; height: 12px; flex: none; }
 .cx-cite em { font-style: normal; font-family: var(--font-sans); color: var(--crux-text-tertiary); margin-left: 2px; }
 .cx-cite-ok svg { color: var(--crux-ok); }
@@ -137,5 +138,9 @@
 .cx-stale .cx-btn { height: 18px; padding: 0 6px; font-size: 11px; box-shadow: none; border-color: var(--crux-warn-border); }
 
 /* Contradiction label */
-.cx-contra { position: absolute; display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 8px; border-radius: 999px; background: var(--crux-bad-soft); border: 1px solid var(--crux-bad-border); color: var(--crux-bad); font-size: 11px; font-weight: 500; white-space: nowrap; box-shadow: var(--crux-shadow-sm); cursor: pointer; pointer-events: all; }
+.cx-contra { position: absolute; display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border-radius: 999px; background: var(--crux-bad-soft); border: 1px solid var(--crux-bad-border); color: var(--crux-bad); font-size: 11px; font-weight: 500; white-space: nowrap; box-shadow: var(--crux-shadow-sm); cursor: pointer; pointer-events: all; }
 .cx-contra svg { width: 12px; height: 12px; }
+.cx-contra:hover { background: var(--crux-surface); }
+
+.cx-legend .cx-dot { animation: none; }
+.cx-btn-icon { width: 28px; padding: 0; justify-content: center; }

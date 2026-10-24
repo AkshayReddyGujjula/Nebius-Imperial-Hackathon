@@ -15,6 +15,7 @@ import { FindingNode } from './nodes/FindingNode'
 import { BlindSpotNode } from './nodes/BlindSpotNode'
 import { RecommendationNode } from './nodes/RecommendationNode'
 import { ContradictionEdge } from './edges/ContradictionEdge'
+import { BusEdge } from './edges/BusEdge'
 import './canvas.css'
 
 const nodeTypes: NodeTypes = {
@@ -24,7 +25,9 @@ const nodeTypes: NodeTypes = {
   blindspot: BlindSpotNode,
   recommendation: RecommendationNode,
 }
-const edgeTypes: EdgeTypes = { contradiction: ContradictionEdge }
+// DECISION: column → recommendation edges use a custom smoothstep ("bus") that turns just above the
+// recommendation; the stock smoothstep turns at the midpoint and runs behind finding cards.
+const edgeTypes: EdgeTypes = { contradiction: ContradictionEdge, bus: BusEdge }
 const defaultEdgeOptions = { style: { strokeWidth: 1.25 } }
 const FIT = { padding: 0.12, duration: 400, maxZoom: 1 } as const
 
@@ -98,7 +101,6 @@ function CanvasInner() {
         onMoveStart={onMoveStart}
         onNodeClick={onNodeClick}
         onPaneClick={onPaneClick}
-        proOptions={{ hideAttribution: true }}
       >
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#DCDCE0" />
       </ReactFlow>

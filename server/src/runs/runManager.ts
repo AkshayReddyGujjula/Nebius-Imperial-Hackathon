@@ -162,16 +162,36 @@ export class Run implements RunContext {
     });
   }
 
+  /** Closes the JSONL stream; called only on eviction (never on `done`, since follow-ups keep emitting). */
+  close(): void {
+    this.stream?.end();
+    this.stream = null;
+  }
+
   toJsonl(): string {
     return this.log.map((e) => JSON.stringify(e)).join("\n") + (this.log.length ? "\n" : "");
   }
 }
 
 const runs = new Map<string, Run>();
+const MAX_RUNS = 30;
+const ACTIVE_PHASES = new Set<string>(["planning", "researching", "checking", "synthesizing"]);
+
+/** DECISION: the stream stays open after `done` (follow-ups still append); it is closed only when the run is evicted. */
+function addRun(run: Run): void {
+  runs.set(run.id, run);
+  while (runs.size > MAX_RUNS) {
+    // Map iterates in insertion order, so the first idle run found is the oldest.
+    const victim = [...runs.values()].find((r) => r !== run && !r.synthesizing && !ACTIVE_PHASES.has(r.state.phase));
+    if (!victim) break;
+    victim.close();
+    runs.delete(victim.id);
+  }
+}
 
 export function createRun(decision: string, inputMode: "text" | "voice"): Run {
   const run = new Run(`r_${nanoid(8)}`, decision, inputMode, { replay: false, persist: true });
-  runs.set(run.id, run);
+  addRun(run);
   return run;
 }
 
@@ -248,7 +268,7 @@ export async function startReplay(file: string, speed = 1): Promise<Run> {
   const originalRunId = events[0].runId;
 
   const run = new Run(`rp_${nanoid(6)}`, decision, inputMode, { replay: true, persist: false });
-  runs.set(run.id, run);
+  addRun(run);
 
   const sp = Number.isFinite(speed) && speed > 0 ? speed : 1;
   const strip = (e: CruxEvent): CruxEventBody => {

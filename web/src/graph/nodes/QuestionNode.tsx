@@ -26,10 +26,9 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
   const tone = dotTone(status)
   const failed = tone === 'failed'
   const deeper = question.origin === 'dig_deeper'
-  const cls = `${question.stale ? 'is-stale' : ''}`
-
+  
   return (
-    <NodeShell id={id} className={cls} label={question.text}>
+    <NodeShell id={id} dim={question.stale} label={question.text}>
       <div className="cx-k">
         {detailed && <span className="cx-mono">{deeper ? `${label} · deeper` : label}</span>}
         {!detailed && deeper && <span>Deeper</span>}

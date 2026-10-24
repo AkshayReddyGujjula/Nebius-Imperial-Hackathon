@@ -64,15 +64,15 @@ export function CitationChip({ finding, source }: { finding: Finding; source: So
   const domain = source?.domain ?? finding.sourceId
   const { sourceRetrieved, quote } = finding.checks
   if (!sourceRetrieved) {
-    return <span className="cx-cite cx-cite-bad" title="Source not retrieved"><CircleX />{domain}</span>
+    return <span className="cx-cite cx-cite-bad" title="Source not retrieved"><CircleX /><span className="cx-cite-d">{domain}</span><em>not retrieved</em></span>
   }
   if (!source) return <span className="cx-cite cx-cite-pend"><Loader className="cx-spin" />verifying…</span>
-  if (quote === 'verified') return <span className="cx-cite cx-cite-ok" title="Quote checked"><BadgeCheck />{domain}</span>
+  if (quote === 'verified') return <span className="cx-cite cx-cite-ok" title="Quote checked"><BadgeCheck /><span className="cx-cite-d">{domain}</span></span>
   if (quote === 'partial') {
-    return <span className="cx-cite cx-cite-ok" title="Quote is a close match"><BadgeCheck />{domain}<em>close match</em></span>
+    return <span className="cx-cite cx-cite-ok" title="Quote is a close match"><BadgeCheck /><span className="cx-cite-d">{domain}</span><em>close match</em></span>
   }
   if (quote === 'not_found') {
-    return <span className="cx-cite cx-cite-warn" title="Quote not found in source"><TriangleAlert />{domain}</span>
+    return <span className="cx-cite cx-cite-warn" title="Quote not found in source"><TriangleAlert /><span className="cx-cite-d">{domain}</span></span>
   }
-  return <span className="cx-cite" title="No quote given"><Quote className="cx-muted-icon" />{domain}<em>no quote</em></span>
+  return <span className="cx-cite" title="No quote given"><Quote className="cx-muted-icon" /><span className="cx-cite-d">{domain}</span><em>no quote</em></span>
 }

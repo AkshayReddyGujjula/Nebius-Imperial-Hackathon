@@ -8,15 +8,17 @@ interface Props {
   className?: string
   children: ReactNode
   label?: string
+  /** Stale/superseded: rendered at 50% opacity (motion owns the inline opacity, so it goes here). */
+  dim?: boolean
 }
 
 /** Common node frame: entry motion, selection ring, hidden handles. */
-export function NodeShell({ id, className = '', children, label }: Props) {
+export function NodeShell({ id, className = '', children, label, dim = false }: Props) {
   const selected = useCrux((s) => s.selectedNodeId === id)
   return (
     <motion.div
       initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0 }}
+      animate={{ opacity: dim ? 0.5 : 1, y: 0 }}
       transition={{ duration: 0.2, ease: [0.2, 0, 0, 1] }}
       className={`cx-node ${className}${selected ? ' is-selected' : ''}`}
       aria-label={label}

@@ -14,9 +14,9 @@ function FindingNodeImpl({ id, data }: NodeProps<CruxNode>) {
   if (!finding) return null
 
   const unsupported = !finding.checks.supported
-  const cls = `${unsupported ? 'is-warn' : ''}${finding.stale ? ' is-stale' : ''}`
+  const cls = unsupported ? 'is-warn' : ''
   return (
-    <NodeShell id={id} className={cls} label={finding.claim}>
+    <NodeShell id={id} className={cls} dim={finding.stale} label={finding.claim}>
       <div className="cx-body cx-body-strong cx-clamp-3">{finding.claim}</div>
       <div className="cx-foot">
         <CitationChip finding={finding} source={source} />

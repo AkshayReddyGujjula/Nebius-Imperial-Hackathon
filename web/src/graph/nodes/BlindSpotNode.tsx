@@ -1,8 +1,8 @@
 import { memo, useState } from 'react'
 import type { NodeProps } from '@xyflow/react'
-import { Check, EyeOff } from 'lucide-react'
+import { Check, EyeOff, X } from 'lucide-react'
 import { useCrux } from '../../store/runStore'
-import { dismissBlindSpot } from '../../lib/api'
+import { dismissBlindSpot, researchBlindSpot } from '../../lib/api'
 import type { CruxNode } from '../buildGraph'
 import { stop } from '../helpers'
 import { StatusDot } from '../parts'
@@ -12,8 +12,16 @@ function BlindSpotNodeImpl({ id }: NodeProps<CruxNode>) {
   const bs = useCrux((s) => s.plan?.blindSpot ?? null)
   const runId = useCrux((s) => s.runId)
   const mock = useCrux((s) => s.mock)
+  const select = useCrux((s) => s.select)
   const [busy, setBusy] = useState(false)
   if (!bs) return null
+  const live = !mock && !!runId
+
+  const research = async () => {
+    if (!live) return
+    setBusy(true)
+    try { await researchBlindSpot(runId) } catch (err) { console.warn('Research failed', err) } finally { setBusy(false) }
+  }
 
   const dismiss = async () => {
     // DECISION: the mock run has no server, so Dismiss updates the store directly there.
@@ -49,7 +57,19 @@ function BlindSpotNodeImpl({ id }: NodeProps<CruxNode>) {
           </span>
         ) : bs.status === 'open' ? (
           <div className="cx-row nodrag nopan" onPointerDown={stop} onClick={stop}>
-            <button type="button" className="cx-btn" disabled={busy} onClick={dismiss}>Dismiss</button>
+            {bs.researchable && (
+              <button type="button" className="cx-btn" disabled={busy || !live} onClick={research} title={live ? undefined : 'Not available in mock data'}>
+                Research it
+              </button>
+            )}
+            {/* Answer it opens the inspector, which owns the answer box (Lane W2). */}
+            <button type="button" className="cx-btn" disabled={busy} onClick={() => select(id)}>Answer it</button>
+            {bs.researchable ? (
+              // DECISION: three worded buttons don't fit 232 px, so Dismiss becomes an icon button here.
+              <button type="button" className="cx-btn cx-btn-ghost cx-btn-icon" disabled={busy} onClick={dismiss} aria-label="Dismiss" title="Dismiss"><X /></button>
+            ) : (
+              <button type="button" className="cx-btn cx-btn-ghost" disabled={busy} onClick={dismiss}>Dismiss</button>
+            )}
           </div>
         ) : null}
       </div>

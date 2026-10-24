@@ -79,7 +79,7 @@ app.get("/api/runs/:id/events", (c) => {
   return streamSSE(c, async (stream) => {
     let aborted = false;
     stream.onAbort(() => { aborted = true; });
-    let cursor = Math.max(0, after);
+    let cursor = Math.min(run.log.length, Math.max(0, after));
     while (!aborted) {
       while (cursor < run.log.length && !aborted) {
         const e = run.log[cursor];                       // log[i].seq === i + 1

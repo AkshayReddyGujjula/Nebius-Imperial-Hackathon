@@ -60,7 +60,7 @@ export function buildEdges(input: EdgeInput): Edge[] {
   }
 
   const edges: Edge[] = []
-  const tree = (source: string, target: string, type: 'smoothstep' | 'straight', dashed: boolean): Edge => ({
+  const tree = (source: string, target: string, type: 'smoothstep' | 'straight' | 'bus', dashed: boolean): Edge => ({
     id: `e:${source}>${target}`,
     source, target, type,
     sourceHandle: 'b', targetHandle: 't',
@@ -73,7 +73,7 @@ export function buildEdges(input: EdgeInput): Edge[] {
     if (col.length === 0) continue
     edges.push(tree(nodeId.decision, col[0], 'smoothstep', headQueued(col[0])))
     for (let i = 1; i < col.length; i++) edges.push(tree(col[i - 1], col[i], 'straight', false))
-    edges.push(tree(col[col.length - 1], nodeId.recommendation, 'smoothstep', !synthesisReady))
+    edges.push(tree(col[col.length - 1], nodeId.recommendation, 'bus', !synthesisReady))
   }
 
   if (detailed) {
