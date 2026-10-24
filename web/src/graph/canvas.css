@@ -158,3 +158,13 @@
 .cx-cond { display: flex; flex-direction: column; gap: 2px; margin-top: 6px; }
 .cx-cond > div { font-size: 12px; line-height: 17px; color: var(--crux-text-secondary, var(--crux-text)); }
 .cx-cond b { font-weight: 500; color: var(--crux-text-tertiary); }
+
+/* Question card header: [badge] Agent N [effort] on the left, status never clips on the right. */
+.cx-agent-name { flex: 0 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; text-transform: none; letter-spacing: 0; font-size: 12px; font-weight: 500; color: var(--crux-text-secondary, var(--crux-text-tertiary)); }
+.cx-effpill { flex: none; display: inline-flex; align-items: center; height: 16px; padding: 0 6px; border: 1px solid var(--crux-border); border-radius: var(--crux-radius-chip); font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: 0; text-transform: none; color: var(--crux-text-tertiary); }
+.cx-k > .cx-right { flex: none; }
+.cx-k .cx-st { white-space: nowrap; flex: none; }
+.cx-k > .cx-tag { flex: none; }
+.cx-foot-col { flex-direction: column; align-items: flex-start; gap: 2px; }
+.cx-foot-col > * { max-width: 100%; }
+.cx-model { font-size: 11px; line-height: 14px; color: var(--crux-text-tertiary); letter-spacing: 0; }

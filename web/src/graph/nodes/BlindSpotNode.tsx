@@ -44,12 +44,12 @@ function BlindSpotNodeImpl({ id }: NodeProps<CruxNode>) {
       <div className="cx-k">
         <EyeOff />
         Blind spot
-        <span className="cx-byline cx-ellipsis">· Spotted by the planner</span>
         <span className="cx-right">
           {bs.status === 'researching' && <StatusDot tone="active" label="Researching" />}
           {bs.status === 'answered' && <StatusDot tone="done" label="Answered" />}
         </span>
       </div>
+      <div className="cx-byline cx-ellipsis" style={{ marginTop: -2, marginBottom: 4 }}>Spotted by the planner</div>
       <div className="cx-title cx-clamp-3">
         <span className="cx-muted">You may be overlooking: </span>
         {bs.text}

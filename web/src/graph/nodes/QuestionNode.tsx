@@ -29,15 +29,20 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
   const deeper = question.origin === 'dig_deeper'
   const agentId = agent?.id ?? null
   
+  const modelLine = agentId ? (
+    <span className="cx-model cx-ellipsis" title={agentLine(agentId, agent?.model, question.effort, false)}>
+      {modelName(agent?.model || 'deepseek')}
+    </span>
+  ) : null
+
   return (
     <NodeShell id={id} dim={question.stale} label={question.text} accent={agentId ? agentColor(agentId) : undefined}>
       <div className="cx-k">
         {agentId && <AgentBadge agentId={agentId} />}
-        <span className="cx-agent-line cx-ellipsis" title={agentLine(agentId, agent?.model, question.effort, false)}>
-          {agentLine(agentId, agent?.model, question.effort, true)}
-        </span>
-        {detailed && <span className="cx-mono">{deeper ? `${label} · deeper` : label}</span>}
-        {!detailed && deeper && <span>Deeper</span>}
+        <span className="cx-agent-name">{agentId ? `Agent ${agentNumber(agentId)}` : 'Waiting for an agent'}</span>
+        {agentId && !detailed && <span className="cx-effpill" title={`${EFFORT_WORD[question.effort]} effort`}>{EFFORT_WORD[question.effort]}</span>}
+        {detailed && <span className="cx-mono cx-ellipsis">{deeper ? `${label} · deeper` : label}</span>}
+        {!detailed && deeper && <span className="cx-ellipsis">Deeper</span>}
         {question.stale && <span className="cx-tag">Superseded</span>}
         <span className="cx-right">
           <StatusDot tone={tone} label={statusWord(status, agent?.sourcesRead)} />
@@ -53,7 +58,8 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
               {question.effortReason}
             </span>
           </div>
-          <div className="cx-foot">
+          <div className="cx-foot cx-foot-col">
+            {modelLine}
             <span className="cx-meta-mono">
               {agent?.usage
                 ? `${fmtTokens(agent.usage.outputTokens)} tok · ${fmtMs(agent.usage.ms)}`
@@ -68,12 +74,15 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
       ) : (
         <>
           <div
-            className={`cx-body cx-clamp-3${status === 'done' ? ' cx-body-strong' : ''}`}
+            className={`cx-body cx-clamp-2${status === 'done' ? ' cx-body-strong' : ''}`}
             style={{ marginTop: 6, color: failed ? 'var(--crux-bad)' : undefined }}
           >
             {simpleLine(status, agent?.sourcesRead ?? 0, summary, agent?.answer, agent?.error ?? agent?.note ?? null)}
           </div>
-          <div className="cx-foot">{status === 'done' || status === 'timeout' ? <TrustLine questionId={qid} /> : null}</div>
+          <div className="cx-foot cx-foot-col">
+            {modelLine}
+            {status === 'done' || status === 'timeout' ? <TrustLine questionId={qid} /> : null}
+          </div>
         </>
       )}
     </NodeShell>
@@ -82,11 +91,10 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
 
 const EFFORT_WORD = { low: 'Low', high: 'High', max: 'Max' } as const
 
-/** "Agent 1 · DeepSeek V4.1 Flash · High effort" (short: "Agent 1 · DeepSeek · High"). */
-function agentLine(agentId: string | null, model: string | undefined, effort: keyof typeof EFFORT_WORD, short: boolean): string {
-  if (!agentId) return short ? 'Waiting for an agent' : 'Waiting for an agent'
-  const name = modelName(model || 'deepseek', short)
-  return `Agent ${agentNumber(agentId)} · ${name} · ${EFFORT_WORD[effort]}${short ? '' : ' effort'}`
+/** Tooltip: "Agent 1 · DeepSeek V4.1 Flash · High effort". */
+function agentLine(agentId: string | null, model: string | undefined, effort: keyof typeof EFFORT_WORD, _full: boolean): string {
+  if (!agentId) return 'Waiting for an agent'
+  return `Agent ${agentNumber(agentId)} · ${modelName(model || 'deepseek')} · ${EFFORT_WORD[effort]} effort`
 }
 
 function simpleLine(
