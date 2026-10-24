@@ -99,6 +99,20 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
     try { await synthesize(runId, { weights }) } catch (err) { setError(err instanceof Error ? err.message : 'Update failed') } finally { setUpdating(false) }
   }
 
+  // Simple mode: the answer lives in the bottom "Your summary" panel; this node only points at it.
+  if (!detailed) {
+    return (
+      <NodeShell id={id} className="cx-node-root" label="Your summary">
+        <div className="cx-live cx-body cx-body-strong" style={{ fontSize: 16, padding: '4px 0' }}>
+          {ready ? <span style={{ color: 'var(--crux-accent-text)' }}>✓ Summary ready ↓</span>
+            : status === 'running' ? <><span className="cx-dot" />Writing your summary…</>
+            : status === 'failed' ? <span>Summary didn't load ↓</span>
+            : <span className="cx-muted">Your summary will show below ↓</span>}
+        </div>
+      </NodeShell>
+    )
+  }
+
   return (
     <NodeShell id={id} className="cx-node-root" label="Decision brief">
       <div className="cx-k">
