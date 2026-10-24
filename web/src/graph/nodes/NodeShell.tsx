@@ -14,18 +14,22 @@ interface Props {
   accent?: string
   /** Springier entrance (findings landing). */
   pop?: boolean
+  /** "Look here": highlight ring on the node that matters most right now (Simple mode). */
+  focus?: boolean
+  /** Finished while something else is active: fade slightly (Simple mode). */
+  faded?: boolean
 }
 
 /** Common node frame: entry motion, selection ring, hidden handles. */
-export function NodeShell({ id, className = '', children, label, dim = false, accent, pop = false }: Props) {
+export function NodeShell({ id, className = '', children, label, dim = false, accent, pop = false, focus = false, faded = false }: Props) {
   const selected = useCrux((s) => s.selectedNodeId === id)
   const reduce = useReducedMotion()
   return (
     <motion.div
       initial={reduce ? { opacity: 0 } : pop ? { opacity: 0, y: -10, scale: 0.92 } : { opacity: 0, y: 4 }}
-      animate={{ opacity: dim ? 0.5 : 1, y: 0, scale: 1 }}
+      animate={{ opacity: dim ? 0.5 : faded ? 0.55 : 1, y: 0, scale: 1 }}
       transition={pop && !reduce ? { type: 'spring', stiffness: 420, damping: 26 } : { duration: 0.2, ease: [0.2, 0, 0, 1] }}
-      className={`cx-node ${className}${selected ? ' is-selected' : ''}`}
+      className={`cx-node ${className}${selected ? ' is-selected' : ''}${focus ? ' is-focus' : ''}`}
       aria-label={label}
       aria-selected={selected}
     >

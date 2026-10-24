@@ -215,3 +215,17 @@
 .cx-node-auditor.is-attention .cx-stage { justify-content: flex-start; padding: 0; }
 .cx-aud-list { display: flex; flex-direction: column; gap: 3px; margin-top: 6px; font-size: 13.5px; line-height: 18px; color: var(--crux-text); }
 @media (prefers-reduced-motion: reduce) { .cx-spin, .cx-node.cx-node-pill.is-working { animation: none; } }
+
+/* Simple mode agent cards + "look here" focus. */
+.cx-node-simple { padding: 12px 14px; gap: 0; }
+.cx-node-simple .cx-k { height: 20px; margin-bottom: 8px; }
+.cx-node-simple .cx-agent-name { font-size: 13px; font-weight: 600; color: var(--crux-text); }
+.cx-title-simple { font-size: 16px; line-height: 22px; font-weight: 600; }
+.cx-simple-line { display: flex; align-items: center; gap: 7px; margin-top: auto; min-width: 0; font-size: 13.5px; line-height: 18px; color: var(--crux-text-secondary); }
+.cx-simple-line.is-live { color: var(--crux-accent-text, var(--crux-accent)); font-weight: 500; }
+.cx-simple-line.is-bad { color: var(--crux-bad); }
+.cx-simple-line .cx-dot { flex: none; }
+.cx-node.is-focus:not(.is-selected) { border-color: var(--crux-accent); box-shadow: 0 0 0 3px var(--crux-accent-soft), var(--crux-shadow); }
+@media (prefers-reduced-motion: no-preference) {
+  .cx-node.is-focus:not(.is-selected) { animation: cx-stage-glow 1.6s ease-in-out infinite; }
+}

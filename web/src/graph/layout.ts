@@ -9,7 +9,7 @@ export const CHAT_ID = 'chatout'
 export const L = {
   colW: 232, colGap: 16, rowGap: 12,
   decisionH: 148, decisionMinW: 480, decisionMaxW: 760, topGap: 64,
-  questionH: { simple: 188, detailed: 156 },
+  questionH: { simple: 136, detailed: 156 },
   blindspotH: { simple: 188, detailed: 156 },
   findingH: 112,
   auditorH: 132,

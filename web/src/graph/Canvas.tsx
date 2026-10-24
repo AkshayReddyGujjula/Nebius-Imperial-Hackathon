@@ -145,15 +145,15 @@ function CanvasInner() {
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#DCDCE0" />
       </ReactFlow>
 
-      <div className="cx-overlay cx-overlay-tl cx-legend" aria-label="Status legend">
+      {viewMode === 'detailed' && <div className="cx-overlay cx-overlay-tl cx-legend" aria-label="Status legend">
         <StatusDot tone="queued" label="Queued" />
         <StatusDot tone="active" label="Searching" />
         <StatusDot tone="active" label="Reading" />
         <StatusDot tone="done" label="Done" />
         <StatusDot tone="failed" label="Failed" />
-      </div>
+      </div>}
       <div className="cx-overlay cx-overlay-tr">
-        <span className="cx-hint">Click any card for details</span>
+        {viewMode === 'detailed' && <span className="cx-hint">Click any card for details</span>}
         <button type="button" className="cx-icon-btn" onClick={fit} aria-label="Fit to view" title="Fit to view">
           <Maximize />
         </button>
