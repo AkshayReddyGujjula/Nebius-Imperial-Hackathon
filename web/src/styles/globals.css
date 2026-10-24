@@ -237,6 +237,8 @@
 .react-flow__attribution { background: transparent; color: var(--crux-text-quaternary); }
 .react-flow__attribution a { color: var(--crux-text-quaternary); }
 .react-flow__background { background-color: var(--crux-page); }
+/* Canvas.tsx passes a light dot colour; keep the grid on the dark palette. */
+.react-flow__background-pattern.dots { fill: var(--crux-grid) !important; }
 .react-flow__edge-path, .react-flow__connection-path { stroke: var(--crux-edge); }
 .react-flow__edge.selected .react-flow__edge-path { stroke: var(--dl-accent-text); }
 .react-flow__edge-textbg { fill: var(--crux-surface); }
