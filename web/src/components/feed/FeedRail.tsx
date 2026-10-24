@@ -7,6 +7,8 @@ import {
 import { useCrux } from '@/store/runStore'
 import { buildFeed, type FeedActor, type FeedItem } from './buildFeed'
 import { useFeedUi } from './feedUi'
+import { modelFamily } from '@/graph/helpers'
+import { ModelBadge } from '@/graph/nodes/ModelBadge'
 import { FeedStats } from './FeedStats'
 import './feed.css'
 
@@ -125,13 +127,13 @@ function FeedCard({ item, unseen, pinned }: { item: FeedItem; unseen: boolean; p
   }
   return (
     <button type="button" onClick={onClick}
-      className={`dl-feed-card tone-${item.tone} ${pinned ? 'is-pinned' : ''} ${item.priority === 0 ? 'is-quiet' : ''}`}
+      className={`dl-feed-card kind-${item.actor.kind} tone-${item.tone} ${pinned ? 'is-pinned' : ''} ${item.priority === 0 ? 'is-quiet' : ''}`}
       title={item.nodeId ? 'Show on the canvas' : undefined}>
       <Avatar actor={item.actor} />
       <div className="min-w-0 flex-1">
         <div className="dl-feed-meta">
           <span className="dl-feed-actor">{item.actor.label}</span>
-          {item.actor.model ? <span className="dl-feed-model">· {item.actor.model}</span> : null}
+          <ModelTag model={item.actor.model} />
           <span className="dl-feed-time ui-num">{new Date(item.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
         </div>
         <div className="dl-feed-card-title" title={item.title}>{simple ? words(item.title, 6) : item.title}</div>
@@ -146,6 +148,14 @@ function FeedCard({ item, unseen, pinned }: { item: FeedItem; unseen: boolean; p
       {unseen ? <span className="dl-feed-bang" aria-label="New">!</span> : null}
     </button>
   )
+}
+
+/** Which model produced the card: a coloured badge for the three LLMs, muted text for anything else. */
+function ModelTag({ model }: { model: string | null }) {
+  if (!model) return null
+  const family = modelFamily(model)
+  if (family) return <span className="dl-feed-mtag"><ModelBadge family={family} micro title={`Written by ${model}`} /></span>
+  return <span className="dl-feed-model">· {model}</span>
 }
 
 /** First n words, with an ellipsis if cut. */

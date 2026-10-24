@@ -79,7 +79,7 @@ export function buildFeed(log: CruxEvent[], s: Pick<RunData, 'agents' | 'plan' |
         const target = e.actorId === 'orchestrator' ? 'Planner' : e.actorId === 'auditor' ? 'Auditor' : actorFor(e.actorId).label
         const item: FeedItem = {
           id: `fd-nar-${e.actorId}`, ts: e.ts, chips: [], quote: null, mono: false,
-          actor: { kind: 'narrator', label: 'Narrator', model: modelName(models?.summary), index: null },
+          actor: { kind: 'narrator', label: 'Status', model: modelName(models?.summary) ?? 'Nemotron', index: null },
           title: `${target} is thinking`, body: e.text, tone: 'neutral', priority: 0,
           nodeId: /^a\d+/.test(e.actorId) ? qNode(e.actorId) : e.actorId === 'orchestrator' ? nodeId.decision : null,
         }

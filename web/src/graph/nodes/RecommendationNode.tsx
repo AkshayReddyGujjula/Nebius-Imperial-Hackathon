@@ -13,6 +13,7 @@ import { NodeShell } from './NodeShell'
 import { useMatrix } from '../../components/matrix/useMatrix'
 import { optionLetter } from '../../lib/format'
 import '../../components/matrix/brief.css'
+import { ModelBadge, NemotronTag } from './ModelBadge'
 
 const EVIDENCE = { high: 'Evidence: strong', medium: 'Evidence: medium', low: 'Evidence: thin' } as const
 const EVIDENCE_BARS = { high: 3, medium: 2, low: 1 } as const
@@ -105,7 +106,7 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
       <NodeShell id={id} className={`cx-node-root cx-brief-pill ${ready ? 'is-ready' : ''}`} label="Your summary">
         <div className="cx-live cx-body cx-body-strong" style={{ fontSize: 14, whiteSpace: 'nowrap' }}>
           {ready ? <span style={{ color: 'var(--crux-accent-text)' }}>✓ Summary ready ↓</span>
-            : status === 'running' ? <><span className="cx-dot" />Writing your summary…</>
+            : status === 'running' ? <><span className="cx-dot" />Writing your summary…<ModelBadge family="deepseek" /></>
             : status === 'failed' ? <span>Summary didn't load ↓</span>
             : <span className="cx-muted">Your summary will show below ↓</span>}
         </div>
@@ -118,6 +119,7 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
       <div className="cx-k">
         <Sparkles />
         Decision brief
+        <ModelBadge family="deepseek" title="Written by DeepSeek V4.1 Flash" />
         {!(ready && (failure || stale.stale)) && <span className="cx-byline cx-ellipsis">· Written by DeepSeek V4.1 Flash · max</span>}
         {ready && failure && (
           <span className="cx-right" style={{ minWidth: 0 }}>
@@ -233,7 +235,7 @@ function Pending({ text, live }: { text: string; live: string | null }) {
         {live !== null ? <span className="cx-dot" /> : null}
         <span className="cx-ellipsis">{text}</span>
       </div>
-      {live ? <div className="cx-body cx-muted cx-ellipsis">{live}</div> : null}
+      {live ? <div className="cx-live-row cx-body cx-muted"><span className="cx-ellipsis">{live}</span><NemotronTag /></div> : null}
       <div className="cx-row" style={{ gap: 8 }} aria-hidden>
         <span className="cx-skel" style={{ width: 280 }} />
         <span className="cx-skel" style={{ width: 180 }} />

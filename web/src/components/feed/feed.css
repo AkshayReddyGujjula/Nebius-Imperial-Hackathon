@@ -155,3 +155,31 @@
   font-size: 13px; font-weight: 600; color: var(--crux-text-secondary); text-align: center; background: transparent;
 }
 .dl-feed-toggle:hover { background: var(--crux-hover); color: var(--crux-text); }
+
+/* ---- Model attribution + calmer palette (overrides above) ---- */
+.dl-feed { --m-deepseek: #6E9BFF; --m-minimax: #E3A35B; --m-nemotron: #7FCB6E; }
+.dl-feed-list { gap: 4px; }
+.dl-feed-card { gap: 10px; padding: 8px 26px 8px 10px; box-shadow: none; }
+.dl-feed-card::before { width: 2px; top: 10px; bottom: 10px; opacity: .8; }
+.dl-feed-card.is-pinned.tone-bad, .dl-feed-card.is-pinned.tone-warn,
+.dl-feed-card.is-pinned.tone-ok, .dl-feed-card.is-pinned.tone-accent {
+  background: color-mix(in srgb, var(--crux-surface) 92%, var(--crux-text) 8%); border-color: var(--crux-border);
+}
+.dl-feed-card.is-quiet { padding-top: 5px; padding-bottom: 5px; }
+.dl-feed-avatar { width: 22px; height: 22px; font-size: 10.5px; color: var(--crux-text-secondary);
+  background: color-mix(in srgb, var(--crux-text) 8%, transparent); border: 1px solid var(--crux-border); }
+.dl-feed-avatar.kind-agent, .dl-feed-avatar.kind-planner, .dl-feed-avatar.kind-writer {
+  color: var(--m-deepseek); background: color-mix(in srgb, var(--m-deepseek) 14%, transparent); border-color: color-mix(in srgb, var(--m-deepseek) 32%, transparent); }
+.dl-feed-avatar.kind-auditor {
+  color: var(--m-minimax); background: color-mix(in srgb, var(--m-minimax) 14%, transparent); border-color: color-mix(in srgb, var(--m-minimax) 32%, transparent); }
+.dl-feed-avatar.kind-narrator {
+  color: var(--m-nemotron); background: color-mix(in srgb, var(--m-nemotron) 12%, transparent); border-color: color-mix(in srgb, var(--m-nemotron) 28%, transparent); }
+.dl-feed-avatar.kind-check { color: var(--crux-warn); background: var(--crux-warn-soft); border-color: var(--crux-warn-border); }
+.dl-feed-avatar.kind-you { color: var(--crux-ok); background: var(--crux-ok-soft); border-color: var(--crux-ok-border); }
+.dl-feed-meta { align-items: center; gap: 6px; }
+.dl-feed-mtag { display: inline-flex; min-width: 0; }
+.dl-feed-card-title { margin-top: 3px; }
+.dl-feed-body { margin-top: 3px; }
+.dl-feed-chips { margin-top: 7px; }
+.dl-feed-chip { background: transparent; }
+.dl-feed.is-simple .dl-feed-mtag { display: inline-flex; }

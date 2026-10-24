@@ -5,6 +5,7 @@ import { useCrux } from '../../store/runStore'
 import { fmtTokens, optionLetter } from '../../lib/format'
 import type { CruxNode } from '../buildGraph'
 import { NodeShell } from './NodeShell'
+import { ModelBadge, NemotronTag } from './ModelBadge'
 
 const MAX_FACTS = 4
 
@@ -25,6 +26,7 @@ function DecisionNodeImpl({ id }: NodeProps<CruxNode>) {
       <div className="cx-k">
         <Split />
         Decision
+        <ModelBadge family="deepseek" title="Planner: DeepSeek V4.1 Flash" />
         {detailed && <span className="cx-byline cx-ellipsis" title="Planner: DeepSeek V4.1 Flash, max reasoning">
           · Planner · DeepSeek V4.1 Flash · max{plan ? ` — split into ${plan.questions.filter((q) => q.parentNodeId === null).length} questions, set each agent's effort` : ''}
         </span>}
@@ -62,6 +64,7 @@ function DecisionNodeImpl({ id }: NodeProps<CruxNode>) {
                 <>
                   <span className="cx-dot" />
                   <span className="cx-ellipsis">{summary || 'Understanding your decision…'}</span>
+                  {summary && <NemotronTag />}
                 </>
               )}
             </div>
