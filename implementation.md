@@ -358,7 +358,7 @@ Backup models, used only if the smoke test fails a primary:
 │  ├─ scripts/try-run.ts                                          [Lane S1]  headless pipeline run, prints events
 │  ├─ runs/            (live recordings, gitignored)
 │  ├─ replays/         (curated recordings, committed — demo fallback)
-│  ├─ test/            quote.test.ts  matrix.test.ts  json.test.ts [Lane S2]
+│  ├─ test/            quote.test.ts  matrix.test.ts  json.test.ts [Lane S3]
 │  └─ src/
 │     ├─ index.ts                     [Phase 0 skeleton → Lane S2]  Hono app + routes
 │     ├─ config.ts                    [Phase 0]  env, models, effort table
@@ -376,10 +376,10 @@ Backup models, used only if the smoke test fails a primary:
 │     ├─ pipeline/followups.ts        [Lane S1, P1/P2]  deeper, blind spot, resynthesize, ladder, followup
 │     ├─ tools/tavily.ts              [Lane S2]  search(), source registry
 │     ├─ checks/quote.ts              [Lane S2]  checkQuote(), checkFinding()
-│     ├─ checks/contradictions.ts     [Lane S2, P1]
+│     ├─ checks/contradictions.ts     [Lane S3, P1]
 │     ├─ checks/stats.ts              [Lane S2]  usage accounting → RunStats
 │     ├─ dev/fakePipeline.ts          [Lane S2]  scripted run used when FAKE_PIPELINE=1
-│     └─ stt/elevenlabs.ts            [Lane S2, P1]
+│     └─ stt/elevenlabs.ts            [Lane S3, P1]
 └─ web/
    ├─ package.json  vite.config.ts  tsconfig*.json  index.html  components.json   [Phase 0]
    └─ src/
@@ -2634,12 +2634,13 @@ console.log("\n" + md);
 | `AGENT_MODE=json` recommended | Lane S1 implements the JSON-mode loop **first**. |
 | ElevenLabs `keyterms` rejected | Lane S2 removes the keyterms. |
 
-### 14.3 Phase 1 — five parallel lanes (each in its own git worktree/branch `lane/<name>` from the Phase 0 commit)
+### 14.3 Phase 1 — six parallel lanes (each in its own git worktree/branch `lane/<name>` from the Phase 0 commit)
 
 | Lane | Owns (exclusive) | Builds (P0) | Builds later (P1/P2) | Verification before reporting |
 |---|---|---|---|---|
 | **S1 · Engine** | `server/src/llm/**`, `server/src/pipeline/**`, `server/scripts/try-run.ts` | §9.1 limiter/nebius/json/summarizer; §9.2 prompts; §9.3 schemas; §9.4 plan; §9.5 synthesize; §9.6 agent (tools mode **and** JSON mode); §9.7 runPipeline. Plus `scripts/try-run.ts`: an in-memory `RunContext` that prints each event as one line and runs the full pipeline on the §2.3 primary scenario. Codes against the `tools/tavily.ts` stub signature until S2 lands it (≈13:50), then merges `main` into its branch | P1: `followups.ts` (§9.8). P2: `applyFollowup` (§9.9) | `npm --prefix server run typecheck`; `npx tsx server/scripts/try-run.ts` completes with ≥ 3 agents done, ≥ 6 findings and a synthesis. Paste the event summary in the report. |
-| **S2 · Platform** | `server/src/index.ts`, `server/src/runs/runManager.ts`, `server/src/tools/**`, `server/src/checks/stats.ts`, `server/src/checks/contradictions.ts`, `server/src/stt/**`, `server/src/dev/**`, `server/test/**` | **First (merge to `main` by ≈13:50, S1 needs it):** §10.1 Tavily. Then §8.3 runManager (with replay); §8.4 SSE; §8.5 P0 routes; §10.4 stats. `server/src/dev/fakePipeline.ts` (`export async function fakePipeline(run: RunContext): Promise<void>`) emits a scripted run through `RunContext`; `POST /api/runs` calls it instead of `runPipeline` when `process.env.FAKE_PIPELINE === "1"`. Tests: `quote.test.ts`, `matrix.test.ts`, `json.test.ts` (§15.1; `json.test.ts` imports S1's `llm/json.ts`, so it lands after S1 merges). | P1: P1 routes; §10.3 contradictions; §10.5 STT; deploy wiring (§17) | `npm --prefix server run typecheck && npm --prefix server run test`; with `FAKE_PIPELINE=1`: `curl -N localhost:8787/api/runs/<id>/events` streams events, reconnecting with `?after=` resumes, and `POST /api/replays` replays a recording |
+| **S2 · Platform** | `server/src/index.ts`, `server/src/runs/runManager.ts`, `server/src/tools/**`, `server/src/checks/stats.ts`, `server/src/dev/**` | **First (merge to `main` by ≈13:45, S1 needs it):** §10.1 Tavily. Then §8.3 runManager (with replay); §8.4 SSE; §8.5 P0 routes; §10.4 stats. `server/src/dev/fakePipeline.ts` (`export async function fakePipeline(run: RunContext): Promise<void>`) emits a scripted run through `RunContext`; `POST /api/runs` calls it instead of `runPipeline` when `process.env.FAKE_PIPELINE === "1"`. | P1: P1 routes (wiring S1's follow-ups and S3's `auditContradictions`/`transcribe`); deploy wiring (§17) | `npm --prefix server run typecheck`; with `FAKE_PIPELINE=1`: `curl -N localhost:8787/api/runs/<id>/events` streams events, reconnecting with `?after=` resumes, and `POST /api/replays` replays a recording |
+| **S3 · Checks & speech** (off the critical path) | `server/src/checks/contradictions.ts`, `server/src/stt/**`, `server/test/**` | Tests: `quote.test.ts`, `matrix.test.ts` (§15.1). Then §10.5 STT (`transcribe`) and §10.3 contradictions (`auditContradictions`), both P1 but self-contained. `json.test.ts` last (it imports S1's `llm/json.ts`; merge `main` after S1 lands). | — | `npm --prefix server run typecheck && npm --prefix server run test`; a one-off script transcribes a short WAV via `transcribe()` |
 | **W1 · Canvas** | `web/src/graph/**` | §13.1 layout; §13.2 Canvas; §13.3 all five nodes + ContradictionEdge; Simple/Detailed rendering; fitView behaviour | P1: blind-spot buttons wired; dig-deeper child stacking; stale visuals; contradiction edge polish | `npm --prefix web run typecheck`; `?mock=1` renders the whole tree growing with no layout jitter; screenshots at 1440×900 in both modes |
 | **W2 · Shell & panels** | `web/src/App.tsx`, `web/src/main.tsx`, `web/src/components/**` (except `components/ui/**`) | §13.4 TopBar, EmptyState, Composer, ActivityRail (Simple feed + Timeline + Checks), RunStats, MatrixDrawer + MatrixTable (re-rank animation), Inspector views (P0 parts), common components; keyboard shortcuts §13.5 | P1: MicButton; Inspector P1 actions (dig deeper, research/answer blind spot, update recommendation, effort ladder card, cell override UI) | `npm --prefix web run typecheck`; `?mock=1`: every region matches the mockups; changing a weight re-orders rows; each inspector view opens |
 | **W3 · State & data** | `web/src/store/**` (except `types.ts`), `web/src/lib/**`, `web/src/dev/**`, `web/src/**/*.test.ts` | §12.2 reducer; §12.3 selectors; §12.4 SSE/API/startRun/startReplay; §12.5 mock run (**deliver this first, within about 35 min**, so W1/W2 can render real-shaped data); reducer tests | P1: replay picker data; deploy (§17) with S2; README; curating `server/replays/` | `npm --prefix web run test` (reducer: playing the mock gives the expected counts; duplicate seq ignored); `npm --prefix web run typecheck` |
@@ -2650,30 +2651,34 @@ console.log("\n" + md);
 - Never edit a file you don't own, including root files.
 - When finished, report: files changed, verification output, open issues, and any `DECISION:` comments.
 
-### 14.4 Suggested agent assignment (proposal — the human confirms)
+### 14.4 Agent assignment (confirmed)
 
-| Work | Suggested model | Why |
-|---|---|---|
-| P0-A server/shared + smoke | Opus 5.5 #1 | Precise and verbatim-heavy; the critical path |
-| P0-B web skeleton | GPT-6.1 Sol #1 | Mechanical scaffolding |
-| S1 Engine | Opus 5.5 #1 (continues after P0-A) | The hardest reasoning: agent loop, streaming, prompts |
-| S2 Platform | GPT-6.1 Sol #2 | Well-specified plumbing and tests |
-| W1 Canvas | Opus 5.5 #2 | Visual quality and layout correctness |
-| W2 Shell & panels | Opus 5.5 #3 | The largest UI surface; design fidelity |
-| W3 State & data | GPT-6.1 Sol #1 (continues after P0-B) | Pure reducer/selectors/mock: well specified |
+All Opus agents run at effort medium. GPT-6.1 Sol is slower, so it gets only off-critical-path work.
 
-### 14.5 Schedule (absolute times, assuming Phase 0 starts at 13:05)
+| Work | Agent |
+|---|---|
+| P0-A server/shared + smoke | Opus 5.5 (Claude 1) |
+| P0-B web skeleton | GPT-6.1 Sol high |
+| S1 Engine | Opus 5.5 (Claude 1) |
+| S2 Platform | Opus 5.5 (Claude 1) |
+| S3 Checks & speech | GPT-6.1 Sol high (fallback: Opus Claude 1) |
+| W1 Canvas | Opus 5.5 (Claude 1) |
+| W2 Shell & panels | Opus 5.5 (Claude 2; fallback: Claude 1) |
+| W3 State & data | Opus 5.5 (Claude 1) |
+| Browser tests at checkpoints | DeepSeek V4.1 Flash (T3 browser) |
+| Review-loop fixes | Sonnet 5.5 medium (small) / Opus 5.5 medium (big) |
+
+### 14.5 Schedule — **hard deadline 15:30**
 
 | Time | What | Gate |
 |---|---|---|
-| 13:05–13:25 | Phase 0 (P0-A ∥ P0-B); the human adds keys | Health ok; smoke results in `SMOKE.md`; both skeletons build |
-| 13:25–14:55 | Phase 1: five lanes | — |
-| **14:10 · Checkpoint C1** | Merge W3 into `main`; W1 and W2 merge `main` into their branches and render `?mock=1`. S1 shows `try-run` output. S2 streams the fake pipeline. | The mock run renders end to end in the UI; try-run produces a synthesis |
-| **14:55–15:10 · Integration C2** | The integrator merges in the order S1 → S2 → W3 → W1 → W2 (disjoint paths, so no conflicts expected), then runs `npm run dev`, a **live run**, and the §15.2 checklist. Record the first good run: copy `server/runs/<id>.jsonl` to `server/replays/demo-hackathon.jsonl` and commit. | All P0 acceptance items pass |
-| 15:10–15:45 | **P1**, each lane its own P1 items. Value order if time is short: (1) blind-spot Answer + Update recommendation, (2) dig deeper, (3) contradiction audit + edges, (4) mic STT, (5) effort ladder, (6) deploy | Re-run the checklist after each merge |
-| 15:45–16:05 | **P2 only if every P1 item is merged and green**; otherwise polish, bug fixes, a second recorded run of the backup scenario, deploy | — |
-| **16:05** | **Code freeze.** Only fixes for demo-blocking bugs after this. | — |
-| 16:05–16:25 | Rehearse the §16 script twice (time it). Prepare the machine (§16.1). | Demo ≤ 3:00 |
+| 12:58–13:20 | Phase 0 (P0-A ∥ P0-B) | Health ok; smoke results in `SMOKE.md`; both skeletons build |
+| 13:20–14:30 | Phase 1: six lanes, P0 items only | — |
+| **13:45 · Checkpoint C1** | S2's Tavily merged to `main`; W3's mock run merged to `main`; W1 and W2 merge `main` and render `?mock=1`. S1 shows `try-run` progress. | The mock run renders in the UI |
+| **14:30–14:45 · Integration C2** | The orchestrator merges S1 → S2 → S3 → W3 → W1 → W2, runs `npm run dev`, a **live run**, the §15.2 checklist, a browser test and a review pass. Record the first good run to `server/replays/demo-hackathon.jsonl` and commit. | All P0 acceptance items pass |
+| 14:45–15:15 | **P1** in value order: (1) blind-spot Answer + Update recommendation, (2) dig deeper, (3) contradiction audit + edges, (4) mic STT, (5) effort ladder. Deploy only if green by 15:05. | Re-run the checklist after each merge |
+| **15:15** | **Code freeze.** Only demo-blocking fixes. Record the backup-scenario replay. P2 is dropped unless everything was green by 15:00. | — |
+| **15:30** | **Done.** 15:30–16:25 the human rehearses the §16 script and prepares the machine (§16.1). | Demo ≤ 3:00 |
 | 16:30 | Judging | — |
 
 **If the build is behind at C2:** drop P2 entirely and cut P1 from the bottom of the value list. Never cut the honesty features: check badges and failed states.
