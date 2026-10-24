@@ -4,6 +4,7 @@ import type { ViewMode } from '../store/types'
 export const AUDITOR_ID = 'auditor'
 export const MEMORY_ID = 'memory'
 export const QUOTECHECK_ID = 'quotecheck'
+export const CHAT_ID = 'chatout'
 
 export const L = {
   colW: 232, colGap: 16, rowGap: 12,
@@ -19,7 +20,7 @@ export const L = {
 
 export interface LaidNode {
   id: string
-  kind: NodeKind | 'auditor' | 'memory' | 'quotecheck'
+  kind: NodeKind | 'auditor' | 'memory' | 'quotecheck' | 'chatout'
   refId: string | null
   x: number
   y: number
@@ -152,6 +153,12 @@ export function layoutGraph({ plan, findings, viewMode }: LayoutInput): LayoutRe
   nodes.push({
     id: MEMORY_ID, kind: 'memory', refId: null,
     x: Math.min(0, (totalW - recW) / 2) - L.memoryGap - L.memoryW, y: L.decisionH + L.topGap, w: L.memoryW, h: L.memoryH,
+  })
+  // DECISION: the conversation sits left of the brief, below where the memory edge turns in, so they never cross.
+  const recY = audY + L.auditorH + L.recGap
+  nodes.push({
+    id: CHAT_ID, kind: 'chatout', refId: null,
+    x: Math.min(0, (totalW - recW) / 2) - L.memoryGap - L.memoryW, y: recY + L.recH[viewMode] / 2 + 24, w: L.memoryW, h: 84,
   })
 
   return { nodes, columns: colItems.map((items) => items.map((it) => it.id)), totalW }

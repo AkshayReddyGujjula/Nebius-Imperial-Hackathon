@@ -1,7 +1,7 @@
 import type { Edge, Node } from '@xyflow/react'
 import { nodeId, type Contradiction, type Finding } from '@shared/index'
 import type { AgentView } from '../store/types'
-import { AUDITOR_ID, MEMORY_ID, QUOTECHECK_ID, type LayoutResult } from './layout'
+import { AUDITOR_ID, CHAT_ID, MEMORY_ID, QUOTECHECK_ID, type LayoutResult } from './layout'
 import type { FlowEdgeData } from './edges/FlowEdge'
 import { agentColor } from './helpers'
 
@@ -25,6 +25,8 @@ export interface EdgeInput {
   synthesisStatus?: string
   memorySeq?: number
   memoryChange?: string | null
+  /** Count of assistant chat messages: each new one sends a packet brief → conversation. */
+  askSeq?: number
 }
 
 export function buildNodes(layout: LayoutResult): CruxNode[] {
@@ -75,7 +77,7 @@ export function buildEdges(input: EdgeInput): Edge[] {
     return !!status && WORKING.has(status)
   }
 
-  const { findings = {}, phase = 'idle', contradictionsStatus = 'idle', synthesisStatus = 'idle', memorySeq = 0, memoryChange = null } = input
+  const { findings = {}, phase = 'idle', contradictionsStatus = 'idle', synthesisStatus = 'idle', memorySeq = 0, memoryChange = null, askSeq = 0 } = input
   const edges: Edge[] = []
   const tree = (
     source: string, target: string, shape: FlowEdgeData['shape'], dashed: boolean, working = false, data: Partial<FlowEdgeData> = {},
@@ -143,6 +145,12 @@ export function buildEdges(input: EdgeInput): Edge[] {
     edges.push({
       ...tree(MEMORY_ID, nodeId.recommendation, 'smooth', false, false, memData(change)),
       id: 'm:rec', sourceHandle: 'b', targetHandle: 'l', className: 'edge-memory',
+    })
+    // Brief → conversation: drawn chat → brief (handles), packet runs backwards: "asks next question".
+    edges.push({
+      ...tree(CHAT_ID, nodeId.recommendation, 'smooth', false, false,
+        askSeq > 0 && synthesisStatus !== 'idle' ? { packet: 'asks next question', packetKey: askSeq, reverse: true, dur: 1.8 } : {}),
+      id: 'c:rec', sourceHandle: 'r', targetHandle: 'l', className: 'edge-solid',
     })
   }
 

@@ -13,6 +13,8 @@ export interface FlowEdgeData extends Record<string, unknown> {
   tone?: string
   /** Seconds for one trip. */
   dur?: number
+  /** Packet travels target → source. */
+  reverse?: boolean
 }
 
 type FlowEdgeType = Edge<FlowEdgeData, 'flow'>
@@ -43,13 +45,14 @@ function FlowEdgeImpl({ id, sourceX, sourceY, targetX, targetY, sourcePosition, 
           loop={mode === 'loop'}
           tone={data?.tone ?? 'var(--crux-accent)'}
           dur={data?.dur ?? (mode === 'loop' ? 2.4 : 1.6)}
+          reverse={!!data?.reverse}
         />
       )}
     </>
   )
 }
 
-function Packet({ path, label, loop, tone, dur }: { path: string; label: string; loop: boolean; tone: string; dur: number }) {
+function Packet({ path, label, loop, tone, dur, reverse }: { path: string; label: string; loop: boolean; tone: string; dur: number; reverse: boolean }) {
   const ref = useRef<SVGAnimateMotionElement>(null)
   const gRef = useRef<SVGGElement>(null)
   // DECISION: SMIL begin="0s" is relative to document load, so a packet mounted mid-run would already be
@@ -65,7 +68,7 @@ function Packet({ path, label, loop, tone, dur }: { path: string; label: string;
   const w = label ? Math.ceil(label.length * CHAR_W) + 14 : 0
   return (
     <g ref={gRef} className="cx-packet" pointerEvents="none" style={{ opacity: 0 }}>
-      <animateMotion ref={ref} begin="indefinite" dur={`${dur}s`} path={path} fill="freeze" repeatCount={loop ? 'indefinite' : '1'} calcMode="spline" keyPoints="0;1" keyTimes="0;1" keySplines="0.4 0 0.2 1" />
+      <animateMotion ref={ref} begin="indefinite" dur={`${dur}s`} path={path} fill="freeze" repeatCount={loop ? 'indefinite' : '1'} calcMode="spline" keyPoints={reverse ? '1;0' : '0;1'} keyTimes="0;1" keySplines="0.4 0 0.2 1" />
       <circle r={4} fill={tone} stroke="var(--crux-surface)" strokeWidth={1.5} />
       {label && (
         <g transform="translate(9 -9)">
