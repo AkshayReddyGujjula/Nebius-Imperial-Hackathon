@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react'
-import { ListTree, ShieldCheck } from 'lucide-react'
+import { BadgeCheck, ListTree, ShieldCheck, TriangleAlert } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useCrux } from '@/store/runStore'
 import type { ActivityItem, CruxStore } from '@/store/types'
@@ -71,7 +71,7 @@ function SimpleFeed() {
               <div className="min-w-0">
                 <p className="text-[13px] leading-[19px] text-crux-text">{i.simple}</p>
                 {live.has(i.id) ? (
-                  <p className="mt-0.5 text-[12px] leading-4 text-crux-text-tertiary italic">{live.get(i.id)}</p>
+                  <p key={live.get(i.id)} className="crux-node-enter mt-0.5 text-[12px] leading-4 text-crux-text-tertiary italic">{live.get(i.id)}</p>
                 ) : null}
               </div>
             </li>
@@ -80,10 +80,19 @@ function SimpleFeed() {
       </div>
       {trust.n > 0 ? (
         <div className="flex-none border-t border-crux-border px-4 py-3">
-          <p className={`text-[13px] leading-[19px] ${trust.ok === trust.n && trust.x === 0 ? 'text-crux-ok' : 'text-crux-warn'}`}>
-            {trust.ok === trust.n ? `All ${trust.n} quotes checked` : `${trust.ok} of ${trust.n} quotes checked`}
-            {trust.x > 0 ? ` · agents disagree on ${trust.x} point${trust.x === 1 ? '' : 's'}` : ''}
-          </p>
+          <ul className="flex flex-col gap-1 text-[13px] leading-[19px] [&_svg]:size-3.5 [&_svg]:flex-none">
+            <li className={`flex items-center gap-1.5 ${trust.ok === trust.n ? 'text-crux-ok' : 'text-crux-warn'}`}>
+              {trust.ok === trust.n ? <BadgeCheck /> : <TriangleAlert />}
+              {trust.ok === trust.n
+                ? (trust.n === 1 ? '1 quote checked' : `All ${trust.n} quotes checked`)
+                : `${trust.n - trust.ok} of ${trust.n} quotes couldn't be verified`}
+            </li>
+            {trust.x > 0 ? (
+              <li className="flex items-center gap-1.5 text-crux-warn">
+                <TriangleAlert />Agents disagree on {trust.x} point{trust.x === 1 ? '' : 's'}
+              </li>
+            ) : null}
+          </ul>
           <button type="button" className="ui-link mt-1 text-[12px]" onClick={() => setViewMode('detailed')}>Show details</button>
         </div>
       ) : null}
@@ -100,7 +109,7 @@ function TimelineItem({ item, startedTs, live }: { item: ActivityItem; startedTs
       <span className="tx">
         {item.title}
         {item.detail ? <small>{item.detail}</small> : null}
-        {live ? <small className="italic">{live}</small> : null}
+        {live ? <small key={live} className="crux-node-enter italic">{live}</small> : null}
       </span>
     </>
   )
