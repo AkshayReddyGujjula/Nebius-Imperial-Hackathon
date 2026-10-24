@@ -6,10 +6,10 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400..800&family=JetBrains+Mono&display=swap">
 <title>Decision Lab: how it works</title>
 <style>
-:root{
-  --paper:#F4F1EA;--sheet:#FFFDF8;--line:#E2DCCF;--ink:#1C1B17;--ink2:#57524A;--ink3:#736D61;
-  --forest:#1F4D3A;--bench:#173C2D;--bench2:#1F4D3A;--mint:#B9CFC2;--mintsoft:#DDE8E1;
-  --brass:#A26B12;--brasssoft:#F3E7CF;--slate:#3E5C76;--slatesoft:#E5ECF3;--warn:#A26B12;--fail:#A33B2B;
+:root{color-scheme:dark;
+  --paper:#0F1216;--sheet:#171C22;--line:#2A323C;--ink:#E8ECF1;--ink2:#AAB3C0;--ink3:#8A94A3;
+  --forest:#3B6EF5;--bench:#141A21;--bench2:#3B6EF5;--mint:#7EA2FF;--mintsoft:#16224A;
+  --brass:#F2B544;--brasssoft:#3A2F17;--slate:#4A5A6E;--slatesoft:#222B36;--warn:#F2B544;--fail:#F06A5A;
   --sans:"Inter Variable",Inter,ui-sans-serif,system-ui,"Segoe UI",sans-serif;--mono:"JetBrains Mono",ui-monospace,Consolas,monospace;
 }
 *{box-sizing:border-box}
@@ -17,7 +17,7 @@ html{scroll-behavior:smooth}
 @media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}.pk{display:none}}
 body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.6 var(--sans)}
 .nums,.mini,.val,.sbars,.bars{font-variant-numeric:tabular-nums}
-a{color:var(--forest)}
+a{color:#7EA2FF}
 :focus-visible{outline:3px solid var(--brass);outline-offset:3px;border-radius:4px}
 h1,h2,h3{line-height:1.08;margin:0;font-weight:700;letter-spacing:-.02em}
 h1{font-size:clamp(44px,5.4vw,78px);letter-spacing:-.045em;font-weight:800}
@@ -29,17 +29,17 @@ p{margin:0 0 1em}
 .lead{font-size:clamp(19px,1.8vw,23px);line-height:1.5;color:var(--ink2);max-width:46ch}
 .where{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--ink3);margin-bottom:18px}
 .where i{width:28px;height:2px;background:var(--forest);display:inline-block}
-nav.top{position:sticky;top:0;z-index:9;background:rgba(244,241,234,.97);border-bottom:1px solid var(--line)}
+nav.top{position:sticky;top:0;z-index:9;background:rgba(15,18,22,.94);border-bottom:1px solid var(--line)}
 nav.top .wrap{display:flex;gap:16px;align-items:center;height:52px;overflow-x:auto;overflow-y:hidden;white-space:nowrap;font-size:15px;scrollbar-width:none;-ms-overflow-style:none}nav.top .wrap::-webkit-scrollbar{display:none}
-nav.top strong{color:var(--forest);font-weight:800;letter-spacing:-.02em;margin-right:6px}
-nav.top a{color:var(--ink2);text-decoration:none}nav.top a:hover{color:var(--forest)}
+nav.top strong{color:#7EA2FF;font-weight:800;letter-spacing:-.02em;margin-right:6px}
+nav.top a{color:var(--ink2);text-decoration:none}nav.top a:hover{color:#7EA2FF}
 section{padding:72px 0 0;scroll-margin-top:56px}
 section > .wrap > h2{margin-bottom:20px}
 
 /* hero */
 .hero{padding:72px 0 40px}
 .hero .wrap{display:grid;grid-template-columns:1fr;gap:36px}
-.hero h1 span{display:block;color:var(--forest)}
+.hero h1 span{display:block;color:#7EA2FF}
 .demo-q{display:inline-flex;gap:12px;align-items:baseline;margin-top:26px;padding:14px 20px;background:var(--sheet);border:1px solid var(--line);border-left:4px solid var(--forest);border-radius:2px 10px 10px 2px;font-size:19px}
 .demo-q small{color:var(--ink3);font-size:14px}
 .hero-fig{background:var(--sheet);border:1px solid var(--line);border-radius:18px;padding:10px;overflow:hidden}
@@ -49,7 +49,7 @@ section > .wrap > h2{margin-bottom:20px}
 /* problem */
 .dstats{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:26px}
 .dstat{background:var(--sheet);border:1px solid var(--line);border-radius:14px;padding:22px 24px;display:grid;grid-template-columns:auto 1fr;gap:6px 22px;align-items:center}
-.dstat b{grid-row:span 2;font-size:64px;line-height:1;font-weight:800;letter-spacing:-.03em;color:var(--forest);font-variant-numeric:tabular-nums}
+.dstat b{grid-row:span 2;font-size:64px;line-height:1;font-weight:800;letter-spacing:-.03em;color:#7EA2FF;font-variant-numeric:tabular-nums}
 .dstat h3{font-size:19px;margin:0}
 .dstat p{margin:0;color:var(--ink2);font-size:16px}
 .dstat a.src{grid-column:1/-1;margin-top:6px}
@@ -68,33 +68,33 @@ section > .wrap > h2{margin-bottom:20px}
 .steps p{font-size:15px;color:var(--ink2);margin:0 0 10px}
 .mock{font-size:13px;border-top:1px dashed var(--line);padding-top:10px;color:var(--ink2)}
 .chip{display:inline-block;border:1px solid var(--line);border-radius:999px;padding:1px 9px;margin:2px 2px 2px 0;font-size:12.5px;background:var(--paper)}
-.chip.on{border-color:var(--forest);background:var(--mintsoft);color:var(--forest)}
+.chip.on{border-color:var(--forest);background:var(--mintsoft);color:#7EA2FF}
 .tag{display:inline-block;font-size:12px;border-radius:4px;padding:1px 7px;margin:2px 0}
-.ok{background:var(--mintsoft);color:var(--forest)}.am{background:var(--brasssoft);color:var(--warn)}
+.ok{background:var(--mintsoft);color:#7EA2FF}.am{background:var(--brasssoft);color:var(--warn)}
 .interject{margin-top:22px;display:grid;grid-template-columns:auto 1fr;gap:18px;align-items:start;background:var(--brasssoft);border-radius:14px;padding:20px 22px;max-width:900px}
-.interject b.file{font-size:15px;background:var(--brass);color:#fff;border-radius:6px;padding:4px 10px;font-weight:700}
+.interject b.file{font-size:15px;background:var(--brass);color:#0F1216;border-radius:6px;padding:4px 10px;font-weight:700}
 .interject p{margin:0;color:var(--ink)}
 
 /* architecture plate */
 #arch{padding-top:96px}
-.plate{background:var(--bench);color:#E8F1EC;padding:72px 0 64px;margin-top:0}
+.plate{background:#141A21;border-top:1px solid #2A323C;border-bottom:1px solid #2A323C;color:#E8ECF1;padding:72px 0 64px;margin-top:0}
 .plate h2{color:#fff}
-.plate .where{color:#A9C2B6}.plate .where i{background:var(--mint)}
-.plate .lead{color:#BFD3C9}
+.plate .where{color:#8A94A3}.plate .where i{background:var(--mint)}
+.plate .lead{color:#AAB3C0}
 .plate code{background:var(--bench2);color:var(--mint);padding:1px 6px;border-radius:4px;font-size:.92em}
 .archfig{margin-top:34px;overflow-x:auto}
 .archfig svg{display:block;width:100%;min-width:900px;height:auto}
-.legend{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:22px;font-size:15px;color:#CFE0D7}
+.legend{display:flex;flex-wrap:wrap;gap:10px 26px;margin-top:22px;font-size:15px;color:#AAB3C0}
 .legend span{display:inline-flex;align-items:center;gap:9px}
 .legend i{width:22px;height:14px;border-radius:4px;display:inline-block}
-.plain{margin-top:30px;display:grid;grid-template-columns:repeat(3,1fr);gap:28px;border-top:1px solid #3A6653;padding-top:26px}
+.plain{margin-top:30px;display:grid;grid-template-columns:repeat(3,1fr);gap:28px;border-top:1px solid #2A323C;padding-top:26px}
 .plain h3{color:var(--mint);font-size:17px;margin-bottom:6px}
-.plain p{color:#C7D9CF;font-size:16px;margin:0}
+.plain p{color:#AAB3C0;font-size:16px;margin:0}
 
 /* table */
 .tbl{width:100%;border-collapse:collapse;margin-top:26px;font-size:16px;background:var(--sheet);border-radius:14px;overflow:hidden;border:1px solid var(--line)}
 .tbl th,.tbl td{text-align:left;padding:13px 16px;border-bottom:1px solid var(--line);vertical-align:top}
-.tbl th{font-size:14px;color:var(--ink3);font-weight:600;background:#F8F5EE}
+.tbl th{font-size:14px;color:var(--ink3);font-weight:600;background:#1E252D}
 .tbl tr:last-child td{border-bottom:0}
 .tbl td:first-child{font-weight:600;white-space:nowrap}
 .m{display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
@@ -109,12 +109,12 @@ section > .wrap > h2{margin-bottom:20px}
 .trust ul{margin:0;padding:0;list-style:none}
 .trust li{padding:12px 0;border-top:1px solid var(--line);color:var(--ink2)}
 .trust li b{color:var(--ink)}
-.big{font-size:28px;font-weight:800;letter-spacing:-.03em;color:var(--forest);display:block;line-height:1.1}
+.big{font-size:28px;font-weight:800;letter-spacing:-.03em;color:#7EA2FF;display:block;line-height:1.1}
 
 /* numbers */
 .nums{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:30px;border-top:2px solid var(--ink)}
 .nums div{padding:22px 20px 22px 0;border-bottom:1px solid var(--line)}
-.nums b{display:block;font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.04em;color:var(--forest);line-height:1}
+.nums b{display:block;font-size:clamp(34px,4vw,52px);font-weight:800;letter-spacing:-.04em;color:#7EA2FF;line-height:1}
 .nums span{display:block;color:var(--ink2);font-size:15px;margin-top:8px;max-width:28ch}
 
 /* cost */
@@ -124,8 +124,8 @@ section > .wrap > h2{margin-bottom:20px}
 .bars{display:grid;grid-template-columns:minmax(150px,220px) 1fr;gap:12px 18px;align-items:center}
 .bars .who{font-weight:600;font-size:16px}
 .bars .who small{display:block;font-weight:400;color:var(--ink3);font-size:13px}
-.track{position:relative;height:38px;background:#EFEADF;border-radius:8px}
-.fill{position:absolute;left:0;top:0;bottom:0;border-radius:8px;background:#9AA39E}
+.track{position:relative;height:38px;background:#232A33;border-radius:8px}
+.fill{position:absolute;left:0;top:0;bottom:0;border-radius:8px;background:#5A6573}
 .fill.ours{background:var(--forest)}
 .val{position:absolute;top:50%;transform:translateY(-50%);font-weight:800;font-size:17px;white-space:nowrap;padding-left:10px}
 .costgrid{display:grid;grid-template-columns:1.4fr 1fr;gap:28px;margin-top:26px}
@@ -133,7 +133,7 @@ section > .wrap > h2{margin-bottom:20px}
 .mini th,.mini td{text-align:right;padding:8px 10px;border-bottom:1px solid var(--line)}
 .mini th:first-child,.mini td:first-child{text-align:left}
 .mini th{color:var(--ink3);font-weight:600;font-size:13.5px}
-.mini tr.us td{color:var(--forest);font-weight:700}
+.mini tr.us td{color:#7EA2FF;font-weight:700}
 .fine{font-size:13.5px;color:var(--ink3);line-height:1.5;margin:0;padding-left:18px}
 .fine li{margin-bottom:4px}
 
@@ -160,8 +160,8 @@ section > .wrap > h2{margin-bottom:20px}
 .xchg{background:var(--sheet);border:1px solid var(--line);border-radius:16px;padding:18px 20px}
 .xlab{font-size:13px;color:var(--ink3);margin:0 0 12px;font-style:italic}
 .bub{max-width:80%;padding:10px 14px;border-radius:14px;margin-bottom:8px;font-size:16px}
-.bub.me{background:#EFEADF;margin-left:auto;border-bottom-right-radius:4px}
-.bub.bot{background:#FBEDEA;color:#6E2A1F;border-bottom-left-radius:4px}
+.bub.me{background:#232A33;margin-left:auto;border-bottom-right-radius:4px}
+.bub.bot{background:#3A1E1C;color:#F06A5A;border-bottom-left-radius:4px}
 .xnote{font-size:14px;color:var(--fail);margin:8px 0 0}
 .facts{list-style:none;padding:0;margin:22px 0 0}
 .facts li{padding:12px 0;border-top:1px solid var(--line);color:var(--ink2);font-size:16px}
@@ -171,19 +171,19 @@ a.src::before{content:"Source: "}
 .syc{margin:0;background:var(--sheet);border:1px solid var(--line);border-radius:18px;padding:24px}
 .syc .sub{color:var(--ink3);font-size:14px;margin:4px 0 18px}
 .sbars{display:grid;grid-template-columns:minmax(120px,190px) 1fr 62px;gap:12px;align-items:center;font-size:15px}
-.strk{height:28px;background:#EFEADF;border-radius:6px;position:relative}
+.strk{height:28px;background:#232A33;border-radius:6px;position:relative}
 .sfill{position:absolute;top:0;bottom:0;left:0;background:var(--fail);border-radius:6px}
-.sfill.lite{background:#D49488}.sfill.red{background:#6E2A1F}
+.sfill.lite{background:#8A3A30}.sfill.red{background:#F06A5A}
 .sbars b{font-weight:800;text-align:right}
 .fine2{font-size:13.5px;color:var(--ink3);margin-top:16px;line-height:1.5}
 .vs{display:grid;gap:16px;margin-top:28px}
 .lane{border-radius:16px;padding:18px 22px}
-.lane.bad{background:#FBEDEA;color:var(--fail)}.lane.good{background:var(--bench);color:var(--mint)}
+.lane.bad{background:#3A1E1C;color:var(--fail)}.lane.good{background:var(--bench);color:var(--mint)}
 .lane h3{margin-bottom:12px}
 .pipe{display:flex;flex-wrap:wrap;align-items:center;gap:8px}
-.pipe span{padding:9px 14px;border-radius:10px;font-weight:600;font-size:15px;background:#fff;color:var(--ink);border:1px solid var(--line)}
+.pipe span{padding:9px 14px;border-radius:10px;font-weight:600;font-size:15px;background:#1E252D;color:var(--ink);border:1px solid var(--line)}
 .lane.good .pipe span{background:var(--mintsoft);border-color:var(--mint);color:var(--bench)}
-.lane.good .pipe span.cd{background:var(--bench2);color:#fff;border:1.5px dashed #A9C2B6}
+.lane.good .pipe span.cd{background:#1E252D;color:#E8ECF1;border:1.5px dashed #8A94A3}
 .pipe span.end{background:var(--fail);color:#fff;border-color:var(--fail)}
 .lane.good .pipe span.end{background:var(--mint);color:var(--bench);border-color:var(--mint)}
 .pipe i{width:22px;height:2px;background:currentColor;position:relative;opacity:.7}
@@ -192,9 +192,9 @@ a.src::before{content:"Source: "}
 .fixes li{padding:10px 0 10px 26px;border-top:1px solid var(--line);position:relative}
 .fixes li::before{content:"";position:absolute;left:2px;top:17px;width:12px;height:7px;border-left:2.5px solid var(--forest);border-bottom:2.5px solid var(--forest);transform:rotate(-45deg)}
 .demo{background:var(--forest);color:#fff;border-radius:22px;padding:64px 40px}
-.demo p{color:#CFE0D7;margin:0 0 10px;font-size:18px}
+.demo p{color:#AAB3C0;margin:0 0 10px;font-size:18px}
 .demo h2{color:#fff;font-size:clamp(40px,6vw,80px);max-width:none;letter-spacing:-.045em}
-section.notes{margin-top:110px;border-top:6px double var(--line);background:#EDE8DC;padding-bottom:20px}
+section.notes{margin-top:110px;border-top:6px double var(--line);background:#141A21;padding-bottom:20px}
 @media (max-width:900px){.why{grid-template-columns:1fr}}
 footer{padding:40px 0 60px;color:var(--ink3);font-size:14px}
 
@@ -214,7 +214,7 @@ main > section#arch{padding:0}
 #arch .plate > .wrap{width:100%}
 main > section.notes{margin-top:0}
 code{font-family:var(--mono)}
-#prog{position:fixed;top:0;left:0;right:0;height:3px;background:var(--forest);transform-origin:0 50%;transform:scaleX(0);z-index:20}
+#prog{position:fixed;top:0;left:0;right:0;height:3px;background:#3B6EF5;transform-origin:0 50%;transform:scaleX(0);z-index:20}
 /* scroll reveals (only when motion is allowed: html.js) */
 html.js main section .wrap,html.js .hero .wrap{opacity:0;transform:translateY(28px);transition:opacity .75s cubic-bezier(.2,.7,.2,1),transform .75s cubic-bezier(.2,.7,.2,1)}
 html.js section.in .wrap,html.js .hero.in .wrap{opacity:1;transform:none}
@@ -248,50 +248,50 @@ html.js #arch.in .em{opacity:1}
 <figure style="margin:0">
 <div class="hero-fig">
 <svg viewBox="0 0 700 430" role="img" aria-label="A conversation on the left, four research agents in the middle, converging into a brief of what the decision hinges on">
-  <style>.hb{font-size:13px;fill:#1C1B17}.hs{font-size:11.5px;fill:#736D61}.hw{font-size:13px;fill:#fff}</style>
+  <style>.hb{font-size:13px;fill:#E8ECF1}.hs{font-size:11.5px;fill:#8A94A3}.hw{font-size:13px;fill:#fff}</style>
   <!-- conversation -->
   <text x="22" y="30" class="hs">You talk</text>
-  <rect x="22" y="44" width="200" height="50" rx="14" fill="#EFEADF"/>
+  <rect x="22" y="44" width="200" height="50" rx="14" fill="#232A33"/>
   <text x="36" y="66" class="hb">Hackathon Sunday, exam</text><text x="36" y="83" class="hb">Monday. Help me decide?</text>
-  <rect x="62" y="108" width="180" height="50" rx="14" fill="#1F4D3A"/>
+  <rect x="62" y="108" width="180" height="50" rx="14" fill="#3B6EF5"/>
   <text x="76" y="130" class="hw">How much do you care</text><text x="76" y="147" class="hw">about price?</text>
-  <rect x="22" y="172" width="58" height="24" rx="12" fill="#DDE8E1" stroke="#1F4D3A"/><text x="34" y="188" font-size="12" fill="#1F4D3A">A lot</text>
-  <rect x="86" y="172" width="54" height="24" rx="12" fill="#fff" stroke="#E2DCCF"/><text x="97" y="188" font-size="12" fill="#57524A">Some</text>
-  <rect x="146" y="172" width="76" height="24" rx="12" fill="#fff" stroke="#E2DCCF"/><text x="156" y="188" font-size="12" fill="#57524A">Not much</text>
-  <rect x="22" y="214" width="200" height="50" rx="14" fill="#EFEADF"/>
+  <rect x="22" y="172" width="58" height="24" rx="12" fill="#16224A" stroke="#3B6EF5"/><text x="34" y="188" font-size="12" fill="#7EA2FF">A lot</text>
+  <rect x="86" y="172" width="54" height="24" rx="12" fill="#1E252D" stroke="#36404C"/><text x="97" y="188" font-size="12" fill="#AAB3C0">Some</text>
+  <rect x="146" y="172" width="76" height="24" rx="12" fill="#1E252D" stroke="#36404C"/><text x="156" y="188" font-size="12" fill="#AAB3C0">Not much</text>
+  <rect x="22" y="214" width="200" height="50" rx="14" fill="#232A33"/>
   <text x="36" y="236" class="hb">Actually I mostly work</text><text x="36" y="253" class="hb">in the terminal.</text>
-  <rect x="22" y="290" width="200" height="42" rx="8" fill="#F3E7CF" stroke="#A26B12"/>
-  <text x="36" y="309" font-size="13" font-weight="700" fill="#7A5310">user.md</text><text x="36" y="324" class="hs">every answer, read by every agent</text>
+  <rect x="22" y="290" width="200" height="42" rx="8" fill="#3A2F17" stroke="#F2B544"/>
+  <text x="36" y="309" font-size="13" font-weight="700" fill="#F2B544">user.md</text><text x="36" y="324" class="hs">every answer, read by every agent</text>
   <!-- agents -->
   <text x="282" y="30" class="hs">Agents research in parallel</text>
   <g font-size="13">
-    <rect x="282" y="48" width="170" height="40" rx="10" fill="#DDE8E1" stroke="#1F4D3A"/><text x="296" y="73" fill="#1C1B17">Pricing &amp; limits</text>
-    <rect x="282" y="104" width="170" height="40" rx="10" fill="#DDE8E1" stroke="#1F4D3A"/><text x="296" y="129" fill="#1C1B17">Code quality</text>
-    <rect x="282" y="160" width="170" height="40" rx="10" fill="#DDE8E1" stroke="#1F4D3A"/><text x="296" y="185" fill="#1C1B17">Workflow fit</text>
-    <rect x="282" y="216" width="170" height="40" rx="10" fill="#DDE8E1" stroke="#1F4D3A"/><text x="296" y="241" fill="#1C1B17">What users report</text>
+    <rect x="282" y="48" width="170" height="40" rx="10" fill="#16224A" stroke="#3B6EF5"/><text x="296" y="73" fill="#E8ECF1">Pricing &amp; limits</text>
+    <rect x="282" y="104" width="170" height="40" rx="10" fill="#16224A" stroke="#3B6EF5"/><text x="296" y="129" fill="#E8ECF1">Code quality</text>
+    <rect x="282" y="160" width="170" height="40" rx="10" fill="#16224A" stroke="#3B6EF5"/><text x="296" y="185" fill="#E8ECF1">Workflow fit</text>
+    <rect x="282" y="216" width="170" height="40" rx="10" fill="#16224A" stroke="#3B6EF5"/><text x="296" y="241" fill="#E8ECF1">What users report</text>
   </g>
-  <path d="M222 311 C 255 311, 250 260, 282 236" stroke="#A26B12" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
-  <g stroke="#1F4D3A" stroke-width="1.6" fill="none">
+  <path d="M222 311 C 255 311, 250 260, 282 236" stroke="#F2B544" stroke-width="1.5" fill="none" stroke-dasharray="4 4"/>
+  <g stroke="#3B6EF5" stroke-width="1.6" fill="none">
     <path d="M452 68 C 500 68, 500 180, 520 186"/><path d="M452 124 C 495 124, 500 180, 520 186"/>
     <path d="M452 180 L520 186"/><path d="M452 236 C 495 236, 500 192, 520 186"/>
   </g>
   <text x="282" y="290" class="hs">every quote checked in code</text>
-  <rect x="282" y="298" width="96" height="22" rx="4" fill="#DDE8E1"/><text x="290" y="313" font-size="12" fill="#1F4D3A">quote verified</text>
-  <rect x="384" y="298" width="108" height="22" rx="4" fill="#F3E7CF"/><text x="392" y="313" font-size="12" fill="#A26B12">quote not found</text>
+  <rect x="282" y="298" width="96" height="22" rx="4" fill="#16224A"/><text x="290" y="313" font-size="12" fill="#7EA2FF">quote verified</text>
+  <rect x="384" y="298" width="108" height="22" rx="4" fill="#3A2F17"/><text x="392" y="313" font-size="12" fill="#F2B544">quote not found</text>
   <!-- brief -->
-  <rect x="520" y="44" width="164" height="300" rx="14" fill="#173C2D"/>
-  <text x="536" y="72" font-size="12" fill="#B9CFC2">Decision brief</text>
+  <rect x="520" y="44" width="164" height="300" rx="14" fill="#141A21"/>
+  <text x="536" y="72" font-size="12" fill="#7EA2FF">Decision brief</text>
   <text x="536" y="98" font-size="15" font-weight="700" fill="#fff">Hinges on</text>
-  <text x="536" y="118" font-size="14" fill="#E8F1EC">price vs. autonomy</text>
-  <line x1="536" x2="668" y1="134" y2="134" stroke="#3A6653"/>
-  <text x="536" y="156" font-size="12" fill="#BFD3C9">If you value cost most</text>
-  <text x="536" y="174" font-size="12" fill="#BFD3C9">If you value autonomy</text>
-  <line x1="536" x2="668" y1="190" y2="190" stroke="#3A6653"/>
-  <text x="536" y="212" font-size="12" fill="#B9CFC2">Ranked by your weights</text>
-  <rect x="536" y="224" width="120" height="10" rx="3" fill="#B9CFC2"/>
-  <rect x="536" y="242" width="86" height="10" rx="3" fill="#4F8F72"/>
-  <text x="536" y="282" font-size="12" fill="#BFD3C9">No verdict.</text>
-  <text x="536" y="300" font-size="12" fill="#BFD3C9">You decide.</text>
+  <text x="536" y="118" font-size="14" fill="#E8ECF1">price vs. autonomy</text>
+  <line x1="536" x2="668" y1="134" y2="134" stroke="#2A323C"/>
+  <text x="536" y="156" font-size="12" fill="#AAB3C0">If you value cost most</text>
+  <text x="536" y="174" font-size="12" fill="#AAB3C0">If you value autonomy</text>
+  <line x1="536" x2="668" y1="190" y2="190" stroke="#2A323C"/>
+  <text x="536" y="212" font-size="12" fill="#7EA2FF">Ranked by your weights</text>
+  <rect x="536" y="224" width="120" height="10" rx="3" fill="#7EA2FF"/>
+  <rect x="536" y="242" width="86" height="10" rx="3" fill="#2F5BD6"/>
+  <text x="536" y="282" font-size="12" fill="#AAB3C0">No verdict.</text>
+  <text x="536" y="300" font-size="12" fill="#AAB3C0">You decide.</text>
 </svg>
 </div>
 <figcaption class="hero-cap">The conversation and the research happen at the same time. Your answers go into a shared memory file that every agent reads, and the result is a brief, not a verdict.</figcaption>
@@ -396,38 +396,38 @@ html.js #arch.in .em{opacity:1}
   <div class="archfig">
 <svg viewBox="0 0 1200 760" role="img" aria-label="Architecture: browser, event stream, Hono server with conversation engine, planner, four research agents, quote check, auditor, synthesis writer, matrix maths, status lines, speech-to-text, and shared memory user.md">
 <defs>
-  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#B9CFC2"/></marker>
-  <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#A26B12"/></marker>
-  <marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8FB0CF"/></marker>
+  <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#7EA2FF"/></marker>
+  <marker id="ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#F2B544"/></marker>
+  <marker id="as" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0 0L10 5L0 10z" fill="#8A9BB0"/></marker>
 </defs>
 <style>
- .zt{font-size:14px;fill:#8FB3A2;font-weight:600}
- .llm{fill:#DDE8E1;stroke:#B9CFC2;stroke-width:2}
- .code{fill:#1F4D3A;stroke:#A9C2B6;stroke-width:1.6;stroke-dasharray:6 4}
- .ext{fill:#DDE7F1;stroke:#8FB0CF;stroke-width:2}
- .mem{fill:#F3E7CF;stroke:#A26B12;stroke-width:2.2}
- .ui{fill:#1F4D3A;stroke:#3A6653;stroke-width:1.4}
- .t{font-size:17px;font-weight:700;fill:#173C2D}
- .s{font-size:13.5px;fill:#33463D}
+ .zt{font-size:14px;fill:#8A94A3;font-weight:600}
+ .llm{fill:#16224A;stroke:#7EA2FF;stroke-width:2}
+ .code{fill:#1E252D;stroke:#8A94A3;stroke-width:1.6;stroke-dasharray:6 4}
+ .ext{fill:#222B36;stroke:#8A9BB0;stroke-width:2}
+ .mem{fill:#3A2F17;stroke:#F2B544;stroke-width:2.2}
+ .ui{fill:#1E252D;stroke:#36404C;stroke-width:1.4}
+ .t{font-size:17px;font-weight:700;fill:#E8ECF1}
+ .s{font-size:13.5px;fill:#AAB3C0}
  .tw{font-size:17px;font-weight:700;fill:#fff}
- .sw{font-size:13.5px;fill:#BFD3C9}
- .e{stroke:#B9CFC2;stroke-width:2;fill:none}
- .em{stroke:#A26B12;stroke-width:1.8;fill:none;stroke-dasharray:6 5}
- .es{stroke:#8FB0CF;stroke-width:1.8;fill:none}
+ .sw{font-size:13.5px;fill:#AAB3C0}
+ .e{stroke:#7EA2FF;stroke-width:2;fill:none}
+ .em{stroke:#F2B544;stroke-width:1.8;fill:none;stroke-dasharray:6 5}
+ .es{stroke:#8A9BB0;stroke-width:1.8;fill:none}
 </style>
 <!-- browser zone -->
-<rect x="20" y="20" width="1160" height="132" rx="16" fill="none" stroke="#3A6653"/>
+<rect x="20" y="20" width="1160" height="132" rx="16" fill="none" stroke="#2A323C"/>
 <text x="40" y="46" class="zt">Browser: React 19 + React Flow</text>
 <rect class="ui" x="40" y="62" width="262" height="72" rx="10"/><text x="58" y="92" class="tw">Research canvas</text><text x="58" y="114" class="sw">agents live, React Flow</text>
 <rect class="ui" x="324" y="62" width="262" height="72" rx="10"/><text x="342" y="92" class="tw">Chat panel</text><text x="342" y="114" class="sw">questions, choices, interjections</text>
 <rect class="ui" x="608" y="62" width="262" height="72" rx="10"/><text x="626" y="92" class="tw">Trade-off matrix</text><text x="626" y="114" class="sw">your weights → ranking</text>
 <rect class="ui" x="892" y="62" width="268" height="72" rx="10"/><text x="910" y="92" class="tw">Live feed + mic</text><text x="910" y="114" class="sw">status lines, speech input</text>
 <!-- SSE -->
-<rect x="20" y="170" width="1160" height="44" rx="10" fill="#1E4638"/>
+<rect x="20" y="170" width="1160" height="44" rx="10" fill="#1E252D"/>
 <text x="40" y="198" class="tw" style="font-size:15px">SSE event stream</text>
 <text x="210" y="198" class="sw">event-sourced, replayable JSONL (powers “Replay a recorded run”)</text>
 <!-- server zone -->
-<rect x="20" y="232" width="1160" height="508" rx="16" fill="none" stroke="#3A6653"/>
+<rect x="20" y="232" width="1160" height="508" rx="16" fill="none" stroke="#2A323C"/>
 <text x="40" y="258" class="zt">Hono server (Node)</text>
 
 <rect class="llm" x="40" y="276" width="262" height="78" rx="12"/><text x="58" y="308" class="t">Conversation engine</text><text x="58" y="330" class="s">DeepSeek V4.1 Flash, 1 question</text>
@@ -453,8 +453,8 @@ html.js #arch.in .em{opacity:1}
 
 <!-- memory -->
 <rect class="mem" x="40" y="664" width="582" height="58" rx="12"/>
-<text x="58" y="699" class="t" style="fill:#6B4A0E">user.md, shared memory</text>
-<text x="280" y="699" class="s" style="fill:#6B4A0E">read by every agent; your answers written in</text>
+<text x="58" y="699" class="t" style="fill:#F2B544">user.md, shared memory</text>
+<text x="280" y="699" class="s" style="fill:#F2B544">read by every agent; your answers written in</text>
 
 <!-- edges -->
 <path id="p0" class="e" d="M171 354 L171 388" marker-end="url(#ah)"/>
@@ -474,7 +474,7 @@ html.js #arch.in .em{opacity:1}
 <path class="em" d="M497 664 L497 584" marker-end="url(#ab)"/>
 <path class="em" d="M622 693 C 680 693, 690 650, 696 640" marker-end="url(#ab)"/>
 <!-- packets: one orchestrated motion, planner → agents → quote check -->
-<g class="pk" fill="#B9CFC2">
+<g class="pk" fill="#7EA2FF">
   <circle r="5"><animateMotion dur="2.6s" repeatCount="indefinite" begin="0s"><mpath href="#pa1"/></animateMotion></circle>
   <circle r="5"><animateMotion dur="2.6s" repeatCount="indefinite" begin=".3s"><mpath href="#pa2"/></animateMotion></circle>
   <circle r="5"><animateMotion dur="2.6s" repeatCount="indefinite" begin=".6s"><mpath href="#pa3"/></animateMotion></circle>
@@ -486,10 +486,10 @@ html.js #arch.in .em{opacity:1}
 </svg>
   </div>
   <div class="legend">
-    <span><i style="background:#DDE8E1;border:2px solid #B9CFC2"></i>LLM on Nebius Token Factory</span>
-    <span><i style="background:#1F4D3A;border:1.6px dashed #A9C2B6"></i>Deterministic code, no model</span>
-    <span><i style="background:#F3E7CF;border:2px solid #A26B12"></i>Shared memory (user.md)</span>
-    <span><i style="background:#DDE7F1;border:2px solid #8FB0CF"></i>External service</span>
+    <span><i style="background:#16224A;border:2px solid #7EA2FF"></i>LLM on Nebius Token Factory</span>
+    <span><i style="background:#1E252D;border:1.6px dashed #8A94A3"></i>Deterministic code, no model</span>
+    <span><i style="background:#3A2F17;border:2px solid #F2B544"></i>Shared memory (user.md)</span>
+    <span><i style="background:#222B36;border:2px solid #8A9BB0"></i>External service</span>
   </div>
   <div class="plain">
     <div><h3>In plain English</h3><p>A planner splits your decision into four questions. Four AI researchers each take one and search the web at the same time, so it takes about a minute rather than four.</p></div>
@@ -546,7 +546,7 @@ html.js #arch.in .em{opacity:1}
     <p class="sub">93,778 input tokens and 29,720 output tokens (19,678 of them reasoning)</p>
     <div class="bars" role="img" aria-label="Demo run cost: ours $0.062, GPT-6.1 Sol $0.49, Claude Opus 5.5 $0.97">
       <div class="who">Ours, Nebius open models<small>measured</small></div>
-      <div class="track"><div class="fill ours" style="width:6.2%"></div><span class="val" style="left:6.2%;color:var(--forest)">$0.062</span></div>
+      <div class="track"><div class="fill ours" style="width:6.2%"></div><span class="val" style="left:6.2%;color:#7EA2FF">$0.062</span></div>
       <div class="who">GPT-6.1 Sol<small>$2 in / $10 out per 1M</small></div>
       <div class="track"><div class="fill" style="width:49%"></div><span class="val" style="left:49%">$0.49 <span style="font-weight:500;color:var(--ink3)">7.8× ours</span></span></div>
       <div class="who">Claude Opus 5.5<small>$4 in / $20 out per 1M</small></div>
@@ -590,28 +590,28 @@ html.js #arch.in .em{opacity:1}
   <h2>Everything overlaps. You keep chatting while it researches.</h2>
   <div class="tl">
 <svg viewBox="0 0 1040 360" width="100%" role="img" aria-label="Timeline swimlanes">
-<style>.lane{font-size:13px;fill:#57524A}.ax{font-size:11px;fill:#736D61}.bar{rx:4}.bt{font-size:11px;fill:#1C1B17}.bw{font-size:11px;fill:#fff}</style>
-<g stroke="#E2DCCF">
+<style>.lane{font-size:13px;fill:#AAB3C0}.ax{font-size:11px;fill:#8A94A3}.bar{rx:4}.bt{font-size:11px;fill:#E8ECF1}.bw{font-size:11px;fill:#fff}</style>
+<g stroke="#2A323C">
 <line x1="140" y1="30" x2="140" y2="320"/><line x1="320" y1="30" x2="320" y2="320"/><line x1="500" y1="30" x2="500" y2="320"/><line x1="680" y1="30" x2="680" y2="320"/><line x1="860" y1="30" x2="860" y2="320"/><line x1="1030" y1="30" x2="1030" y2="320"/>
 <line x1="20" y1="72" x2="1030" y2="72"/><line x1="20" y1="120" x2="1030" y2="120"/><line x1="20" y1="168" x2="1030" y2="168"/><line x1="20" y1="216" x2="1030" y2="216"/><line x1="20" y1="264" x2="1030" y2="264"/>
 </g>
 <text class="ax" x="136" y="24">0 s</text><text class="ax" x="312" y="24">20</text><text class="ax" x="492" y="24">40</text><text class="ax" x="672" y="24">60</text><text class="ax" x="852" y="24">80</text><text class="ax" x="1000" y="24">~100</text>
 <text class="lane" x="20" y="52">You</text><text class="lane" x="20" y="100">Conversation</text><text class="lane" x="20" y="148">Planner</text><text class="lane" x="20" y="196">4 agents</text><text class="lane" x="20" y="244">Auditor</text><text class="lane" x="20" y="292">Writer</text>
 <!-- you: 9px per second; x=140 + 9*s -->
-<rect class="bar" x="140" y="38" width="30" height="22" fill="#3E5C76"/><text class="bw" x="144" y="53">ask</text>
-<rect class="bar" x="230" y="38" width="40" height="22" fill="#3E5C76"/><text class="bw" x="234" y="53">tap</text>
-<rect class="bar" x="340" y="38" width="40" height="22" fill="#3E5C76"/><text class="bw" x="344" y="53">tap</text>
-<rect class="bar" x="520" y="38" width="80" height="22" fill="#3E5C76"/><text class="bw" x="524" y="53">interject</text>
-<rect class="bar" x="900" y="38" width="120" height="22" fill="#3E5C76"/><text class="bw" x="904" y="53">read brief, weights</text>
-<rect class="bar" x="170" y="86" width="60" height="22" fill="#DDE8E1" stroke="#1F4D3A"/><text class="bt" x="174" y="101">Q1</text>
-<rect class="bar" x="270" y="86" width="70" height="22" fill="#DDE8E1" stroke="#1F4D3A"/><text class="bt" x="274" y="101">Q2</text>
-<rect class="bar" x="380" y="86" width="70" height="22" fill="#DDE8E1" stroke="#1F4D3A"/><text class="bt" x="384" y="101">Q3</text>
-<rect class="bar" x="600" y="86" width="70" height="22" fill="#DDE8E1" stroke="#1F4D3A"/><text class="bt" x="604" y="101">reply</text>
-<rect class="bar" x="160" y="134" width="90" height="22" fill="#1F4D3A"/><text class="bw" x="164" y="149">plan · max</text>
-<rect class="bar" x="250" y="176" width="540" height="10" fill="#1F4D3A"/><rect class="bar" x="250" y="188" width="430" height="10" fill="#1F4D3A" opacity=".8"/><rect class="bar" x="250" y="200" width="480" height="10" fill="#1F4D3A" opacity=".65"/><rect class="bar" x="250" y="176" width="0" height="0"/>
-<text class="bt" x="560" y="164" style="fill:#57524A">search · read · extract quotes (55–70 s, parallel)</text>
-<rect class="bar" x="790" y="230" width="60" height="22" fill="#A26B12"/><text class="bw" x="794" y="245">audit</text>
-<rect class="bar" x="850" y="278" width="110" height="22" fill="#1F4D3A"/><text class="bw" x="854" y="293">brief · max</text>
+<rect class="bar" x="140" y="38" width="30" height="22" fill="#4A5A6E"/><text class="bw" x="144" y="53">ask</text>
+<rect class="bar" x="230" y="38" width="40" height="22" fill="#4A5A6E"/><text class="bw" x="234" y="53">tap</text>
+<rect class="bar" x="340" y="38" width="40" height="22" fill="#4A5A6E"/><text class="bw" x="344" y="53">tap</text>
+<rect class="bar" x="520" y="38" width="80" height="22" fill="#4A5A6E"/><text class="bw" x="524" y="53">interject</text>
+<rect class="bar" x="900" y="38" width="120" height="22" fill="#4A5A6E"/><text class="bw" x="904" y="53">read brief, weights</text>
+<rect class="bar" x="170" y="86" width="60" height="22" fill="#16224A" stroke="#3B6EF5"/><text class="bt" x="174" y="101">Q1</text>
+<rect class="bar" x="270" y="86" width="70" height="22" fill="#16224A" stroke="#3B6EF5"/><text class="bt" x="274" y="101">Q2</text>
+<rect class="bar" x="380" y="86" width="70" height="22" fill="#16224A" stroke="#3B6EF5"/><text class="bt" x="384" y="101">Q3</text>
+<rect class="bar" x="600" y="86" width="70" height="22" fill="#16224A" stroke="#3B6EF5"/><text class="bt" x="604" y="101">reply</text>
+<rect class="bar" x="160" y="134" width="90" height="22" fill="#3B6EF5"/><text class="bw" x="164" y="149">plan · max</text>
+<rect class="bar" x="250" y="176" width="540" height="10" fill="#3B6EF5"/><rect class="bar" x="250" y="188" width="430" height="10" fill="#3B6EF5" opacity=".8"/><rect class="bar" x="250" y="200" width="480" height="10" fill="#3B6EF5" opacity=".65"/><rect class="bar" x="250" y="176" width="0" height="0"/>
+<text class="bt" x="560" y="164" style="fill:#AAB3C0">search · read · extract quotes (55–70 s, parallel)</text>
+<rect class="bar" x="790" y="230" width="60" height="22" fill="#F2B544"/><text class="bw" style="fill:#0F1216" x="794" y="245">audit</text>
+<rect class="bar" x="850" y="278" width="110" height="22" fill="#3B6EF5"/><text class="bw" x="854" y="293">brief · max</text>
 <text class="ax" x="140" y="345">Nemotron status lines stream to the live feed throughout · quote checks run in code as each agent finishes · times are illustrative of a typical run</text>
 </svg>
 

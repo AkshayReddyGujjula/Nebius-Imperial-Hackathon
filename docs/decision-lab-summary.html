@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Decision Lab — one-page summary</title>
 <style>
-  :root{
-    --page:#F4F1EA; --surface:#FFFDF8; --border:#E2DCCF; --border-strong:#D4CCBB;
-    --text:#1C1B17; --text2:#57524A; --text3:#736D61;
-    --accent:#1F4D3A; --accent-soft:#DDE8E1; --accent-border:#B9CFC2;
-    --reading:#3E5C76; --reading-soft:#E1E8EE; --warn:#A26B12; --warn-soft:#F3E7CF; --done:#4F6B47;
+  :root{color-scheme:dark;
+    --page:#0F1216; --surface:#171C22; --border:#2A323C; --border-strong:#36404C;
+    --text:#E8ECF1; --text2:#AAB3C0; --text3:#8A94A3;
+    --accent:#7EA2FF; --accent-soft:#16224A; --accent-border:#2C4796;
+    --reading:#8A9BB0; --reading-soft:#222B36; --warn:#F2B544; --warn-soft:#3A2F17; --done:#3FB98A;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden}
@@ -32,9 +32,9 @@
   .box .d{font-size:.84em;color:var(--text2);margin-top:.3em}
   .model{display:inline-block;font:600 .74em/1 ui-monospace,Consolas,monospace;padding:.3em .5em;border-radius:5px;margin-top:.45em;background:var(--accent-soft);color:var(--accent)}
   .model.mm{background:var(--warn-soft);color:var(--warn)}
-  .model.nv{background:#E6EBDF;color:var(--done)}
+  .model.nv{background:#13302A;color:var(--done)}
   .model.ext{background:var(--reading-soft);color:var(--reading)}
-  .model.code{background:#ECE7DC;color:var(--text2)}
+  .model.code{background:#1E252D;color:var(--text2)}
   .you{grid-column:1;grid-row:1}
   .server{grid-column:2;grid-row:1;border-color:var(--accent-border)}
   .narr{grid-column:3;grid-row:1}
@@ -59,8 +59,8 @@
   .bench{margin-top:1.6vh;display:flex;flex-direction:column;gap:.85vh}
   .bar{display:grid;grid-template-columns:12.5em 1fr 4.2em;align-items:center;gap:.6vw;font-size:.86em}
   .bar .lab{color:var(--text2)}
-  .track{height:.85em;background:#E6E0D3;border-radius:99px;overflow:hidden;position:relative}
-  .fill{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--accent)}
+  .track{height:.85em;background:#232A33;border-radius:99px;overflow:hidden;position:relative}
+  .fill{position:absolute;inset:0 auto 0 0;border-radius:99px;background:#3B6EF5}
   .fill.warn{background:var(--warn)}.fill.muted{background:var(--border-strong)}.fill.read{background:var(--reading)}
   .bar .v{font:600 .95em ui-monospace,Consolas,monospace;text-align:right}
   .note{font-size:.78em;color:var(--text3);margin-top:.9vh}
