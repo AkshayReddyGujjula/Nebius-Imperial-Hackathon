@@ -48,7 +48,8 @@ export function sentences(text: string): string[] {
   return text.replace(/\*\*|__|`/g, '').split(/\n+/).flatMap((line) => {
     const l = line.replace(/^\s*(?:[-*•]|\d+[.)])\s+/, '').trim()
     if (!l) return []
-    return (l.match(/[^.!?]+(?:[.!?]+(?=\s|$)|$)/g) ?? [l]).map((s) => s.trim()).filter(Boolean)
+    // Split only at a sentence end followed by a new sentence, so "$0.46" or "e.g. x" stay whole.
+    return l.split(/(?<=[.!?])\s+(?=["“(£$\d]|[A-Z])/).map((s) => s.trim()).filter(Boolean)
   })
 }
 
