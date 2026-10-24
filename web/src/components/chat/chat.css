@@ -123,7 +123,7 @@
 .dl-input textarea { font-size: 15px; line-height: 22px; }
 
 /* Question deck: compact card docked to the bottom of the canvas, above the summary, clear of the zoom controls (bottom-left). */
-.dl-deck-anchor { background: none; border: 0; flex-direction: row; position: absolute; left: 0; right: 0; bottom: 16px; z-index: 30; display: flex; justify-content: center; padding: 0 64px; pointer-events: none; }
+.dl-deck-anchor { background: none; border: 0; flex-direction: row; position: absolute; left: 0; right: 0; bottom: 16px; z-index: 30; display: flex; justify-content: center; padding: 0 92px; pointer-events: none; }
 .dl-deck-anchor > * { pointer-events: auto; }
 .dl-deck { position: relative; width: min(520px, 100%); }
 .dl-deck-edge { position: absolute; left: 16px; right: 16px; bottom: -8px; height: 24px; border-radius: 0 0 16px 16px; border: 1px solid var(--c-line); border-top: 0; background: var(--c-paper); box-shadow: var(--crux-shadow-sm); }
