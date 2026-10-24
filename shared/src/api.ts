@@ -18,3 +18,13 @@ export interface HealthResponse {
   jsonMode: boolean;
 }
 export interface ApiError { error: string }
+
+/** Interview step before a run: the orchestrator asks the user tailored questions first. */
+export interface ClarifyRequest { decision: string }
+export interface ClarifyQuestion {
+  id: string;                    // "k1"
+  question: string;              // ≤ 20 words, second person
+  why: string;                   // ≤ 15 words: why the answer changes the research
+  suggestions: string[];         // 2–4 short one-tap answers
+}
+export interface ClarifyResponse { questions: ClarifyQuestion[]; ms: number; model: string }
