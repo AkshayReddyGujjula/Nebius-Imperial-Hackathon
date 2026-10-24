@@ -61,6 +61,8 @@ export interface RunData {
   memory: string;
   memoryChanges: string[];
   memorySeq: number;
+  /** Raw event log for the live feed (reasoning.chunk excluded), oldest first. */
+  feedLog: CruxEvent[];
 }
 
 export interface UiState {

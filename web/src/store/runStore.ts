@@ -2,6 +2,8 @@ import { create } from 'zustand'
 import { reduce } from './reducer'
 import type { CruxStore, RunData, UiState, ViewMode } from './types'
 
+const FEED_LOG_LIMIT = 1500
+
 function savedViewMode(): ViewMode {
   try { return localStorage.getItem('crux.viewMode') === 'detailed' ? 'detailed' : 'simple' }
   catch { return 'simple' }
@@ -14,7 +16,7 @@ export const initialRun = (mock = false): RunData => ({
   findingSeq: {}, factSeq: {}, proposals: [], contradictions: [],
   contradictionsStatus: 'idle', synthesis: null, synthesisSeq: 0,
   synthesisStatus: 'idle', stats: null, reasoning: {}, activity: [], ladders: {},
-  notices: [], fatalError: null, chat: [], memory: "", memoryChanges: [], memorySeq: 0,
+  notices: [], fatalError: null, chat: [], memory: "", memoryChanges: [], memorySeq: 0, feedLog: [],
 })
 
 export const initialUi = (): UiState => ({
@@ -25,7 +27,11 @@ export const initialUi = (): UiState => ({
 
 export const useCrux = create<CruxStore>()((set) => ({
   ...initialRun(), ...initialUi(),
-  ingest: (e) => set((s) => reduce(s, e) ?? s),
+  ingest: (e) => set((s) => {
+    const p = reduce(s, e)
+    if (!p) return s
+    return e.type === 'reasoning.chunk' ? p : { ...p, feedLog: [...s.feedLog, e].slice(-FEED_LOG_LIMIT) }
+  }),
   reset: (opts) => set((s) => ({ ...initialRun(opts?.mock), ...initialUi(), viewMode: s.viewMode })),
   setViewMode: (viewMode) => {
     try { localStorage.setItem('crux.viewMode', viewMode) } catch { /* Storage may be unavailable. */ }
