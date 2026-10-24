@@ -30,8 +30,8 @@ function ContradictionEdgeImpl(props: EdgeProps<ContradictionEdgeType>) {
           type="button"
           className="cx-contra nodrag nopan"
           style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
-          aria-label="Contradiction"
-          title="Contradiction: these findings disagree"
+          aria-label="Contradiction, flagged by MiniMax M3.1 (auditor)"
+          title="Contradiction: these findings disagree. Flagged by MiniMax M3.1 (auditor)"
           onClick={(e) => { e.stopPropagation(); if (data) select(data.findingA) }}
         >
           <GitCompareArrows />

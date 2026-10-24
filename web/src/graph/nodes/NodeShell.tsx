@@ -10,10 +10,12 @@ interface Props {
   label?: string
   /** Stale/superseded: rendered at 50% opacity (motion owns the inline opacity, so it goes here). */
   dim?: boolean
+  /** CSS colour for a 2 px top hairline (agent identity). */
+  accent?: string
 }
 
 /** Common node frame: entry motion, selection ring, hidden handles. */
-export function NodeShell({ id, className = '', children, label, dim = false }: Props) {
+export function NodeShell({ id, className = '', children, label, dim = false, accent }: Props) {
   const selected = useCrux((s) => s.selectedNodeId === id)
   return (
     <motion.div
@@ -25,6 +27,7 @@ export function NodeShell({ id, className = '', children, label, dim = false }: 
       aria-selected={selected}
     >
       <Handles />
+      {accent ? <span className="cx-hair" style={{ background: accent }} aria-hidden /> : null}
       {children}
     </motion.div>
   )

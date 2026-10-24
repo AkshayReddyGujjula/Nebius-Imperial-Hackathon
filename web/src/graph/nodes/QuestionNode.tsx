@@ -7,8 +7,8 @@ import { useCrux } from '../../store/runStore'
 import { selectQuestionTrust } from '../../store/selectors'
 import { fmtMs, fmtTokens } from '../../lib/format'
 import type { CruxNode } from '../buildGraph'
-import { disagreesWith, qLabel } from '../helpers'
-import { EffortBadge, StatusDot, dotTone, statusWord } from '../parts'
+import { agentColor, agentNumber, disagreesWith, modelName, qLabel } from '../helpers'
+import { AgentBadge, EffortBadge, StatusDot, dotTone, statusWord } from '../parts'
 import { NodeShell } from './NodeShell'
 
 function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
@@ -27,10 +27,15 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
   const tone = dotTone(status)
   const failed = tone === 'failed'
   const deeper = question.origin === 'dig_deeper'
+  const agentId = agent?.id ?? null
   
   return (
-    <NodeShell id={id} dim={question.stale} label={question.text}>
+    <NodeShell id={id} dim={question.stale} label={question.text} accent={agentId ? agentColor(agentId) : undefined}>
       <div className="cx-k">
+        {agentId && <AgentBadge agentId={agentId} />}
+        <span className="cx-agent-line cx-ellipsis" title={agentLine(agentId, agent?.model, question.effort, false)}>
+          {agentLine(agentId, agent?.model, question.effort, true)}
+        </span>
         {detailed && <span className="cx-mono">{deeper ? `${label} · deeper` : label}</span>}
         {!detailed && deeper && <span>Deeper</span>}
         {question.stale && <span className="cx-tag">Superseded</span>}
@@ -73,6 +78,15 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
       )}
     </NodeShell>
   )
+}
+
+const EFFORT_WORD = { low: 'Low', high: 'High', max: 'Max' } as const
+
+/** "Agent 1 · DeepSeek V4.1 Flash · High effort" (short: "Agent 1 · DeepSeek · High"). */
+function agentLine(agentId: string | null, model: string | undefined, effort: keyof typeof EFFORT_WORD, short: boolean): string {
+  if (!agentId) return short ? 'Waiting for an agent' : 'Waiting for an agent'
+  const name = modelName(model || 'deepseek', short)
+  return `Agent ${agentNumber(agentId)} · ${name} · ${EFFORT_WORD[effort]}${short ? '' : ' effort'}`
 }
 
 function simpleLine(
