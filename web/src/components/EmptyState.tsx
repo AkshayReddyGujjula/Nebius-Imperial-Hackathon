@@ -1,9 +1,10 @@
-import { useState, type ReactNode } from 'react'
+import { useState } from 'react'
 import { Cpu, RotateCcw, Split } from 'lucide-react'
 import type { ReplayInfo } from '@shared/api'
 import { useCrux } from '@/store/runStore'
 import { listReplays } from '@/lib/api'
 import { Composer } from './Composer'
+import { MicButton } from './MicButton'
 
 export const EXAMPLES = [
   {
@@ -16,12 +17,12 @@ export const EXAMPLES = [
   },
 ]
 
-export function EmptyState({ onRun, onReplay, error, mic }: {
+export function EmptyState({ onRun, onReplay, error }: {
   onRun: (text: string) => void
   onReplay: (file: string) => void
   error: string | null
-  mic?: ReactNode
 }) {
+  const [micError, setMicError] = useState<string | null>(null)
   const setDraft = useCrux((s) => s.setDraft)
   const [replays, setReplays] = useState<ReplayInfo[] | null>(null)
   const [replayError, setReplayError] = useState<string | null>(null)
@@ -43,7 +44,7 @@ export function EmptyState({ onRun, onReplay, error, mic }: {
           <p className="mt-1 mb-4 text-[14px] leading-5 text-crux-text-secondary">
             Type it or say it. Include what matters: deadlines, stakes, what you value.
           </p>
-          <Composer onSubmit={onRun} error={error} mic={mic} />
+          <Composer onSubmit={onRun} error={error ?? micError} mic={<MicButton onError={setMicError} />} />
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <span className="text-[12px] text-crux-text-tertiary">Try:</span>
             {EXAMPLES.map((ex) => (
