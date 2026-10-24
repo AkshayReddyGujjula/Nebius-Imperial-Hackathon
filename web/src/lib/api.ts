@@ -90,10 +90,40 @@ function attach(runId: string): void {
   disconnect = () => { clear(); stopConn() }
 }
 
+// Remembers the live run across a page reload (the server keeps its event log replayable from seq 0).
+const ACTIVE_KEY = 'crux.activeRun'
+
+function remember(runId: string, replay: boolean): void {
+  try { sessionStorage.setItem(ACTIVE_KEY, JSON.stringify({ runId, replay })) } catch { /* storage unavailable */ }
+}
+
+/** Forgets the remembered run (called on "New decision"). */
+export function forgetActiveRun(): void {
+  try { sessionStorage.removeItem(ACTIVE_KEY) } catch { /* storage unavailable */ }
+}
+
+/** Reattaches to the run remembered before a reload. Returns false (and forgets it) when there is none or it is gone. */
+export async function resumeActiveRun(): Promise<boolean> {
+  let runId: string | undefined
+  try { runId = (JSON.parse(sessionStorage.getItem(ACTIVE_KEY) ?? 'null') as { runId?: string } | null)?.runId } catch { /* corrupt */ }
+  if (!runId) { forgetActiveRun(); return false }
+  try {
+    const ctrl = new AbortController()
+    const res = await fetch(runEventsUrl(runId), { signal: ctrl.signal })
+    ctrl.abort() // only the status matters; the EventSource below replays from seq 0
+    if (!res.ok) { forgetActiveRun(); return false }
+  } catch { forgetActiveRun(); return false }
+  stopRun()
+  useCrux.getState().reset()
+  attach(runId)
+  return true
+}
+
 export async function startRun(decision: string, mode: 'text' | 'voice'): Promise<void> {
   stopRun()
   useCrux.getState().reset()
   const { runId } = await createRun({ decision, inputMode: mode })
+  remember(runId, false)
   attach(runId)
 }
 
@@ -101,6 +131,7 @@ export async function startReplay(file: string, speed?: number): Promise<void> {
   stopRun()
   useCrux.getState().reset()
   const { runId } = await createReplay(speed === undefined ? { file } : { file, speed })
+  remember(runId, true)
   attach(runId)
 }
 
