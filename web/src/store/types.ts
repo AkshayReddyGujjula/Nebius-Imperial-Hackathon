@@ -63,6 +63,8 @@ export interface RunData {
   memorySeq: number;
   /** Per user chat message id: what that message saved to user.md and the research it started. */
   receipts: Record<string, { memory: string[]; research: string[] }>;
+  /** Raw event log for the live feed (reasoning.chunk excluded), oldest first. */
+  feedLog: CruxEvent[];
 }
 
 export interface UiState {

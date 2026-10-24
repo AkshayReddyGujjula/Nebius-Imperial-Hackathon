@@ -9,10 +9,13 @@ import { ChatPanel } from '@/components/chat/ChatPanel'
 import { MatrixDrawer } from '@/components/matrix/MatrixDrawer'
 import { Inspector } from '@/components/inspector/Inspector'
 import { useShortcuts } from '@/components/useShortcuts'
+import { FeedRail } from '@/components/feed/FeedRail'
+import { useFeedUi } from '@/components/feed/feedUi'
 import '@/components/shell.css'
 
 export default function App() {
   const phase = useCrux((s) => s.phase)
+  const feedOpen = useFeedUi((s) => s.open)
   const [error, setError] = useState<string | null>(null)
   const cancelMock = useRef<(() => void) | null>(null)
   useShortcuts()
@@ -52,7 +55,7 @@ export default function App() {
 
   const idle = phase === 'idle'
   return (
-    <div className={`dl-app grid h-dvh grid-rows-[52px_minmax(0,1fr)] overflow-hidden bg-crux-page text-crux-text transition-[grid-template-columns] duration-[240ms] ease-[cubic-bezier(.2,0,0,1)] ${idle ? 'grid-cols-[0px_minmax(0,1fr)]' : 'grid-cols-[420px_minmax(0,1fr)]'}`}>
+    <div className={`dl-app grid h-dvh grid-rows-[52px_minmax(0,1fr)] overflow-hidden bg-crux-page text-crux-text transition-[grid-template-columns] duration-[240ms] ease-[cubic-bezier(.2,0,0,1)] ${idle ? 'grid-cols-[0px_minmax(0,1fr)_0px]' : feedOpen ? 'grid-cols-[420px_minmax(0,1fr)_clamp(300px,23vw,340px)]' : 'grid-cols-[420px_minmax(0,1fr)_44px]'}`}>
       <TopBar onNewDecision={newDecision} />
       <div className="min-h-0 min-w-0 overflow-hidden">{idle ? null : <ChatPanel />}</div>
       <main className="relative flex min-h-0 min-w-0 flex-col">
@@ -66,6 +69,7 @@ export default function App() {
         )}
         <Inspector />
       </main>
+      <div className="min-h-0 min-w-0 overflow-hidden">{idle ? null : <FeedRail />}</div>
     </div>
   )
 }

@@ -56,7 +56,7 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
   const textTone = kind === 'active' ? 'text-crux-accent-text' : kind === 'ok' ? 'text-crux-ok' : kind === 'bad' ? 'text-crux-bad' : 'text-crux-text-secondary'
 
   return (
-    <header className="dl-topbar col-span-2 flex h-[52px] min-w-0 items-center gap-4 px-4">
+    <header className="dl-topbar col-span-3 flex h-[52px] min-w-0 items-center gap-4 px-4">
       <div className="flex min-w-0 items-center gap-2">
         <span className="dl-mark grid size-[18px] flex-none place-items-center rounded-[4px]" aria-hidden="true">DL</span>
         <span className="whitespace-nowrap text-[15px] font-semibold">Decision Lab</span>
