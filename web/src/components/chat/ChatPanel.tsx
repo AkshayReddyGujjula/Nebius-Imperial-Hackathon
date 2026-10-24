@@ -172,10 +172,11 @@ function Options({ suggestions, recommended, disabled, onSent }: {
 }
 
 function ResearchStatus() {
-  const { agents, phase, briefReady, synthSeq } = useCrux(useShallow((s) => ({
-    agents: Object.values(s.agents), phase: s.phase, briefReady: s.synthesisStatus === 'ready', synthSeq: s.synthesisSeq,
+  const { agentMap, phase, briefReady, synthSeq } = useCrux(useShallow((s) => ({
+    agentMap: s.agents, phase: s.phase, briefReady: s.synthesisStatus === 'ready', synthSeq: s.synthesisSeq,
   })))
   const select = useCrux((s) => s.select)
+  const agents = useMemo(() => Object.values(agentMap), [agentMap])
   const active = phase === 'planning' || phase === 'researching' || phase === 'checking' || phase === 'synthesizing'
   const done = agents.filter((a) => a.status === 'done' || a.status === 'failed' || a.status === 'timeout').length
   const n = agents.length
@@ -225,7 +226,7 @@ function ChatInput({ disabled, onSent }: { disabled: boolean; onSent: (text: str
     const el = ref.current
     if (!el) return
     el.style.height = 'auto'
-    el.style.height = `${Math.min(7 * LINE, Math.max(LINE, el.scrollHeight - 10))}px`
+    el.style.height = `${Math.min(7 * LINE + 10, Math.max(LINE + 10, el.scrollHeight))}px`
   }, [draft])
 
   const submit = async () => {
