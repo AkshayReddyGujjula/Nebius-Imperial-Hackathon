@@ -1,0 +1,24 @@
+/* Decision brief card body (RecommendationNode). Scrolls inside the card; never grows it. */
+.br-meter { display: inline-flex; align-items: center; gap: 6px; font-size: 11.5px; color: var(--crux-text-secondary); white-space: nowrap; flex: none; }
+.br-meter i { display: inline-block; width: 12px; height: 5px; border-radius: 2px; background: var(--crux-subtle); }
+.br-meter i[data-on="true"] { background: var(--crux-accent); }
+.br-conds { display: flex; flex-direction: column; gap: 4px; margin-top: 8px; }
+.br-cond { display: flex; align-items: baseline; gap: 6px; min-width: 0; font-size: 12px; line-height: 17px; color: var(--crux-text-tertiary); }
+.br-chip { display: inline-flex; align-items: center; gap: 5px; flex: none; max-width: 70%; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--crux-accent-border); background: var(--crux-accent-soft); color: var(--crux-text); font-size: 12px; line-height: 17px; }
+.br-chip b { font-weight: 600; }
+.br-chip em { font-style: normal; color: var(--crux-accent-text); }
+.br-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.br-cond > .br-detail { min-width: 0; }
+.br-sides { display: grid; grid-template-columns: repeat(var(--n, 2), minmax(0, 1fr)); gap: 8px; }
+.br-side { border: 1px solid var(--crux-border); border-radius: 8px; padding: 6px 8px; min-width: 0; background: var(--crux-surface); }
+.br-side[data-lead="true"] { border-color: var(--crux-accent-border); }
+.br-side h4 { margin: 0; font-size: 12px; line-height: 16px; font-weight: 600; color: var(--crux-text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.br-fit { display: flex; align-items: center; gap: 6px; margin: 3px 0 4px; font-size: 11.5px; color: var(--crux-text-tertiary); font-variant-numeric: tabular-nums; }
+.br-fit b { color: var(--crux-text); font-weight: 600; }
+.br-fit .bar { flex: 1; height: 4px; border-radius: 2px; background: var(--crux-subtle); overflow: hidden; }
+.br-fit .bar span { display: block; height: 100%; background: var(--crux-text-tertiary); }
+.br-side[data-lead="true"] .br-fit .bar span { background: var(--crux-accent); }
+.br-stat { display: flex; justify-content: space-between; gap: 6px; font-size: 11.5px; line-height: 16px; color: var(--crux-text-secondary); }
+.br-stat > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.br-stat .up { color: var(--crux-accent-text); font-variant-numeric: tabular-nums; flex: none; }
+.br-stat .dn { color: var(--crux-text-tertiary); font-variant-numeric: tabular-nums; flex: none; }
