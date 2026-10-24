@@ -1,4 +1,4 @@
-import { parseNodeId, type Question } from "@shared/index";
+import { parseNodeId, type Fact, type Question } from "@shared/index";
 import { bumpEffort } from "../config";
 import type { RunContext } from "../runs/types";
 import { runAgent } from "./agent";
@@ -73,8 +73,18 @@ export async function researchBlindSpot(ctx: RunContext): Promise<{ questionId: 
   return { questionId: question.id };
 }
 
+/** §9.8: records the person's own answer to the blind spot as a fact. */
 export async function answerBlindSpot(ctx: RunContext, answer: string): Promise<void> {
-  throw new Error("not implemented: answerBlindSpot");
+  const plan = requirePlan(ctx);
+  const bs = plan.blindSpot;
+  if (!bs) throw new Error("There is no blind spot");
+  const text = answer.trim();
+  if (!text) throw new Error("The answer is empty");
+  const fact: Fact = { id: ctx.nextId("fact"), kind: "fact", text: `${bs.text} — ${text}`, quote: null, origin: "blindspot_answer" };
+  plan.facts.push(fact);
+  ctx.emit({ type: "fact.added", fact });
+  bs.status = "answered"; bs.answer = text;
+  ctx.emit({ type: "blindspot.updated", blindSpot: { ...bs } });
 }
 
 export async function resynthesize(ctx: RunContext, weights: Record<string, number>): Promise<void> {
