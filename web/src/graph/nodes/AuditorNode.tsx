@@ -6,6 +6,7 @@ import { useCrux } from '../../store/runStore'
 import type { CruxNode } from '../buildGraph'
 import { NodeShell } from './NodeShell'
 import { StagePill, firstWords } from './StagePill'
+import { ModelBadge, NemotronTag } from './ModelBadge'
 
 const MAX_SHOWN = 3
 
@@ -27,6 +28,10 @@ function AuditorNodeImpl({ id }: NodeProps<CruxNode>) {
       return (
         <NodeShell id={id} className="cx-node-auditor is-attention" label="Contradiction check">
           <StagePill state="attention" name="Auditor" text={`${conflicts} conflict${conflicts === 1 ? '' : 's'}`} />
+          <div className="cx-aud-who">
+            <ModelBadge family="minimax" />
+            <span className="cx-ellipsis">a different lab checks DeepSeek's work</span>
+          </div>
           <div className="cx-aud-list">
             {contradictions.slice(0, 2).map((c) => (
               <div key={c.id} className="cx-ellipsis" title={c.explanation}>
@@ -54,7 +59,16 @@ function AuditorNodeImpl({ id }: NodeProps<CruxNode>) {
       <div className="cx-k">
         <ShieldCheck />
         Auditor
-        <span className="cx-byline cx-ellipsis">· Contradiction check · MiniMax M3.1 Flash · different model family from the researchers</span>
+        <ModelBadge family="minimax" />
+        <span className="cx-byline cx-ellipsis">· Contradiction check</span>
+      </div>
+      <div className="cx-aud-who" title="MiniMax M3.1 Flash, from a different lab, cross-examines every DeepSeek finding for contradictions">
+        <span className="cx-ellipsis"><b>MiniMax M3.1</b> · a different lab checks DeepSeek's work</span>
+        {status === 'ready' && (
+          <span className={`cx-aud-count ${contradictions.length ? 'is-bad' : 'is-ok'}`}>
+            {contradictions.length} conflict{contradictions.length === 1 ? '' : 's'}
+          </span>
+        )}
       </div>
       <div className="cx-body" style={{ marginTop: 'auto' }}>
         {waiting && <span className="cx-ellipsis">Waits for all agents to finish</span>}
@@ -62,6 +76,7 @@ function AuditorNodeImpl({ id }: NodeProps<CruxNode>) {
           <div className="cx-live">
             <span className="cx-dot cx-aud-pulse" />
             <span className="cx-ellipsis">{live || 'Checking findings against each other…'}</span>
+            {live && <NemotronTag />}
           </div>
         )}
         {status === 'failed' && (

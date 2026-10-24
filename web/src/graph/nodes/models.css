@@ -1,0 +1,46 @@
+/* Model badges: a coloured dot + short model name. One colour per model family. */
+.cx-model {
+  --m: #6E9BFF;
+  display: inline-flex; align-items: center; gap: 4px; flex: none;
+  height: 16px; padding: 0 6px 0 5px; border-radius: 999px;
+  font-size: 10px; font-weight: 600; line-height: 16px; letter-spacing: .01em; white-space: nowrap;
+  color: color-mix(in srgb, var(--m) 78%, white);
+  background: color-mix(in srgb, var(--m) 13%, transparent);
+  border: 1px solid color-mix(in srgb, var(--m) 30%, transparent);
+}
+.cx-model-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--m); flex: none; }
+.cx-model.is-micro { height: 14px; line-height: 14px; font-size: 9.5px; padding: 0 5px 0 4px; }
+.cx-model.is-micro .cx-model-dot { width: 5px; height: 5px; }
+.cx-model.m-deepseek { --m: #6E9BFF; }
+.cx-model.m-minimax { --m: #E3A35B; }
+.cx-model.m-nemotron { --m: #7FCB6E; }
+
+/* Auditor: who checks whom. */
+.cx-aud-who { display: flex; align-items: center; gap: 6px; min-width: 0; font-size: 11px; color: var(--crux-text-secondary); margin: 2px 0 4px; }
+.cx-aud-count { margin-left: auto; font-weight: 600; font-size: 11px; white-space: nowrap; }
+.cx-aud-count.is-bad { color: var(--crux-bad); }
+.cx-aud-count.is-ok { color: var(--crux-ok); }
+.cx-live-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.cx-live-row > .cx-ellipsis { flex: 1; min-width: 0; }
+
+/* Model legend (top-bar chip + popover). */
+.dl-mlegend { position: relative; display: inline-flex; }
+.dl-mlegend-chip {
+  display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 999px;
+  font-size: 12px; font-weight: 600; color: var(--crux-text, #e6e9ef);
+  background: color-mix(in srgb, var(--crux-text, #fff) 5%, transparent);
+  border: 1px solid var(--crux-border, #2a2f3a); cursor: pointer;
+}
+.dl-mlegend-chip:hover { background: color-mix(in srgb, var(--crux-text, #fff) 9%, transparent); }
+.dl-mlegend-dots { display: inline-flex; gap: 2px; }
+.dl-mlegend-dots i { width: 6px; height: 6px; border-radius: 50%; display: block; }
+.dl-mlegend-pop {
+  position: absolute; top: calc(100% + 6px); right: 0; z-index: 60; width: 340px; padding: 10px;
+  border-radius: 10px; background: var(--crux-surface, #151922); border: 1px solid var(--crux-border, #2a2f3a);
+  box-shadow: 0 12px 32px rgba(0,0,0,.45);
+}
+.dl-mlegend-head { font-size: 11px; text-transform: uppercase; letter-spacing: .05em; font-weight: 600; color: var(--crux-text-tertiary, #8a92a3); margin-bottom: 6px; }
+.dl-mlegend-row { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; padding: 7px 0; border-top: 1px solid var(--crux-border, #2a2f3a); }
+.dl-mlegend-row:first-of-type { border-top: 0; }
+.dl-mlegend-job { font-size: 12px; font-weight: 600; color: var(--crux-text, #e6e9ef); align-self: center; }
+.dl-mlegend-why { grid-column: 1 / -1; font-size: 11.5px; line-height: 15px; color: var(--crux-text-secondary, #b4bac6); }

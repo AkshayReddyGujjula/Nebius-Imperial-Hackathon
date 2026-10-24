@@ -11,6 +11,7 @@ import type { CruxNode } from '../buildGraph'
 import { agentColor, agentNumber, disagreesWith, modelName, qLabel } from '../helpers'
 import { AgentBadge, SourceChip, StatePill, TypeOut, pillState } from '../parts'
 import { NodeShell } from './NodeShell'
+import { ModelBadge, NemotronTag } from './ModelBadge'
 import { firstWords } from './StagePill'
 import '../activity.css'
 
@@ -41,8 +42,9 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
         <div className="cx-k">
           {agentId && <AgentBadge agentId={agentId} />}
           <span className="cx-agent-name" title={agentLine(agentId, agent?.model, question.effort)}>
-            {agentId ? modelName(agent?.model || 'deepseek').split(' ')[0] : 'Waiting'}
+            {agentId ? `Agent ${agentNumber(agentId)}` : 'Waiting'}
           </span>
+          {agentId && <ModelBadge family="deepseek" title={agentLine(agentId, agent?.model, question.effort)} />}
           <span className="cx-right">
             <StatePill state={pillState(status)} progress={agentProgress(status, agent?.round ?? 0, total)} />
           </span>
@@ -58,6 +60,7 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
       <div className="cx-k">
         {agentId && <AgentBadge agentId={agentId} />}
         <span className="cx-agent-name">{agentId ? `Agent ${agentNumber(agentId)}` : 'Waiting for an agent'}</span>
+        {agentId && <ModelBadge family="deepseek" />}
         {detailed && <span className="cx-mono cx-ellipsis">{deeper ? `${label} · deeper` : label}</span>}
         {!detailed && deeper && <span className="cx-ellipsis">Deeper</span>}
         {question.stale && <span className="cx-tag">Superseded</span>}
@@ -104,6 +107,7 @@ function SimpleLine({ agentId, summary }: { agentId: string | null; summary: str
     <div className={`cx-simple-line${live ? ' is-live' : ''}${status === 'failed' ? ' is-bad' : ''}`}>
       {live ? <span className="cx-dot cx-aud-pulse" aria-hidden /> : null}
       <span className="cx-ellipsis">{text}</span>
+      {status === 'thinking' && summary ? <NemotronTag /> : null}
     </div>
   )
 }
@@ -209,6 +213,7 @@ function AgentActivity({ agentId, questionId, total, summary }: {
           <div className="ax-think">
             {summary ? <TypeOut key={summary} text={summary} cps={60} /> : <>Weighing what the sources say<span className="ax-caret" aria-hidden /></>}
           </div>
+          {summary && <div><NemotronTag /></div>}
           {findingChip}
         </>
       )

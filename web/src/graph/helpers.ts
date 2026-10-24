@@ -50,3 +50,23 @@ export const slotColor = (slot: number) => `var(--dl-agent-${slot}, ${AGENT_FALL
 export const agentColor = (agentId: string | null | undefined) => slotColor(agentSlot(agentId))
 export const agentSoft = (agentId: string | null | undefined) =>
   `var(--dl-agent-${agentSlot(agentId)}-soft, color-mix(in srgb, ${agentColor(agentId)} 12%, transparent))`
+
+// ---------- model identity (one colour per model family) ----------
+
+export type ModelFamily = 'deepseek' | 'minimax' | 'nemotron'
+
+/** Short name + colour per family; readable on the dark theme. */
+export const MODEL_FAMILIES: Record<ModelFamily, { short: string; full: string; color: string }> = {
+  deepseek: { short: 'DeepSeek', full: 'DeepSeek V4.1 Flash', color: '#6E9BFF' },
+  minimax: { short: 'MiniMax', full: 'MiniMax M3.1 Flash', color: '#E3A35B' },
+  nemotron: { short: 'Nemotron', full: 'Nemotron 3.5 Lightning', color: '#7FCB6E' },
+}
+
+/** Which family a model id / display name belongs to; null for anything else (code, user.md…). */
+export function modelFamily(id: string | null | undefined): ModelFamily | null {
+  if (!id) return null
+  if (/deepseek/i.test(id)) return 'deepseek'
+  if (/minimax/i.test(id)) return 'minimax'
+  if (/nemotron/i.test(id)) return 'nemotron'
+  return null
+}
