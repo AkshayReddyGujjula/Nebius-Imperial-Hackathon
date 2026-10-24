@@ -10,6 +10,10 @@ import { MicButton } from './MicButton'
 
 export const EXAMPLES = [
   {
+    label: 'Hackathon on Sunday, exam on Monday — help me decide',
+    text: 'I have a hackathon on Sunday and then an exam on Monday. Can you help me decide?',
+  },
+  {
     label: 'Claude Code or Codex — which coding agent fits me?',
     text: "Claude Code or Codex — which coding agent fits me? I'm a developer who wants an AI coding agent for day-to-day work on a mid-sized TypeScript codebase. I care about code quality, how well it handles multi-file changes, price, and how it fits my workflow.",
   },
