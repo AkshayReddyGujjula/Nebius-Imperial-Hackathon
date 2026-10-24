@@ -80,17 +80,22 @@ async function execOnce(o: ChatOpts): Promise<ChatResult> {
   }
 }
 
+// Nebius outages are short (~10-30 s of 503s), so ride them out: 2/4/8/12 s plus jitter.
+const RETRY_BACKOFF_MS = [2000, 4000, 8000, 12000];
+const RETRY_WAIT_CAP_MS = 15_000;
+
 async function withRetry(o: ChatOpts): Promise<ChatResult> {
   for (let attempt = 0; ; attempt++) {
     try { return await execOnce(o); }
     catch (err: any) {
-      if (err instanceof StreamedError || attempt >= 2) throw err;
+      if (err instanceof StreamedError || attempt >= RETRY_BACKOFF_MS.length) throw err;
       const status = err?.status as number | undefined;
       const retryable = status === undefined ? err?.name !== "TimeoutError" && err?.name !== "AbortError"
         : [429, 502, 503, 504].includes(status);
       if (!retryable) throw err;
       const ra = Number(err?.headers?.get?.("retry-after") ?? err?.headers?.["retry-after"]);
-      await new Promise((r) => setTimeout(r, (Number.isFinite(ra) && ra > 0 ? ra * 1000 : 2000) + Math.random() * 500));
+      const base = Math.max(RETRY_BACKOFF_MS[attempt]!, Number.isFinite(ra) && ra > 0 ? ra * 1000 : 0);
+      await new Promise((r) => setTimeout(r, Math.min(base + Math.random() * 500, RETRY_WAIT_CAP_MS)));
     }
   }
 }
