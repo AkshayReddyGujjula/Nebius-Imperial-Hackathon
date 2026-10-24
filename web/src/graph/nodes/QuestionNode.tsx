@@ -1,3 +1,4 @@
+import { clip } from '@/lib/format'
 import { memo } from 'react'
 import type { NodeProps } from '@xyflow/react'
 import { useShallow } from 'zustand/react/shallow'
@@ -90,7 +91,7 @@ function simpleLine(
   }
 }
 
-const shortReason = (r: string | null) => (r ? (r.length > 60 ? `${r.slice(0, 57)}…` : r) : 'something went wrong')
+const shortReason = (r: string | null) => (r ? clip(r, 60) : 'something went wrong')
 
 function TrustLine({ questionId }: { questionId: string }) {
   const t = useCrux(useShallow((s) => selectQuestionTrust(s, questionId)))

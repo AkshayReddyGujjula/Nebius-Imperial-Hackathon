@@ -48,6 +48,12 @@ export function Composer({ onSubmit, mic, error }: { onSubmit: (text: string) =>
             <kbd className="ui-mono">Enter</kbd> to run · <kbd className="ui-mono">Shift</kbd>+<kbd className="ui-mono">Enter</kbd> new line
           </span>
           <div className="flex-1" />
+          {draft.length > 3500 ? (
+            <span className="ui-num text-[12px] text-crux-text-tertiary">{draft.length.toLocaleString('en-GB')} / 4,000</span>
+          ) : null}
+          {!ready && draft.trim().length > 0 ? (
+            <span className="text-[12px] text-crux-text-tertiary">Write at least 10 characters</span>
+          ) : null}
           {mic}
           <button id="crux-run" type="button" className="ui-btn primary icon !size-9" disabled={!ready || busy}
             onClick={submit} aria-label="Run" title={ready ? 'Run' : 'Write at least 10 characters'}>

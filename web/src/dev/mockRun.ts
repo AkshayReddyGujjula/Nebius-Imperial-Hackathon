@@ -365,7 +365,10 @@ export function playMock(store: StoreLike, speed = 1): () => void {
       ? { ...e, ts, agent: { ...e.agent, startedAt: start + (e.agent.startedAt - BASE_TS) / speed } }
       : e.type === 'synthesis.ready'
         ? { ...e, ts, synthesis: { ...e.synthesis, createdAt: ts } }
-        : { ...e, ts }
+        : e.type === 'stats.updated'
+          // Scale the scripted durations too, so the header timer at done matches the sped-up play time.
+          ? { ...e, ts, stats: { ...e.stats, wallMs: e.stats.wallMs / speed, agentMsSum: e.stats.agentMsSum / speed } }
+          : { ...e, ts }
     timers.push(setTimeout(() => store.getState().ingest(ev), offset))
   }
   return () => timers.forEach(clearTimeout)

@@ -8,6 +8,7 @@ import { CitationChip } from '../common/CitationChip'
 import { OriginTag, Pips } from '../matrix/MatrixTable'
 import { useMatrix } from '../matrix/useMatrix'
 import { Header, Sec } from './parts'
+import { REPLAY_NOTE, ReplayNote } from './actions'
 
 export function CellView({ cellKeyStr, onClose }: { cellKeyStr: string; onClose: () => void }) {
   const plan = useCrux((s) => s.plan)
@@ -15,6 +16,7 @@ export function CellView({ cellKeyStr, onClose }: { cellKeyStr: string; onClose:
   const override = useCrux((s) => s.overrides[cellKeyStr])
   const setOverride = useCrux((s) => s.setOverride)
   const select = useCrux((s) => s.select)
+  const replay = useCrux((s) => s.replay)
   const { cells } = useMatrix()
   const cell = cells.find((c) => cellKey(c.optionId, c.criterionId) === cellKeyStr)
   const contradicted = useCrux(useShallow((s) => (cell?.findingIds ?? []).filter((id) => s.contradictions.some((x) => x.findingIds.includes(id)))))
@@ -67,12 +69,13 @@ export function CellView({ cellKeyStr, onClose }: { cellKeyStr: string; onClose:
           <div className="flex items-center gap-2">
             <div className="ui-seg flex-1" role="radiogroup" aria-label="Your score">
               {[1, 2, 3, 4, 5].map((n) => (
-                <button key={n} type="button" role="radio" aria-checked={override === n} data-on={override === n} onClick={() => setOverride(cellKeyStr, n)}>{n}</button>
+                <button key={n} type="button" role="radio" aria-checked={override === n} data-on={override === n} disabled={replay} title={replay ? REPLAY_NOTE : undefined} onClick={() => setOverride(cellKeyStr, n)}>{n}</button>
               ))}
             </div>
-            {override !== undefined ? <button type="button" className="ui-btn sm" onClick={() => setOverride(cellKeyStr, null)}>Clear</button> : null}
+            {override !== undefined ? <button type="button" className="ui-btn sm" disabled={replay} onClick={() => setOverride(cellKeyStr, null)}>Clear</button> : null}
           </div>
           <p className="mt-2 text-[12px] leading-4 text-crux-text-tertiary">Changing it marks the cell You and re-ranks the totals at once.</p>
+          <div className="mt-1"><ReplayNote /></div>
         </Sec>
       </div>
     </>

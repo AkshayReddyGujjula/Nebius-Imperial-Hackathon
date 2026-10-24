@@ -75,6 +75,9 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
         )}
       </div>
       {error && <p className="text-xs" style={{ color: 'var(--crux-bad)', margin: '0 0 4px' }}>{error}</p>}
+      {replay && (status === 'failed' || (ready && (failure || stale.stale))) && (
+        <p className="text-xs" style={{ color: 'var(--crux-text-tertiary)', margin: '0 0 4px' }}>Not available on a replay — start a live run.</p>
+      )}
       {ready ? (
         <div className="cx-rec">
           <div className="cx-rec-main">

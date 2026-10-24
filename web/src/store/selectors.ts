@@ -1,3 +1,4 @@
+import { clip } from '@/lib/format'
 import { buildCells, computeTotals, parseNodeId } from '@shared/index'
 import type { AgentStatus, MatrixCell, OptionTotal } from '@shared/index'
 import { qIndex, SYNTHESIS_NOTICE_ID } from './reducer'
@@ -46,7 +47,7 @@ export function selectSynthesisError(s: Pick<S, 'notices'>): string | null {
   const msg = s.notices.find((n) => n.id === SYNTHESIS_NOTICE_ID)?.message
   if (msg === undefined) return null
   const line = msg.split(/\r?\n/)[0].trim() || 'unknown error'
-  return line.length > 80 ? `${line.slice(0, 79).trimEnd()}…` : line
+  return clip(line, 80)
 }
 
 // ---------- per-question trust ----------

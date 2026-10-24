@@ -25,13 +25,23 @@ function useAction() {
   return { busy, error, run }
 }
 
+export const REPLAY_NOTE = 'Not available on a replay — start a live run.'
+
+/** One muted note per panel explaining why its follow-up buttons are disabled on a replay. */
+export function ReplayNote() {
+  const replay = useCrux((s) => s.replay)
+  return replay ? <p className="text-[12px] leading-4 text-crux-text-tertiary">{REPLAY_NOTE}</p> : null
+}
+
 function Err({ text }: { text: string | null }) {
   return text ? <p className="text-[12px] leading-4 text-crux-warn">{text}</p> : null
 }
 
-function Btn({ busy, children, className, ...rest }: { busy: boolean; children: ReactNode } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+function Btn({ busy, children, className, live, ...rest }: { busy: boolean; children: ReactNode; live?: boolean } & React.ButtonHTMLAttributes<HTMLButtonElement>) {
+  const replay = useCrux((s) => s.replay)
+  const off = live && replay
   return (
-    <button type="button" className={`ui-btn inline-flex items-center justify-center gap-2 ${className ?? ''}`} disabled={busy || rest.disabled} {...rest}>
+    <button type="button" className={`ui-btn inline-flex items-center justify-center gap-2 ${className ?? ''}`} {...rest} disabled={busy || rest.disabled || off} title={off ? REPLAY_NOTE : rest.title}>
       {busy ? <Loader className="ui-spin" /> : null}{children}
     </button>
   )
@@ -52,7 +62,7 @@ export function QuestionActions({ questionId }: { questionId: string }) {
   const finished = status === 'done' || status === 'failed' || status === 'timeout'
   return (
     <>
-      <Btn busy={deeper.busy} className="primary wide" disabled={!finished}
+      <Btn live busy={deeper.busy} className="primary wide" disabled={!finished}
         title={finished ? undefined : 'Available once this branch finishes'}
         onClick={() => deeper.run(async (runId) => {
           const r = await digDeeper(runId, { nodeId: nodeId.question(questionId) })
@@ -61,9 +71,10 @@ export function QuestionActions({ questionId }: { questionId: string }) {
         <Search />Dig deeper at {effortWord(bump(q.effort))} effort
       </Btn>
       <Err text={deeper.error} />
+      <ReplayNote />
       {detailed ? (
         <>
-          <Btn busy={ladder.busy} className="wide" disabled={!finished}
+          <Btn live busy={ladder.busy} className="wide" disabled={!finished}
             onClick={() => ladder.run((runId) => runLadder(runId, { questionId }))}>
             Compare effort levels
           </Btn>
@@ -118,11 +129,12 @@ export function FindingActions({ findingId }: { findingId: string }) {
   const a = useAction()
   return (
     <div className="flex flex-col gap-2">
-      <Btn busy={a.busy} className="wide" onClick={() => a.run(async (runId) => {
+      <Btn live busy={a.busy} className="wide" onClick={() => a.run(async (runId) => {
         const r = await digDeeper(runId, { nodeId: nodeId.finding(findingId) })
         select(nodeId.question(r.questionId))
       })}><Search />Dig deeper on this claim</Btn>
       <Err text={a.error} />
+      <ReplayNote />
     </div>
   )
 }
@@ -176,7 +188,7 @@ export function BlindSpotActions() {
       </div>
       <div className="flex flex-wrap gap-2">
         {bs.researchable ? (
-          <Btn busy={research.busy} onClick={() => research.run(async (runId) => {
+          <Btn live busy={research.busy} onClick={() => research.run(async (runId) => {
             const r = await researchBlindSpot(runId)
             select(nodeId.question(r.questionId))
           })}><Search />Research it</Btn>
@@ -184,6 +196,7 @@ export function BlindSpotActions() {
         <Btn busy={dismiss.busy} className="ghost" onClick={onDismiss}>Dismiss</Btn>
       </div>
       <Err text={research.error ?? dismiss.error} />
+      {bs.researchable ? <ReplayNote /> : null}
     </div>
   )
 }
@@ -195,11 +208,12 @@ export function UpdateRecommendation({ primary = false }: { primary?: boolean })
   const running = useCrux((s) => s.synthesisStatus === 'running')
   return (
     <div className="flex flex-col gap-1.5">
-      <Btn busy={a.busy || running} className={primary ? 'primary self-start' : 'sm self-start'}
+      <Btn live busy={a.busy || running} className={primary ? 'primary self-start' : 'sm self-start'}
         onClick={() => a.run((runId) => synthesize(runId, { weights: useCrux.getState().weights }))}>
         {running ? 'Updating…' : 'Update recommendation'}
       </Btn>
       <Err text={a.error} />
+      <ReplayNote />
     </div>
   )
 }

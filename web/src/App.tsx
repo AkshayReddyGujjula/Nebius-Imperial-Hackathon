@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useCrux } from '@/store/runStore'
-import { startReplay, startRun, stopRun } from '@/lib/api'
+import { forgetActiveRun, resumeActiveRun, startReplay, startRun, stopRun } from '@/lib/api'
 import { mockSpeedFromUrl, playMock } from '@/dev/mockRun'
 import { Canvas } from '@/graph/Canvas'
 import { TopBar } from '@/components/TopBar'
@@ -20,6 +20,7 @@ export default function App() {
   useEffect(() => {
     const speed = mockSpeedFromUrl()
     if (speed) cancelMock.current = playMock(useCrux, speed)
+    else void resumeActiveRun()
     return () => { cancelMock.current?.(); cancelMock.current = null }
   }, [])
 
@@ -44,6 +45,7 @@ export default function App() {
   const newDecision = useCallback(() => {
     cancelMock.current?.(); cancelMock.current = null
     stopRun()
+    forgetActiveRun()
     useCrux.getState().reset()
     setError(null)
   }, [])
