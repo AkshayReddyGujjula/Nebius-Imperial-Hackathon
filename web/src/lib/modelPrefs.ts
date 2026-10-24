@@ -1,7 +1,7 @@
 import type { RunModels } from '@shared/api'
 import { MODEL_CATALOG } from '@shared/models'
 
-const CHOICES = MODEL_CATALOG.map((m) => ({ id: m.id, name: `${m.name} · ${m.tier === 'smart' ? 'smart' : 'cheap'} · $${m.in}/$${m.out}${m.tested ? ' · tested' : ''}` }))
+const CHOICES = MODEL_CATALOG.map((m) => ({ id: m.id, name: `${m.name} — $${m.in}/$${m.out}${m.tier === 'smart' ? ' · smart' : ''}${m.tested ? ' · tested' : ''}` }))
 export const MODEL_CHOICES = { orchestrator: CHOICES, agent: CHOICES, audit: CHOICES }
 
 export interface Preset { id: string; name: string; why: string; models: Required<RunModels> }

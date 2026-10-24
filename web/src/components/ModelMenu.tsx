@@ -20,7 +20,7 @@ export function ModelMenu() {
         <Settings2 className="!size-4" />Models · {active ? active.name : 'Custom'}
       </button>
       {open ? (
-        <div className="absolute left-1/2 z-30 mt-2 w-[520px] max-w-[90vw] -translate-x-1/2 rounded-xl border border-crux-border-strong bg-crux-surface p-4 text-left shadow-[0_8px_24px_rgba(0,0,0,.35)]">
+        <div className="absolute left-1/2 z-30 mt-2 w-[560px] max-w-[92vw] -translate-x-1/2 rounded-xl border border-crux-border-strong bg-crux-surface p-4 text-left shadow-[0_8px_24px_rgba(0,0,0,.35)]">
           <div className="mb-2 text-[13px] font-semibold">Presets</div>
           <div className="flex flex-col gap-1.5">
             {PRESETS.map((p) => (
@@ -34,10 +34,10 @@ export function ModelMenu() {
           <div className="mt-4 mb-2 text-[13px] font-semibold">Or pick per role <span className="font-normal text-crux-text-tertiary">· open models on Nebius Token Factory</span></div>
           <div className="flex flex-col gap-2">
             {ROLES.map((r) => (
-              <label key={r.key} className="grid grid-cols-[160px_1fr] items-center gap-3 text-[13px]">
+              <label key={r.key} className="grid grid-cols-[140px_minmax(0,1fr)] items-center gap-3 text-[13px]">
                 <span>{r.label}<span className="block text-[11.5px] text-crux-text-tertiary">{r.hint}</span></span>
                 <select value={m[r.key]} onChange={(e) => update({ ...m, [r.key]: e.target.value })}
-                  className="h-9 rounded-lg border border-crux-border bg-crux-page px-2 text-[13px] text-crux-text">
+                  className="h-9 w-full min-w-0 truncate rounded-lg border border-crux-border bg-crux-page px-2 text-[13px] text-crux-text">
                   {MODEL_CHOICES[r.key].map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </label>
