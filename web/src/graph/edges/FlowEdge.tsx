@@ -17,7 +17,7 @@ export interface FlowEdgeData extends Record<string, unknown> {
 
 type FlowEdgeType = Edge<FlowEdgeData, 'flow'>
 
-const CHAR_W = 6.1
+const CHAR_W = 6.8
 
 /** A tree edge that can carry a small labelled "packet" from source to target (agent hand-offs). */
 function FlowEdgeImpl({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, style, data }: EdgeProps<FlowEdgeType>) {

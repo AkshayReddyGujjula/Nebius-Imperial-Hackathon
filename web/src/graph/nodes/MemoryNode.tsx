@@ -43,7 +43,7 @@ function MemoryNodeImpl({ id }: NodeProps<CruxNode>) {
         )}
       </div>
       <div className="cx-foot cx-meta-mono">
-        {seq > 0 ? `${lines} notes · read by every agent` : 'empty'}
+        {seq > 0 ? `${lines} notes · read by all` : 'empty'}
       </div>
     </NodeShell>
   )
