@@ -1,7 +1,7 @@
 import type { Edge, Node } from '@xyflow/react'
 import { nodeId, type Contradiction } from '@shared/index'
 import type { AgentView } from '../store/types'
-import type { LayoutResult } from './layout'
+import { AUDITOR_ID, type LayoutResult } from './layout'
 import { agentColor } from './helpers'
 
 export type CruxNodeData = { refId: string | null }
@@ -84,8 +84,9 @@ export function buildEdges(input: EdgeInput): Edge[] {
     if (head.className === 'edge-working') head.style = { stroke: agentColor(agentByQuestion[col[0].slice(2)]) }
     edges.push(head)
     for (let i = 1; i < col.length; i++) edges.push(tree(col[i - 1], col[i], 'straight', false))
-    edges.push(tree(col[col.length - 1], nodeId.recommendation, 'bus', !synthesisReady))
+    edges.push(tree(col[col.length - 1], AUDITOR_ID, 'bus', !synthesisReady))
   }
+  if (layout.columns.length > 0) edges.push(tree(AUDITOR_ID, nodeId.recommendation, 'straight', !synthesisReady))
 
   if (detailed) {
     const colOf = new Map<string, number>()

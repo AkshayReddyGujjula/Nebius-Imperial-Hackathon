@@ -174,3 +174,5 @@
 .cx-rec { overflow-y: auto; overscroll-behavior: contain; padding-right: 4px; }
 .cx-rec-main, .cx-rec-why { min-height: min-content; }
 .cx-cond > div { white-space: normal; }
+.cx-node-auditor { border-color: var(--crux-border-strong); padding: 10px 16px; }
+.cx-aud-pulse { background: var(--crux-accent); animation: crux-pulse var(--crux-pulse-duration) ease-in-out infinite; }

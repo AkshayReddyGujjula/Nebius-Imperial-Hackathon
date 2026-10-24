@@ -1,18 +1,21 @@
 import { nodeId, type Finding, type NodeKind, type Plan, type Question } from '@shared/index'
 import type { ViewMode } from '../store/types'
 
+export const AUDITOR_ID = 'auditor'
+
 export const L = {
   colW: 232, colGap: 16, rowGap: 12,
   decisionH: 148, decisionMinW: 480, decisionMaxW: 760, topGap: 64,
   questionH: { simple: 188, detailed: 156 },
   blindspotH: { simple: 188, detailed: 156 },
   findingH: 112,
+  auditorH: 132,
   recGap: 56, recH: { simple: 240, detailed: 280 },
 } as const
 
 export interface LaidNode {
   id: string
-  kind: NodeKind
+  kind: NodeKind | 'auditor'
   refId: string | null
   x: number
   y: number
@@ -130,9 +133,12 @@ export function layoutGraph({ plan, findings, viewMode }: LayoutInput): LayoutRe
 
   // DECISION: centre the recommendation like the decision so it stays aligned when totalW < decisionMinW.
   const recW = Math.max(totalW, L.decisionMinW)
+  // DECISION: the contradiction auditor sits between the findings and the recommendation, same width.
+  const audY = bottom + L.recGap
+  nodes.push({ id: AUDITOR_ID, kind: 'auditor', refId: null, x: (totalW - recW) / 2, y: audY, w: recW, h: L.auditorH })
   nodes.push({
     id: nodeId.recommendation, kind: 'recommendation', refId: null,
-    x: (totalW - recW) / 2, y: bottom + L.recGap, w: recW, h: L.recH[viewMode],
+    x: (totalW - recW) / 2, y: audY + L.auditorH + L.recGap, w: recW, h: L.recH[viewMode],
   })
 
   return { nodes, columns: colItems.map((items) => items.map((it) => it.id)), totalW }

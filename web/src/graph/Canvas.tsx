@@ -16,6 +16,7 @@ import { BlindSpotNode } from './nodes/BlindSpotNode'
 import { RecommendationNode } from './nodes/RecommendationNode'
 import { ContradictionEdge } from './edges/ContradictionEdge'
 import { BusEdge } from './edges/BusEdge'
+import { AuditorNode } from './nodes/AuditorNode'
 import './canvas.css'
 
 const nodeTypes: NodeTypes = {
@@ -24,6 +25,7 @@ const nodeTypes: NodeTypes = {
   finding: FindingNode,
   blindspot: BlindSpotNode,
   recommendation: RecommendationNode,
+  auditor: AuditorNode,
 }
 // DECISION: column → recommendation edges use a custom smoothstep ("bus") that turns just above the
 // recommendation; the stock smoothstep turns at the midpoint and runs behind finding cards.
@@ -91,7 +93,7 @@ function CanvasInner() {
   const onMoveStart: OnMoveStart = useCallback((event) => {
     if (event) setUserMovedViewport(true)
   }, [setUserMovedViewport])
-  const onNodeClick: NodeMouseHandler = useCallback((_e, node) => select(node.id), [select])
+  const onNodeClick: NodeMouseHandler = useCallback((_e, node) => { if (node.type !== 'auditor') select(node.id) }, [select])
   const onPaneClick = useCallback(() => { select(null); selectCell(null) }, [select, selectCell])
   const fit = useCallback(() => {
     setUserMovedViewport(false)
