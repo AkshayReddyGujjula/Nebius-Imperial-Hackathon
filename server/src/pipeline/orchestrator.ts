@@ -37,8 +37,9 @@ export async function plan(ctx: RunContext, summarizer: Summarizer): Promise<Pla
   try {
     out = await callJson(ctx, "orchestrator", PlanOut, {
       model: CONFIG.models.orchestrator, reasoningEffort: "max", maxTokens: 32000, timeoutMs: 90_000, messages, onReasoning });
-  } catch {
-    ctx.emit({ type: "notice", level: "warn", message: "Planner retrying at high effort" });
+  } catch (err) {
+    console.warn("[plan] max effort failed:", err);
+    ctx.emit({ type: "notice", level: "warn", message: `Planner retrying at high effort (${shortMessage(err)})` });
     out = await callJson(ctx, "orchestrator", PlanOut, {
       model: CONFIG.models.orchestrator, reasoningEffort: "high", maxTokens: 32000, timeoutMs: 60_000, messages, onReasoning });
   } finally {
