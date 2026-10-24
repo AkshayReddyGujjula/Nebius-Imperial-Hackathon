@@ -199,7 +199,8 @@ function QuestionPopup({ text, suggestions, recommended, disabled, onSent }: {
               ))}
             </div>
             <form className="dl-pop-own" onSubmit={(e) => { e.preventDefault(); void pick(own) }}>
-              <input value={own} maxLength={4000} disabled={busy || disabled} onChange={(e) => setOwn(e.target.value)} placeholder="Or type your own answer…" aria-label="Your own answer" />
+              <input value={own} maxLength={4000} disabled={busy || disabled} onChange={(e) => setOwn(e.target.value)} placeholder="Or type or say your own answer…" aria-label="Your own answer" />
+              {disabled ? null : <MicButton small onError={setError} onText={(t) => setOwn((o) => (o.trim() ? `${o.trim()} ${t}` : t))} />}
               <button type="submit" className="ui-btn primary" disabled={busy || disabled || !own.trim()}>Send</button>
             </form>
             {error ? <p className="dl-err">{error}</p> : null}

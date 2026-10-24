@@ -8,6 +8,7 @@ import { selectRecommendationStale } from '@/store/selectors'
 import { answerBlindSpot, digDeeper, dismissBlindSpot, researchBlindSpot, runLadder, synthesize } from '@/lib/api'
 import { fmtMs, fmtTokens, fmtUsd, pct } from '@/lib/format'
 import { effortWord } from '../common/EffortBadge'
+import { MicButton } from '../MicButton'
 
 /** Runs an API call for the live run; mock data has no server, so actions explain that instead. */
 function useAction() {
@@ -149,6 +150,7 @@ export function BlindSpotActions() {
   const bs = useCrux((s) => s.plan?.blindSpot ?? null)
   const select = useCrux((s) => s.select)
   const [answer, setAnswer] = useState('')
+  const [micError, setMicError] = useState<string | null>(null)
   const research = useAction()
   const save = useAction()
   const dismiss = useAction()
@@ -179,16 +181,17 @@ export function BlindSpotActions() {
       <div>
         <div className="ui-label mb-2">Answer it</div>
         <textarea id="crux-blindspot-answer" className="ui-field" rows={3} value={answer}
-          placeholder="e.g. Resits are in August, capped at 40%"
+          placeholder="Type or say it — e.g. Resits are in August, capped at 40%"
           onChange={(e) => setAnswer(e.target.value)} />
         <div className="mt-2 flex items-center gap-2">
+          <MicButton small onError={setMicError} onText={(t) => setAnswer((a) => (a.trim() ? `${a.trim()} ${t}` : t))} />
           <Btn busy={save.busy} className="primary" disabled={answer.trim().length < 2}
             onClick={() => save.run(async (runId) => { await answerBlindSpot(runId, { answer: answer.trim() }); setAnswer('') })}>
             Save answer
           </Btn>
           <span className="text-[12px] text-crux-text-tertiary">Added to what Decision Lab knows about you.</span>
         </div>
-        <Err text={save.error} />
+        <Err text={save.error ?? micError} />
       </div>
       <div className="flex flex-wrap gap-2">
         {bs.researchable ? (

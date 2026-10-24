@@ -7,8 +7,9 @@ import { fmtClock } from '@/lib/format'
 
 const MAX_MS = 90_000
 
-/** Push-to-talk: click to record, click again (or 90 s) to stop; the transcript is appended to the draft. */
-export function MicButton({ onError }: { onError: (msg: string | null) => void }) {
+/** Push-to-talk: click to record, click again (or 90 s) to stop. The transcript is appended to the main draft,
+ *  or handed to `onText` when the mic belongs to another field. */
+export function MicButton({ onError, onText, small = false }: { onError: (msg: string | null) => void; onText?: (text: string) => void; small?: boolean }) {
   const [state, setState] = useState<'idle' | 'recording' | 'transcribing'>('idle')
   const [elapsed, setElapsed] = useState(0)
   const rec = useRef<Recorder | null>(null)
@@ -22,9 +23,10 @@ export function MicButton({ onError }: { onError: (msg: string | null) => void }
     try {
       const blob = await r.stop()
       const { text } = await transcribe(blob)
+      onError(null)
+      if (onText) { onText(text); return }
       const existing = useCrux.getState().draft.trim()
       useCrux.getState().setDraft(existing ? `${existing} ${text}` : text, 'voice')
-      onError(null)
       window.setTimeout(() => document.getElementById('crux-run')?.focus(), 0)
     } catch (e) {
       onError(e instanceof Error && e.message ? e.message : "Couldn't transcribe — try again or type instead.")
@@ -80,7 +82,7 @@ export function MicButton({ onError }: { onError: (msg: string | null) => void }
     )
   }
   return (
-    <button type="button" className="ui-btn icon !size-9" onClick={() => void start()} aria-label="Record your decision" title="Say it instead">
+    <button type="button" className={`ui-btn icon ${small ? '!size-8' : '!size-9'}`} onClick={() => void start()} aria-label="Speak instead of typing" title="Say it instead">
       <Mic className="!size-4" />
     </button>
   )
