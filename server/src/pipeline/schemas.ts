@@ -93,3 +93,14 @@ export const FollowupOut = z.object({
   })).default([]),
 });
 export type FollowupOut = z.infer<typeof FollowupOut>;
+
+export const ChatOut = z.object({
+  reply: z.string().min(1),
+  suggestions: z.array(z.string()).default([]),
+  recommendedIndex: z.number().int().nullable().catch(null).default(null),
+  memory: z.array(z.object({ section: z.string().default("About you"), text: z.string() })).catch([]).default([]),
+  action: z.enum(["none", "update_brief", "research"]).catch("none").default("none"),
+  researchRequest: z.string().nullable().catch(null).default(null),
+  weightChanges: z.array(z.object({ criterionId: z.string(), weight: z.number(), reason: z.string().default("") })).catch([]).default([]),
+});
+export type ChatOut = z.infer<typeof ChatOut>;

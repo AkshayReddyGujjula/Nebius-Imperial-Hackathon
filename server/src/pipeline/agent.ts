@@ -116,7 +116,7 @@ export async function runAgent(ctx: RunContext, summarizer: Summarizer, question
       : hasResults ? searchRuleMore(extraRounds, profile.queriesPerRound) : searchRuleStart(profile.queriesPerRound);
     const jsonMode = CONFIG.agentMode === "json";
     const messages: any[] = [
-      { role: "system", content: buildAgentSystem(plan, question, searchRule, jsonMode ? FINISH_RULE_JSON : FINISH_RULE_TOOLS) },
+      { role: "system", content: buildAgentSystem(plan, question, searchRule, jsonMode ? FINISH_RULE_JSON : FINISH_RULE_TOOLS, ctx.state.memory) },
       { role: "user", content: sourcesText ? `SEARCH RESULTS (round 1)\n\n${sourcesText}` : "No results yet." },
     ];
     let roundsUsed = 0;
@@ -221,7 +221,7 @@ export async function runAgent(ctx: RunContext, summarizer: Summarizer, question
     const { data, result } = await callJson(ctx, agentId, SubmitOut, {
       model: CONFIG.models.agent, reasoningEffort: "low", maxTokens: 6000, timeoutMs: 40_000,
       messages: [
-        { role: "system", content: buildAgentSystem(plan, question, SEARCH_RULE_NONE, FINISH_RULE_SALVAGE) },
+        { role: "system", content: buildAgentSystem(plan, question, SEARCH_RULE_NONE, FINISH_RULE_SALVAGE, ctx.state.memory) },
         { role: "user", content: `SEARCH RESULTS\n\n${sourcesText || "(no results)"}` },
       ],
     });
