@@ -33,11 +33,19 @@ function say(ctx: RunContext, role: "user" | "assistant", text: string, suggesti
   ctx.emit({ type: "chat.message", id, role, text, suggestions, recommendedIndex });
 }
 
+// Words a trimmed phrase must not end on, so a cut never leaves "...lets the team" or "core to the".
+const DANGLING = /^(a|an|the|to|of|and|or|but|for|with|in|on|at|by|from|your|my|their|its|is|are|was|still|lets|than|that|so|if|as|very|more|less)$/i;
+
+/** First `max` words of a phrase, minus trailing filler and punctuation. */
+function firstWords(text: string, max: number): string {
+  const words = text.split(" ").slice(0, max);
+  while (words.length > 1 && DANGLING.test(words[words.length - 1].replace(/[^\p{L}']/gu, ""))) words.pop();
+  return words.join(" ").replace(/[\s,;:.!?—–-]+$/, "");
+}
+
 /** Cuts a sentence to `max` words, re-ending it with `end`. */
 function clip(sentence: string, max: number, end: string): string {
-  const words = sentence.split(" ");
-  if (words.length <= max) return sentence;
-  return words.slice(0, max).join(" ").replace(/[\s,;:.!?—–-]+$/, "") + end;
+  return sentence.split(" ").length <= max ? sentence : firstWords(sentence, max) + end;
 }
 
 /** Guard: forces a reply into lead (12 words) + up to 2 facts (12 words) + one "If you value…" (12 words) + one question (14 words). Trims, never fails. */
@@ -75,7 +83,7 @@ function cleanSuggestions(raw: string[], rec: number | null): { suggestions: str
   const picked: { s: string; i: number }[] = [];
   raw.forEach((s, i) => {
     const t = String(s ?? "").replace(/\s+/g, " ").trim().replace(/\.$/, "");
-    const t5 = t.split(" ").slice(0, 5).join(" ").replace(/[,;:—-]+$/, "");
+    const t5 = firstWords(t, 5);
     if (!t5 || seen.has(t5.toLowerCase())) return;
     seen.add(t5.toLowerCase());
     picked.push({ s: t5, i });
