@@ -1,7 +1,49 @@
+import { parseNodeId, type Question } from "@shared/index";
+import { bumpEffort } from "../config";
 import type { RunContext } from "../runs/types";
+import { runAgent } from "./agent";
+import { summarizerFor } from "./runPipeline";
 
+function requirePlan(ctx: RunContext) {
+  const plan = ctx.state.plan;
+  if (!plan) throw new Error("The plan isn't ready yet");
+  return plan;
+}
+
+/** Latest agent that researched a question (dig-deeper and re-runs create more than one). */
+function agentFor(ctx: RunContext, questionId: string) {
+  return [...ctx.state.agents.values()].filter((a) => a.info.questionId === questionId).pop();
+}
+
+/** §9.8: grows a new, higher-effort branch from a question node ("q:q2") or a finding node ("f:F5"). */
 export async function digDeeper(ctx: RunContext, nodeId: string): Promise<{ questionId: string }> {
-  throw new Error("not implemented: digDeeper");
+  const plan = requirePlan(ctx);
+  const { kind, ref } = parseNodeId(nodeId);
+  let parent: Question | undefined, text: string;
+  if (kind === "question") {
+    parent = plan.questions.find((q) => q.id === ref);
+    if (!parent) throw new Error(`Unknown question: ${ref}`);
+    const gaps = agentFor(ctx, parent.id)?.gaps.join("; ") ?? "";
+    text = `${parent.text} Go deeper: find stronger, more specific or more recent evidence, and resolve these gaps: ${gaps || "none listed"}.`;
+  } else if (kind === "finding") {
+    const finding = ctx.state.findings.get(ref ?? "");
+    if (!finding) throw new Error(`Unknown finding: ${ref}`);
+    parent = plan.questions.find((q) => q.id === finding.questionId);
+    if (!parent) throw new Error(`Unknown question: ${finding.questionId}`);
+    text = `Verify and go deeper on this claim: "${finding.claim}" (context: ${parent.text})`;
+  } else {
+    throw new Error(`Can't dig deeper on ${nodeId}`);
+  }
+  const effort = bumpEffort(parent.effort);
+  const question: Question = {
+    id: ctx.nextId("question"), text, why: parent.why, optionIds: [...parent.optionIds], criterionIds: [...parent.criterionIds],
+    effort, effortRequested: effort, effortReason: "You asked to dig deeper", seedQueries: [],
+    parentNodeId: nodeId, origin: "dig_deeper", stale: false,
+  };
+  plan.questions.push(question);
+  ctx.emit({ type: "question.added", question });
+  void runAgent(ctx, summarizerFor(ctx), question);
+  return { questionId: question.id };
 }
 
 export async function researchBlindSpot(ctx: RunContext): Promise<{ questionId: string }> {
