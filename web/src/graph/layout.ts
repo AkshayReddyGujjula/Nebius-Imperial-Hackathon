@@ -126,12 +126,14 @@ export function layoutGraph({ plan, findings, viewMode, contradictionCount = 0 }
   const totalW = n > 0 ? n * L.colW + (n - 1) * L.colGap : L.decisionMinW
   const nodes: LaidNode[] = []
   const decisionW = Math.min(Math.max(totalW, L.decisionMinW), L.decisionMaxW)
-  nodes.push({ id: nodeId.decision, kind: 'decision', refId: null, x: (totalW - decisionW) / 2, y: 0, w: decisionW, h: L.decisionH })
+  // Simple mode: the decision card shows only the title and options, so it is shorter.
+  const decH = detailed ? L.decisionH : 108
+  nodes.push({ id: nodeId.decision, kind: 'decision', refId: null, x: (totalW - decisionW) / 2, y: 0, w: decisionW, h: decH })
 
-  let bottom: number = L.decisionH
+  let bottom: number = decH
   colItems.forEach((items, i) => {
     const x = i * (L.colW + L.colGap)
-    let y = L.decisionH + L.topGap
+    let y = decH + L.topGap
     for (const it of items) {
       nodes.push({ ...it, x, y, w: L.colW })
       y += it.h + L.rowGap
@@ -165,7 +167,7 @@ export function layoutGraph({ plan, findings, viewMode, contradictionCount = 0 }
   const sideX = Math.min(0, (totalW - recW) / 2) - L.memoryGap
   nodes.push({
     id: MEMORY_ID, kind: 'memory', refId: null,
-    x: sideX - memW, y: L.decisionH + L.topGap, w: memW, h: memH,
+    x: sideX - memW, y: decH + L.topGap, w: memW, h: memH,
   })
   // DECISION: the conversation sits left of the brief, below where the memory edge turns in, so they never cross.
   nodes.push({
