@@ -29,7 +29,8 @@ const nodeTypes: NodeTypes = {
 // recommendation; the stock smoothstep turns at the midpoint and runs behind finding cards.
 const edgeTypes: EdgeTypes = { contradiction: ContradictionEdge, bus: BusEdge }
 const defaultEdgeOptions = { style: { strokeWidth: 1.25 } }
-const FIT = { padding: 0.12, duration: 400, maxZoom: 1 } as const
+// Pixel padding: clears the legend overlay at the top and keeps cards as large as possible for a projector.
+const FIT = { padding: { top: '56px', right: '24px', bottom: '28px', left: '24px' }, duration: 400, maxZoom: 1 } as const
 
 export function Canvas() {
   return (
