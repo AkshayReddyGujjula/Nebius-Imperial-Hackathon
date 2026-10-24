@@ -40,7 +40,10 @@ const nodeTypes: NodeTypes = {
 const edgeTypes: EdgeTypes = { contradiction: ContradictionEdge, bus: BusEdge, flow: FlowEdge }
 const defaultEdgeOptions = { style: { strokeWidth: 1.25 } }
 // Pixel padding: clears the legend overlay at the top and keeps cards as large as possible for a projector.
-const FIT = { padding: { top: '56px', right: '24px', bottom: '64px', left: '24px' }, duration: 400, maxZoom: 1 } as const
+const FIT_DETAILED = { padding: { top: '56px', right: '24px', bottom: '64px', left: '24px' }, duration: 400, maxZoom: 1 } as const
+// Simple mode leaves room for the floating question card at the centre-bottom of the canvas.
+const FIT_SIMPLE = { ...FIT_DETAILED, padding: { ...FIT_DETAILED.padding, bottom: '128px' } } as const
+let FIT: typeof FIT_DETAILED | typeof FIT_SIMPLE = FIT_DETAILED
 
 export function Canvas() {
   return (
@@ -72,6 +75,7 @@ function CanvasInner() {
     select: s.select, selectCell: s.selectCell, setUserMovedViewport: s.setUserMovedViewport,
   })))
   const flow = useReactFlow()
+  FIT = viewMode === 'simple' ? FIT_SIMPLE : FIT_DETAILED
 
   const layout = useMemo(() => layoutGraph({ plan, findings, viewMode }), [plan, findings, viewMode])
   const nodes = useMemo(() => buildNodes(layout), [layout])

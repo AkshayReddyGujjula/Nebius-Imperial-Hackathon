@@ -17,8 +17,9 @@ function modelFact(model: string): string {
 const ROLE: Record<string, string> = { orchestrator: 'Planner + agents + writer', agent: 'Research agents', audit: 'Auditor', summary: 'Narrator' }
 
 export function FeedStats() {
-  const { stats, phase, startedTs, doneTs, agents, feedLog } = useCrux(useShallow((s) => ({
+  const { stats, phase, startedTs, doneTs, agents, feedLog, simple } = useCrux(useShallow((s) => ({
     stats: s.stats, phase: s.phase, startedTs: s.startedTs, doneTs: s.doneTs, agents: s.agents, feedLog: s.feedLog,
+    simple: s.viewMode === 'simple',
   })))
   const running = phase !== 'idle' && phase !== 'done' && phase !== 'error'
   const now = useNow(running)
@@ -50,6 +51,19 @@ export function FeedStats() {
       role: roles.includes('orchestrator') && roles.includes('agent') ? ROLE.orchestrator : roles.map((r) => ROLE[r] ?? r).join(' + '),
     }))
   }, [models])
+
+  // Simple mode: one row of three big numbers, nothing else.
+  if (simple) {
+    return (
+      <section className="dl-feed-section dl-feed-stats is-simple" aria-label="Run stats">
+        <div className="dl-feed-kpis is-3">
+          <Kpi label="Time" value={startedTs ? fmtClock(elapsed) : '–'} />
+          <Kpi label="Cost" value={stats ? fmtUsd(stats.costUsd) : '–'} />
+          <Kpi label="Quotes ✓" value={total ? `${checked}/${total}` : '–'} hint="Quotes found word-for-word in the cited source" />
+        </div>
+      </section>
+    )
+  }
 
   return (
     <section className="dl-feed-section dl-feed-stats" aria-label="Benchmarks and run stats">
