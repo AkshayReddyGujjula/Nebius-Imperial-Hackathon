@@ -45,7 +45,7 @@ export const errText = (e: unknown) => `Couldn't send — ${e instanceof Error ?
 
 /** Sentences of a reply, keeping list lines intact. */
 export function sentences(text: string): string[] {
-  return text.split(/\n+/).flatMap((line) => {
+  return text.replace(/\*\*|__|`/g, '').split(/\n+/).flatMap((line) => {
     const l = line.replace(/^\s*(?:[-*•]|\d+[.)])\s+/, '').trim()
     if (!l) return []
     return (l.match(/[^.!?]+(?:[.!?]+(?=\s|$)|$)/g) ?? [l]).map((s) => s.trim()).filter(Boolean)
