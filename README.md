@@ -2,9 +2,28 @@
 
 **Research what your decision actually hinges on.**
 
-Decision Lab first interviews you about a decision you are stuck on ("I have a hackathon tomorrow and an exam the day after. Should I go?"), asks a few questions to understand your situation, works out what the decision hinges on, and sends one research agent at each question in parallel. Every quote is checked against its source in code, a second model family audits the findings for contradictions, and you get an unbiased decision brief (facts and stats for each option, never a verdict) plus a trade-off matrix whose weights you can change. Built for the Noetic × Nebius One-Day Hackathon (Imperial College London) on open models running on Nebius Token Factory.
+Decision Lab is one live conversation about a decision you are stuck on ("I have a hackathon tomorrow and an exam the day after. Should I go?"). Your first message starts the research straight away: parallel DeepSeek V4.1 Flash agents on Nebius Token Factory search the web through Tavily while the assistant keeps talking to you. It asks one question at a time, each with 2-4 multiple-choice answers (sometimes with a "likely" pick) and always room to type your own. Every answer goes into a shared memory file about you, `user.md`, which every agent and prompt reads. When the research lands, the assistant summarises it in the chat and asks the next question. Every quote is checked against its source in code, a second model family audits the findings for contradictions, and you get an unbiased decision brief: what the decision hinges on, the key stats, and "If you value X most → ..." lines. It never gives a verdict. Built for the Noetic × Nebius One-Day Hackathon (Imperial College London) on open models running on Nebius Token Factory, in a "Paper & Forest" look: warm paper, ink and a forest-green accent.
 
 ![Decision Lab, Simple mode, at the end of a run](docs/simple.png)
+
+## How the conversation works
+
+```
+ you: "Hackathon tomorrow, exam the day after. Should I go?"
+   |
+   +--> research starts at once (parallel agents, Tavily)
+   |
+ assistant: "How big is this hackathon for you?"   [Just for fun] [Decent prizes] [Big: sponsors and recruiters]
+ you: "Big: sponsors and recruiters"
+   |
+   +--> memory.updated: user.md += "Big hackathon with recruiters"
+   +--> research refines (the career side now carries more weight)
+   |
+ assistant: summarises what the research found  ->  Decision brief (hinges on / stats / If you value X most)
+ assistant: next question  ->  ...
+```
+
+**Why a shared `user.md`.** Decision Lab runs several agents at once. If each kept its own idea of you, they would drift apart and ask you the same thing twice. Instead there is one markdown file with fixed sections (The decision, About you, What matters to you, Constraints, Still unknown). Every answer updates it, and every agent and prompt reads it. That keeps the agents in sync, means the assistant never re-asks something you have already told it, and lets the research and the brief be tailored to your situation.
 
 ## What it does
 
@@ -12,9 +31,9 @@ Decision Lab first interviews you about a decision you are stuck on ("I have a h
 2. **Parallel research agents.** One agent per question searches the web through Tavily, reads, may search again within its effort budget, and submits findings with a verbatim quote and a source. Agents also propose 1-5 scores for each option.
 3. **Citation checks.** Code verifies that each cited source was actually retrieved and that the quote appears in its text: verified, partial, or not found. Failures are shown, not hidden.
 4. **Cross-family audit.** A model from a different family (MiniMax) looks for contradictions between agents. Same-model agents are not independent experts; this is the check for that.
-5. **Decision brief and matrix.** DeepSeek writes a neutral brief: what the decision hinges on, the key stats for each option, and "if you value X most" lines. It never tells you what to do. The trade-off matrix (options x criteria) re-ranks instantly in code when you change a weight, so the ranking reflects your priorities, not the model's.
+5. **Decision brief and matrix.** As soon as the research lands, DeepSeek writes a neutral brief: what the decision hinges on, the key stats for each option, and "if you value X most" lines. It never tells you what to do. The trade-off matrix (options x criteria) re-ranks instantly in code when you change a weight, so the ranking reflects your priorities, not the model's.
 
-Follow-ups: dig deeper on any branch (the effort is bumped one level), research or answer the blind spot yourself, an effort ladder that reruns a branch at low, high and max on the same evidence so you can see what extra thinking buys, and voice input for the decision.
+Replies are multiple choice (2-4 answers, sometimes a "likely" pick) or free text. Follow-ups: dig deeper on any branch (the effort is bumped one level), research or answer the blind spot yourself, an effort ladder that reruns a branch at low, high and max on the same evidence so you can see what extra thinking buys, and voice input for the decision.
 
 **Simple** mode (default) keeps everything in plain language. **Detailed** (`D`) shows findings, citations, checks, efforts, timings, tokens, cost and raw reasoning. `M` opens the matrix.
 
@@ -22,7 +41,7 @@ Follow-ups: dig deeper on any branch (the effort is bumped one level), research 
 |---|---|---|
 | ![Empty state](docs/empty.png) | ![Detailed mode](docs/detailed.png) | ![Trade-off matrix](docs/matrix.png) |
 
-The screenshots use the built-in mock run (`?mock=fast`), not a live run.
+The screenshots use the built-in mock run (`?mock=fast`), not a live run, and were taken before the conversation view and the Paper & Forest colours landed.
 
 ## Open models on Nebius Token Factory
 
@@ -59,7 +78,8 @@ In the two recorded runs, all quotes verified (12 of 12 and 6 of 6). The mock ru
 - Matrix numbers come from your weights and the proposed scores, computed in code. The model never does the arithmetic.
 - Scores are marked "AI" (proposed from cited findings) or "You" (set by you); unknown cells read "No evidence yet" and widen the total's range.
 - Each agent's effort, reason, tokens, time and cost are visible in Detailed mode.
-- Recommendations are conditional and carry a confidence level; the blind spot is surfaced rather than buried.
+- The brief never picks an option for you: it states what the decision hinges on, the stats, and "If you value X most → ..." lines, with a confidence level. The blind spot is surfaced rather than buried.
+- Your answers live in one shared `user.md` that every agent reads, so nothing you say is lost between agents and nothing is asked twice.
 
 ## Run it locally
 
@@ -86,7 +106,7 @@ Open http://localhost:5173.
 
 ```
   web (React + React Flow)  <--- SSE events --->  server (Hono, Node)
-  canvas, matrix, rail                              run manager, pipeline
+  chat, canvas, matrix                              run manager, pipeline
                                                          |
                           +------------------------------+----------------+
                           v                              v                v
@@ -97,8 +117,8 @@ Open http://localhost:5173.
 The server streams a typed event log per run over SSE; the web app is a reducer over that log, which is also what makes recorded replays possible.
 
 - `shared/` the contract both sides import: event and API types, matrix maths, pricing.
-- `server/` pipeline (planner, agents, synthesis, follow-ups), Nebius client with limiter and retries, Tavily, quote and contradiction checks, stats, speech-to-text, replays.
-- `web/` canvas graph, Simple / Detailed shell, inspector, matrix, mock run.
+- `server/` pipeline (conversation, shared `user.md` memory, planner, agents, synthesis, follow-ups), Nebius client with limiter and retries, Tavily, quote and contradiction checks, stats, speech-to-text, replays.
+- `web/` live conversation, canvas graph, Simple / Detailed shell, inspector, matrix, mock run (which plays a scripted conversation with `user.md` updates).
 
 ## Cost
 
