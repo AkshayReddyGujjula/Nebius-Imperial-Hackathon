@@ -1,3 +1,4 @@
+import { effectiveWeight } from '@shared/matrix'
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, RefreshCw, Table2 } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
@@ -35,7 +36,7 @@ function Summary() {
   }))
   const stale = useCrux((s) => selectRecommendationStale(s).stale)
   const { setMatrixOpen, select, setViewMode } = useCrux(useShallow((s) => ({ setMatrixOpen: s.setMatrixOpen, select: s.select, setViewMode: s.setViewMode })))
-  const { totals, leader } = useMatrix()
+  const { totals, leader, cells } = useMatrix()
   const [collapsed, setCollapsed] = useState(false)
   const [updating, setUpdating] = useState(false)
   const ready = status === 'ready' && !!synthesis && !!plan
@@ -75,7 +76,19 @@ function Summary() {
 
   const label = (id: string | undefined) => plan.options.find((o) => o.id === id)?.label ?? ''
   const ranked = [...totals].sort((a, b) => a.rank - b.rank).slice(0, 4)
-  const leadLabel = leader ? label(leader.optionId) : ''
+  // DECISION: when the weighted totals are within 0.3, the option that scores higher on what the person said matters
+  // MOST wins, so the pick always follows their strongest stated priority (computed in code, not by a model).
+  let bestId = leader?.optionId
+  let decidedBy: string | null = null
+  const second = ranked.find((t) => t.optionId !== leader?.optionId)
+  if (leader?.point != null && second?.point != null && Math.abs(leader.point - second.point) < 0.3) {
+    const top = [...plan.criteria].sort((a, b) => effectiveWeight(b, weights) - effectiveWeight(a, weights))[0]
+    const sc = (id: string) => cells.find((c) => c.optionId === id && c.criterionId === top?.id)?.score ?? null
+    const a = sc(leader.optionId), b = sc(second.optionId)
+    if (top && a != null && b != null && b > a) { bestId = second.optionId; decidedBy = top.label }
+    else if (top && a != null && b != null && a > b) decidedBy = top.label
+  }
+  const leadLabel = bestId ? label(bestId) : ''
   const runnerUp = ranked.find((t) => t.optionId !== leader?.optionId && t.tooClose)
   const close = false && !!leader?.tooClose && !!runnerUp   // always name one clear best fit
   const headline = !leader ? 'Not enough scores yet'
@@ -137,9 +150,10 @@ function Summary() {
             <article key="best" className="sm-card" style={{ animationDelay: '0ms' }}>
               <h3>Best fit for you</h3>
               <p className="sm-key">{headline}</p>
+              {decidedBy ? <p className="text-[12.5px] text-crux-text-secondary">Close on totals, so it follows what matters most to you: <b>{decidedBy}</b></p> : null}
               <ul className="sm-bars">
                 {ranked.map((t, i) => (
-                  <li key={t.optionId} data-lead={t.optionId === leader?.optionId}>
+                  <li key={t.optionId} data-lead={t.optionId === bestId}>
                     <span className="sm-bar-label" title={label(t.optionId)}>{clip(label(t.optionId), 4)}</span>
                     <span className="sm-track"><span style={{ width: `${t.point != null ? (t.point / 5) * 100 : 0}%`, animationDelay: `${200 + i * 120}ms` }} /></span>
                     <span className="sm-val ui-num">{t.point != null ? t.point.toFixed(1) : '–'}</span>
