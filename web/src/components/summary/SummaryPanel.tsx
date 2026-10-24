@@ -1,4 +1,4 @@
-import { effectiveWeight } from '@shared/matrix'
+import { pickBestFit } from '@shared/matrix'
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, ChevronLeft, ChevronRight, ChevronUp, RefreshCw, Table2 } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
@@ -78,16 +78,9 @@ function Summary() {
   const ranked = [...totals].sort((a, b) => a.rank - b.rank).slice(0, 4)
   // DECISION: when the weighted totals are within 0.3, the option that scores higher on what the person said matters
   // MOST wins, so the pick always follows their strongest stated priority (computed in code, not by a model).
-  let bestId = leader?.optionId
-  let decidedBy: string | null = null
-  const second = ranked.find((t) => t.optionId !== leader?.optionId)
-  if (leader?.point != null && second?.point != null && Math.abs(leader.point - second.point) < 0.3) {
-    const top = [...plan.criteria].sort((a, b) => effectiveWeight(b, weights) - effectiveWeight(a, weights))[0]
-    const sc = (id: string) => cells.find((c) => c.optionId === id && c.criterionId === top?.id)?.score ?? null
-    const a = sc(leader.optionId), b = sc(second.optionId)
-    if (top && a != null && b != null && b > a) { bestId = second.optionId; decidedBy = top.label }
-    else if (top && a != null && b != null && a > b) decidedBy = top.label
-  }
+  const fit = pickBestFit(plan, cells, weights)   // shared with the server's final read, so both always agree
+  const bestId = fit.bestId ?? leader?.optionId
+  const decidedBy = fit.decidedBy
   const leadLabel = bestId ? label(bestId) : ''
   const runnerUp = ranked.find((t) => t.optionId !== leader?.optionId && t.tooClose)
   const close = false && !!leader?.tooClose && !!runnerUp   // always name one clear best fit

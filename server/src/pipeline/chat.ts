@@ -1,4 +1,5 @@
 import type { Synthesis } from "@shared/index";
+import { buildCells, computeTotals, pickBestFit } from "@shared/matrix";
 import { CONFIG } from "../config";
 import { callJson } from "../llm/json";
 import type { RunContext } from "../runs/types";
@@ -31,6 +32,15 @@ function say(ctx: RunContext, role: "user" | "assistant", text: string, suggesti
   if (role === "assistant") text = shapeReply(text);
   ctx.state.chat.push({ id, role, text });
   ctx.emit({ type: "chat.message", id, role, text, suggestions, recommendedIndex });
+}
+
+/** Posts an assistant turn verbatim (no reply shaping), for code-written text such as the final read. */
+function sayRaw(ctx: RunContext, text: string): void {
+  const n = (counters.get(ctx.state) ?? 0) + 1;
+  counters.set(ctx.state, n);
+  const id = `m${n}`;
+  ctx.state.chat.push({ id, role: "assistant", text });
+  ctx.emit({ type: "chat.message", id, role: "assistant", text, suggestions: [], recommendedIndex: null });
 }
 
 // Words a trimmed phrase must not end on, so a cut never leaves "...lets the team" or "core to the".
@@ -75,13 +85,46 @@ const WRAP_UP = "Thanks, I have what I need. Your summary is ready below, ranked
 const asked = new WeakMap<object, number>();
 const endsWithQuestion = (t: string | undefined) => /\?["'”)]?\s*$/.test((t ?? "").trim());
 
+const wrapped = new WeakSet<object>();
+
+/** The final read, written by code from the same cells, weights and tie-break the summary panel uses. */
+export function finalRead(ctx: RunContext): string {
+  const st = ctx.state, plan = st.plan;
+  if (!plan) return WRAP_UP;
+  const cells = buildCells(plan.options, plan.criteria, st.proposals, {});
+  const weights = Object.fromEntries(plan.criteria.map((c) => [c.id, c.weight]));
+  const fit = pickBestFit(plan, cells, weights);
+  const label = (id: string | null) => plan.options.find((o) => o.id === id)?.label;
+  const best = label(fit.bestId), runner = label(fit.runnerUpId);
+  if (!best) return WRAP_UP;
+  const points = buildCellsTotals(plan, cells, weights);
+  const pb = points.get(fit.bestId!), pr = fit.runnerUpId ? points.get(fit.runnerUpId) : undefined;
+  const score = pb != null && pr != null && runner ? ` (${pb.toFixed(1)} vs ${pr.toFixed(1)})` : "";
+  const parts = [`Here's my read: **${best}** fits you best${score}.`];
+  const top = [...plan.criteria].sort((a, b) => b.weight - a.weight)[0];
+  if (top && fit.runnerUpId) {
+    const sc = (id: string) => cells.find((c) => c.optionId === id && c.criterionId === top.id)?.score ?? null;
+    const a = sc(fit.bestId!), b = sc(fit.runnerUpId);
+    if (a != null && b != null && a > b) parts.push(`You put **${top.label}** first, and ${best} does better there.`);
+  }
+  if (fit.flipLabel) parts.push(`It would only flip if **${fit.flipLabel}** mattered most to you.`);
+  return parts.join(" ");
+}
+
+function buildCellsTotals(plan: NonNullable<RunContext["state"]["plan"]>, cells: ReturnType<typeof buildCells>, weights: Record<string, number>) {
+  return new Map(computeTotals(plan.options, plan.criteria, cells, weights).map((t) => [t.optionId, t.point]));
+}
+
 /** Posts an assistant turn, enforcing the question budget. */
 function ask(ctx: RunContext, reply: string, suggestions: string[], rec: number | null): void {
   const isQuestion = endsWithQuestion(shapeReply(reply));
   const n = asked.get(ctx.state) ?? 0;
   if (isQuestion && n >= MAX_QUESTIONS) {
-    const last = ctx.state.chat[ctx.state.chat.length - 1];
-    if (last?.text !== WRAP_UP) say(ctx, "assistant", WRAP_UP);
+    if (wrapped.has(ctx.state)) return;
+    wrapped.add(ctx.state);
+    let text = WRAP_UP;
+    try { text = finalRead(ctx); } catch (err) { console.warn("[chat] final read failed:", err); }
+    sayRaw(ctx, text);
     return;
   }
   if (isQuestion) asked.set(ctx.state, n + 1);
@@ -115,7 +158,7 @@ function cleanSuggestions(raw: string[], rec: number | null): { suggestions: str
 
 async function callChat(ctx: RunContext, user: string): Promise<ChatOut> {
   const once = async () => (await callJson(ctx, "orchestrator", ChatOut, {
-    model: CONFIG.models.orchestrator, reasoningEffort: "low", maxTokens: 2500, timeoutMs: 25_000,
+    model: CONFIG.models.orchestrator, reasoningEffort: "low", maxTokens: 2500, timeoutMs: 12_000,
     messages: [{ role: "system", content: CHAT_SYSTEM }, { role: "user", content: user }],
   })).data;
   try { return await once(); } catch (err) {
@@ -191,8 +234,8 @@ export function openConversation(ctx: RunContext): Promise<void> {
       ask(ctx, out.reply.trim(), s.suggestions, s.recommendedIndex);
     } catch (err) {
       console.warn("[chat] opening failed:", err);
-      say(ctx, "assistant", "I've started researching this for you. While the agents work — how big are the stakes on each side for you?",
-        ["Both matter a lot", "One clearly matters more", "Not sure yet"], null);
+      say(ctx, "assistant", "I've started researching this for you. Which would hurt more: losing out on one side, or the other?",
+        ["Losing the first option", "Losing the second option"], null);
     }
   });
 }
