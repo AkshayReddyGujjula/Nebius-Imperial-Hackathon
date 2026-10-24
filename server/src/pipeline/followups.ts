@@ -78,6 +78,11 @@ export async function researchBlindSpot(ctx: RunContext): Promise<{ questionId: 
   return { questionId: question.id };
 }
 
+/** An error whose message is safe to show the person as-is; routes map it to a 409. */
+export class UserFacingError extends Error {
+  status = 409 as const;
+}
+
 /** §9.8: records the person's own answer to the blind spot as a fact. */
 export async function answerBlindSpot(ctx: RunContext, answer: string): Promise<void> {
   const plan = requirePlan(ctx);
@@ -96,12 +101,15 @@ export async function answerBlindSpot(ctx: RunContext, answer: string): Promise<
 export async function resynthesize(ctx: RunContext, weights: Record<string, number>): Promise<void> {
   requirePlan(ctx);
   if (isSynthesizing(ctx)) throw new Error("A recommendation is already being written");
-  const setPhase = (phase: "synthesizing" | "done") => { ctx.state.phase = phase; ctx.emit({ type: "run.phase", phase }); };
+  const setPhase = (phase: typeof ctx.state.phase) => { ctx.state.phase = phase; ctx.emit({ type: "run.phase", phase }); };
+  const prevPhase = ctx.state.phase;
   setPhase("synthesizing");
   try {
     await synthesize(ctx, summarizerFor(ctx), weights);
   } finally {
-    setPhase("done");
+    // Plan agents may still be running (soft-deadline window): only report "done" once every one is terminal.
+    const settled = [...ctx.state.agents.values()].every((a) => a.status === "done" || a.status === "failed" || a.status === "timeout");
+    setPhase(settled ? "done" : prevPhase);
     ctx.flushStats();
   }
 }
@@ -112,7 +120,7 @@ export async function runLadder(ctx: RunContext, questionId: string): Promise<{ 
   const question = plan.questions.find((q) => q.id === questionId);
   if (!question) throw new Error(`Unknown question: ${questionId}`);
   const agent = [...ctx.state.agents.values()].find((a) => a.info.questionId === questionId && a.promptSourcesText.trim());
-  if (!agent) throw new Error("This branch has no sources to compare yet");
+  if (!agent) throw new UserFacingError("This branch has no sources to compare yet");
   const ladderId = ctx.nextId("ladder");
   ctx.emit({ type: "ladder.started", ladderId, questionId });
   const messages = [

@@ -13,7 +13,7 @@ import { CONFIG } from "./config";
 import { createRun, getRun, listReplays, resolveReplayFile, startReplay, type Run } from "./runs/runManager";
 import type { RunContext } from "./runs/types";
 import { runPipeline } from "./pipeline/runPipeline";
-import { answerBlindSpot, applyFollowup, digDeeper, researchBlindSpot, resynthesize, runLadder } from "./pipeline/followups";
+import { answerBlindSpot, applyFollowup, digDeeper, researchBlindSpot, resynthesize, runLadder, UserFacingError } from "./pipeline/followups";
 import { transcribe } from "./stt/elevenlabs";
 import { fakePipeline } from "./dev/fakePipeline";
 
@@ -108,7 +108,7 @@ app.post("/api/runs/:id/blindspot/dismiss", (c) => {
   const bs = g.run.state.plan?.blindSpot;
   if (!bs) return fail(c, 404, "This run has no blind spot.");
   bs.status = "dismissed";
-  g.run.emit({ type: "blindspot.updated", blindSpot: bs });
+  g.run.emit({ type: "blindspot.updated", blindSpot: { ...bs } });
   return c.json({ ok: true });
 });
 
@@ -138,7 +138,7 @@ app.post("/api/runs/:id/deeper", async (c) => {
     const res: DeeperResponse = await digDeeper(g.run, body.nodeId);
     return c.json(res);
   } catch (err) {
-    return fail(c, 500, errMsg(err));
+    return fail(c, err instanceof UserFacingError ? 409 : 500, errMsg(err));
   }
 });
 
@@ -150,7 +150,7 @@ app.post("/api/runs/:id/blindspot/research", async (c) => {
   try {
     return c.json(await researchBlindSpot(g.run));
   } catch (err) {
-    return fail(c, 500, errMsg(err));
+    return fail(c, err instanceof UserFacingError ? 409 : 500, errMsg(err));
   }
 });
 
@@ -165,7 +165,7 @@ app.post("/api/runs/:id/blindspot/answer", async (c) => {
     await answerBlindSpot(g.run, answer);
     return c.json({ ok: true });
   } catch (err) {
-    return fail(c, 500, errMsg(err));
+    return fail(c, err instanceof UserFacingError ? 409 : 500, errMsg(err));
   }
 });
 
@@ -191,7 +191,7 @@ app.post("/api/runs/:id/ladder", async (c) => {
     const res: LadderResponse = await runLadder(g.run, body.questionId);
     return c.json(res);
   } catch (err) {
-    return fail(c, 500, errMsg(err));
+    return fail(c, err instanceof UserFacingError ? 409 : 500, errMsg(err));
   }
 });
 
