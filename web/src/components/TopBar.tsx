@@ -63,13 +63,13 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
 
   return (
     <header className="dl-topbar col-span-3 flex h-[52px] min-w-0 items-center gap-4 px-4">
-      <div className="flex min-w-0 items-center gap-2">
+      <div className="flex min-w-0 flex-1 items-center gap-2">
         <span className="dl-mark grid size-[18px] flex-none place-items-center rounded-[4px]" aria-hidden="true">DL</span>
         <span className="whitespace-nowrap text-[15px] font-semibold">Decision Lab</span>
         {phase !== 'idle' && title ? (
           <>
             <ChevronRight className="dl-topbar-muted flex-none" />
-            <span className="max-w-[460px] truncate text-[14px] font-medium" title={title}>{title}</span>
+            <span className="min-w-0 max-w-[420px] truncate text-[14px] font-medium text-crux-text-secondary" title={title}>{title}</span>
           </>
         ) : null}
       </div>
@@ -77,15 +77,15 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
       {phase !== 'idle' ? (
         <div className="flex flex-none items-center gap-2">
           {replay ? <span className="ui-pill">Replay</span> : null}
-          {mock ? <span className="ui-pill warn">Mock data</span> : null}
+          {mock ? <span className="ui-pill warn whitespace-nowrap text-[11px]" title="Showing demo data">Demo</span> : null}
           {viewMode === 'simple' && progress ? (
             // Simple mode: one big phase line over the bar, always shown (incl. "Brief ready").
             <div className="dl-progress" data-active={progress.active} role="progressbar" aria-label={simpleLabel(progress.label)}
               aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.pct)} style={{ minWidth: 280 }}>
-              <span className={`text-[14px] font-semibold leading-[17px] ${progress.label === 'Stopped' ? 'text-crux-bad' : progress.label === 'Done' ? 'text-crux-ok' : 'text-crux-text'}`}>
+              <span className={`text-[13px] font-medium leading-[17px] ${progress.label === 'Stopped' ? 'text-crux-bad' : progress.label === 'Done' ? 'text-crux-ok' : 'text-crux-text'}`}>
                 {simpleLabel(progress.label)}<span className="dl-topbar-muted font-normal"> · </span><span className="ui-num font-normal">{fmtClock(Math.max(0, elapsed))}</span>
               </span>
-              <span className="dl-progress-track" style={{ height: 6 }}><span className="dl-progress-fill" style={{ width: `${progress.pct}%` }} /></span>
+              <span className="dl-progress-track" style={{ height: 4 }}><span className="dl-progress-fill" style={{ width: `${progress.pct}%` }} /></span>
             </div>
           ) : progress && progress.label !== 'Done' && progress.label !== 'Stopped' ? (
             <div className="dl-progress" data-active={progress.active} role="progressbar" aria-label={progress.label}
@@ -104,7 +104,8 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
         </div>
       ) : null}
 
-      <div className="flex-1" />
+      {/* Slot for <ModelLegend /> (mounted by the orchestrator), just left of the view toggle. */}
+      <div className="dl-topbar-slot flex flex-none items-center" />
 
       <div className="ui-seg" role="radiogroup" aria-label="View mode">
         {(['simple', 'detailed'] as const).map((m) => (
