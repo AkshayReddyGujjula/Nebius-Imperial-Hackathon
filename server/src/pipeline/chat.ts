@@ -70,7 +70,7 @@ export function shapeReply(raw: string): string {
 }
 
 /** The conversation asks at most this many questions; after that it wraps up and points at the summary. */
-const MAX_QUESTIONS = 10;
+const MAX_QUESTIONS = 5;
 const WRAP_UP = "Thanks, I have what I need. Your summary is ready below, ranked by what you told me.";
 const asked = new WeakMap<object, number>();
 const endsWithQuestion = (t: string | undefined) => /\?["'”)]?\s*$/.test((t ?? "").trim());
