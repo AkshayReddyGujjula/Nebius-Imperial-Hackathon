@@ -11,21 +11,22 @@
 ## The story (≈3:00)
 
 **0:00 — Hook (no screen yet).**
-"Who here has a deadline clash this week? I do. I've got a hackathon — this one — and my machine-learning exam is the day after. Should I even be here? Chatbots will just tell me 'it depends' or pick for me. I wanted something that actually understands *me*, does the research, and lets *me* decide."
+"Every developer here is picking a coding agent right now. Claude Code or Codex? Twitter will tell you one is 'obviously better'. A chatbot will say 'it depends', or just pick one. I wanted something that works out what fits *me*, does the research while we talk, and lets *me* decide."
 
 **0:15 — Start the conversation.**
-Click the example chip *"Hackathon tomorrow, exam the day after — should I go?"* (or say it into the mic). Press Enter.
+Click the first example chip *"Claude Code or Codex — which coding agent fits me?"* (or say it into the mic). Press Enter.
 Say: "I just talk to it. And notice — it's already researching while it replies."
-Point at: the canvas on the right growing (decision → 4 research questions), and the reply in the chat.
+Point at: the canvas on the right growing (decision → research questions on quality, multi-file edits, pricing, workflow), and the reply in the chat.
 
-**0:35 — It asks about me, one question at a time.**
-Point at the multiple-choice answers and the *Likely* tag.
-Say: "It asks one question at a time, with one-tap answers — or I type my own. It's working out what actually matters to me."
-Tap: **"Big: sponsors and recruiters."** Then answer the next one: **"Scraped through."**
+**0:35 — It asks about me, with one-tap answers.**
+Point at the multiple-choice pop-up and the *Likely* tag.
+Say: "It asks one question at a time, with one-tap answers — or I type my own." Tap the *Likely* answer.
 
-**0:55 — Shared memory (the key idea).**
-Point at the *What I know about you · user.md* card as it highlights the new lines.
-Say: "Every answer goes into a shared memory file — user.md. Every agent reads it: the planner, the four research agents, the writer. So they stay in sync, it never asks me the same thing twice, and the research tailors itself — my exam answer just pushed exam performance up the weights."
+**0:45 — Interject while the agents are still working (the key idea).**
+The agents are still researching. Click the **Budget is…** chip under the chat and finish it, or type:
+**"I mostly work in the terminal and care about privacy; budget £20/month"** → Enter.
+Point at the receipt under the bubble: *Saved to user.md → shared with Planner, Agents 1–4, Writer*, and the *What I know about you · user.md* card highlighting the new lines. If it says *Started new research: …*, point at the new question card appearing on the canvas.
+Say: "I didn't wait for it to finish. Anything I add — a preference, a constraint, a fact — goes straight into a shared memory file, user.md. Every agent re-reads it before every step: the planner, the four research agents, the writer. So the research that's already running bends towards *my* terminal workflow, *my* privacy bar and *my* £20 budget — and if it raises something nobody was researching, it starts a new agent on it."
 
 **1:15 — Who is doing what (open models on Nebius).**
 Switch the left panel to **Research** (or point at the agent badges on the cards).
@@ -37,19 +38,21 @@ Say: "Open models hallucinate — DeepSeek's non-hallucination rate is about a t
 
 **2:10 — The decision brief: no verdict.**
 Point at the **Decision brief** card / the assistant's summary in the chat.
-Say: "It never tells me what to do. It tells me what it hinges on — *how much the exam mark matters versus the recruiter access* — with the stats on each side, and 'if you value X most, here's what fits'. Then it asks me the next question. I can stop whenever I'm ready, or keep going."
+Say: "It never tells me which agent to buy. It tells me what it hinges on — *terminal-first workflow and data handling versus price at my £20 budget* — with the evidence on each side, and 'if you value X most, here's what fits'. Then it asks me the next question. I can stop whenever I'm ready, or keep going."
 
 **2:30 — My priorities, my ranking.**
-Press **M** (matrix). Raise **Exam performance**.
-Say: "The trade-offs are my weights, and the maths is done in code, not by the model. If I care more about the exam… the ranking moves. The AI didn't change its mind — my priorities did."
+Press **M** (matrix). Raise **Privacy** (or **Price**).
+Say: "The trade-offs are my weights, and the maths is done in code, not by the model. If privacy matters more to me… the ranking moves. The AI didn't change its mind — my priorities did."
 
 **2:45 — Close.**
 Point at the progress bar / Checks tab (cost, speed-up).
-Say: "Four agents in parallel, [N]× faster than in sequence, about four cents a decision. Decision Lab: talk it through, see the evidence, decide for yourself."
+Say: "Four agents in parallel, [N]× faster than in sequence, about seven cents a decision. Decision Lab: talk it through, see the evidence, decide for yourself."
 
 ## Numbers you can quote (all real, from our runs)
-- One decision: about **$0.03–0.04** in Nebius tokens; about **55–70 s** of research; **2.4–3.5×** faster in parallel than in sequence.
+- One decision: about **$0.05–0.08** (about seven cents) in Nebius tokens — measured over 6 recorded live runs, each ~95k input and ~34k output tokens; about **55–70 s** of research; **2.4–3.5×** faster in parallel than in sequence.
+- The same tokens would cost about **$0.49 on GPT-6.1 Sol** and **$0.97 on Claude Opus 5.5** at list prices (8× / 16×).
 - Quote checks: **12 of 12** quotes verified in the recorded hackathon run.
+- Recorded fallback for this story: `server/replays/demo-claude-code-vs-codex.jsonl` — a live run with the terminal / privacy / £20 interjection sent mid-research.
 - Smoke tests: GLM-5.3-Flash returned empty summaries **3 of 6** times → switched to NVIDIA Nemotron (~0.3 s per line). Max effort used **1.3k–12k** reasoning tokens on the same problem.
 - Speech-to-text: ElevenLabs Scribe v2 transcribed a spoken decision in **~2 s** (Token Factory has no speech model).
 
@@ -57,10 +60,10 @@ Say: "Four agents in parallel, [N]× faster than in sequence, about four cents a
 - **"Isn't this just a chatbot?"** — A chatbot answers. This researches in parallel while it talks, checks every quote in code, keeps a shared memory of you that every agent reads, and never picks for you.
 - **"Why not tell me the answer?"** — Because the right answer depends on what you value. We show the evidence and the trade-offs; the matrix ranks by *your* weights.
 - **"How do you know it's not hallucinating?"** — We don't trust it: every quote is matched against the retrieved page in code, and a different model family audits for contradictions. Failures are shown, not hidden.
-- **"Cost?"** — About four cents per decision on Nebius, plus ~30 Tavily credits.
+- **"Cost?"** — About seven cents ($0.05–0.08) per decision on Nebius — roughly 8× cheaper than GPT-6.1 Sol and 16× cheaper than Claude Opus 5.5 for the same tokens, plus ~30 Tavily credits.
 - **"What's next?"** — Persist user.md across decisions (it already lives in a file), team decisions with dissent, and fine-tuning the planner on accepted plans via Token Factory.
 
 ## If something goes wrong
-- A run fails or stalls > 20 s → **New decision → Replay a recorded run** → pick the hackathon one. Say it's a recording.
+- A run fails or stalls > 20 s → **New decision → Replay a recorded run** → pick *"Claude Code or Codex"* (or the hackathon one). Say it's a recording.
 - An update fails → the previous brief stays with **Try again**; mention Nebius 503s honestly — it's part of the "where models struggle" story.
 - Mic fails → type it.

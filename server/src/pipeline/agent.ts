@@ -134,6 +134,8 @@ export async function runAgent(ctx: RunContext, summarizer: Summarizer, question
       if (Date.now() >= deadline - 1000) break;
       const canSearch = roundsUsed < extraRounds;
       setStatus("thinking");
+      // Interjections land in user.md mid-research: re-read it before every call, not just round 1.
+      messages[0] = { role: "system", content: buildAgentSystem(plan, question, searchRule, jsonMode ? FINISH_RULE_JSON : FINISH_RULE_TOOLS, ctx.state.memory) };
       let res: ChatResult;
       try {
         res = await streamChat({

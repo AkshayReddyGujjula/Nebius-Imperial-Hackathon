@@ -61,6 +61,8 @@ export interface RunData {
   memory: string;
   memoryChanges: string[];
   memorySeq: number;
+  /** Per user chat message id: what that message saved to user.md and the research it started. */
+  receipts: Record<string, { memory: string[]; research: string[] }>;
 }
 
 export interface UiState {

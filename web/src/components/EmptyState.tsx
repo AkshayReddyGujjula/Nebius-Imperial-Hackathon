@@ -10,6 +10,10 @@ import { MicButton } from './MicButton'
 
 export const EXAMPLES = [
   {
+    label: 'Claude Code or Codex — which coding agent fits me?',
+    text: "Claude Code or Codex — which coding agent fits me? I'm a developer who wants an AI coding agent for day-to-day work on a mid-sized TypeScript codebase. I care about code quality, how well it handles multi-file changes, price, and how it fits my workflow.",
+  },
+  {
     label: 'Hackathon tomorrow, exam the day after — should I go?',
     text: "I've got a hackathon tomorrow from 10 till 7, and my machine learning exam is the day after. The exam is worth 40% of the module and I'm maybe 70% prepared. The hackathon would be great for my CV and I'd learn a lot, but I really don't want to tank the exam. Should I go?",
   },
