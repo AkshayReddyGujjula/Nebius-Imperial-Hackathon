@@ -114,8 +114,11 @@
 .cx-chip > span { overflow: hidden; text-overflow: ellipsis; }
 .cx-chip b { color: var(--crux-text); font-weight: 500; margin-right: 4px; flex: none; }
 .cx-chip-more { flex: none; color: var(--crux-text-tertiary); }
-.cx-skel { height: 8px; border-radius: 4px; background: var(--crux-subtle); }
+.cx-skel { height: 8px; border-radius: 4px; background: var(--crux-border); }
 .cx-skel-chip { height: 22px; border-radius: var(--crux-radius-chip); background: var(--crux-subtle); flex: none; }
+/* Placeholders breathe while their content is being produced. */
+.cx-skel, .cx-skel-chip { animation: cx-breathe 1.6s ease-in-out infinite; }
+@keyframes cx-breathe { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
 .cx-live { display: flex; align-items: center; gap: 8px; min-width: 0; }
 .cx-live .cx-dot { background: var(--crux-accent); animation: crux-pulse var(--crux-pulse-duration) ease-in-out infinite; }
 
