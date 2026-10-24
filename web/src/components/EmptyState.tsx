@@ -77,7 +77,7 @@ export function EmptyState({ onRun, onReplay, error }: {
         <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: [0.2, 0, 0, 1] }}>
           <h1 className="text-center text-[30px] leading-9 font-semibold tracking-[-0.02em]">What are you deciding?</h1>
           <p className="mt-2 mb-6 text-center text-[15px] leading-6 text-crux-text-secondary">
-            Talk it through. Decision Lab researches while you chat, and never decides for you.
+            Talk it through. Decision Lab researches while you chat, then your own priorities pick the best fit.
           </p>
           <Composer onSubmit={onRun} error={error ?? micError} mic={<MicButton onError={setMicError} />} />
           <div className="mt-3 flex flex-wrap justify-center gap-2">
