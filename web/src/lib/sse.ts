@@ -7,7 +7,8 @@ export function connectRun(
   onEvent: (e: CruxEvent) => void,
   onError?: () => void,
 ): () => void {
-  // Phase 0 stub: Lane W3 replaces this with EventSource wiring.
-  void API; void runId; void onEvent; void onError
-  return () => {}
+  const es = new EventSource(`${API}/api/runs/${encodeURIComponent(runId)}/events`)
+  es.onmessage = (m) => { try { onEvent(JSON.parse(m.data) as CruxEvent) } catch { /* ignore malformed */ } }
+  es.onerror = () => onError?.() // EventSource auto-reconnects with Last-Event-ID
+  return () => es.close()
 }
