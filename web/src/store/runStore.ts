@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import { reduce } from './reducer'
 import type { CruxStore, RunData, UiState, ViewMode } from './types'
 
 function savedViewMode(): ViewMode {
@@ -6,7 +7,7 @@ function savedViewMode(): ViewMode {
   catch { return 'simple' }
 }
 
-const initialRun = (mock = false): RunData => ({
+export const initialRun = (mock = false): RunData => ({
   runId: null, lastSeq: 0, mock, decision: '', inputMode: 'text', replay: false,
   startedTs: null, phase: 'idle', doneTs: null, plan: null,
   agents: {}, agentByQuestion: {}, searches: {}, sources: {}, findings: {},
@@ -16,7 +17,7 @@ const initialRun = (mock = false): RunData => ({
   notices: [], fatalError: null,
 })
 
-const initialUi = (): UiState => ({
+export const initialUi = (): UiState => ({
   viewMode: savedViewMode(), selectedNodeId: null, selectedCellKey: null,
   matrixOpen: false, railTab: 'timeline', weights: {}, overrides: {},
   lastRerank: null, userMovedViewport: false, draft: '', draftInputMode: 'text',
@@ -24,7 +25,7 @@ const initialUi = (): UiState => ({
 
 export const useCrux = create<CruxStore>()((set) => ({
   ...initialRun(), ...initialUi(),
-  ingest: () => {}, // Phase 0 stub: Lane W3 installs the event reducer.
+  ingest: (e) => set((s) => reduce(s, e) ?? s),
   reset: (opts) => set((s) => ({ ...initialRun(opts?.mock), ...initialUi(), viewMode: s.viewMode })),
   setViewMode: (viewMode) => {
     try { localStorage.setItem('crux.viewMode', viewMode) } catch { /* Storage may be unavailable. */ }
