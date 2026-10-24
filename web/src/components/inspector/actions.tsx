@@ -136,7 +136,7 @@ export function BlindSpotActions() {
   const research = useAction()
   const save = useAction()
   const dismiss = useAction()
-  const canUpdate = useCrux((s) => s.synthesis !== null && (s.synthesisStatus === 'running' || selectRecommendationStale(s).stale))
+  const canUpdate = useCrux((s) => s.synthesisStatus === 'failed' || (s.synthesis !== null && (s.synthesisStatus === 'running' || selectRecommendationStale(s).stale)))
   if (bs?.status === 'answered' && canUpdate) {
     // The stale banner's button sits under this overlay, so offer the update right where the answer was saved.
     return (
