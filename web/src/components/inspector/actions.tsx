@@ -182,7 +182,7 @@ export function BlindSpotActions() {
             onClick={() => save.run(async (runId) => { await answerBlindSpot(runId, { answer: answer.trim() }); setAnswer('') })}>
             Save answer
           </Btn>
-          <span className="text-[12px] text-crux-text-tertiary">Added to what Crux knows about you.</span>
+          <span className="text-[12px] text-crux-text-tertiary">Added to what Decision Lab knows about you.</span>
         </div>
         <Err text={save.error} />
       </div>

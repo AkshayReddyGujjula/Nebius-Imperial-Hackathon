@@ -1,12 +1,42 @@
 import { ChevronRight, Download, Plus, Split } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useCrux } from '@/store/runStore'
+import type { CruxStore } from '@/store/types'
 import { selectTopStatus } from '@/store/selectors'
 import { fmtClock } from '@/lib/format'
 import { Dot, dotForTone } from './common/StatusDot'
 import { useNow } from './useNow'
 
 const API = import.meta.env.VITE_API_BASE ?? ''
+const FINISHED = ['done', 'failed', 'timeout']
+
+// Global progress: planning ~10%, researching 10→75% by agents finished, checking 80, writing 90, done 100.
+// Follow-ups (re-synthesis, dig deeper, ladder) after the run show an indeterminate "Updating the brief…".
+function progressOf(s: CruxStore): { pct: number; label: string; active: boolean } | null {
+  const agents = Object.values(s.agents)
+  const finished = agents.filter((a) => FINISHED.includes(a.status)).length
+  switch (s.phase) {
+    case 'idle': return null
+    case 'planning': return { pct: 10, label: 'Planning', active: true }
+    case 'researching': {
+      const pct = agents.length ? 10 + 65 * (finished / agents.length) : 10
+      return { pct, label: `Researching · ${finished} of ${agents.length} agents done`, active: true }
+    }
+    case 'checking': return { pct: 80, label: 'Checking citations', active: true }
+    case 'synthesizing': return { pct: 90, label: 'Writing the brief', active: true }
+    case 'error': return { pct: 100, label: 'Stopped', active: false }
+    case 'done': {
+      const ladderRunning = Object.values(s.ladders).some((l) => Object.values(l.arms).some((a) => a?.status === 'running'))
+      const pending = agents.filter((a) => !FINISHED.includes(a.status))
+      if (s.synthesisStatus === 'running') return { pct: 90, label: 'Updating the brief…', active: true }
+      if (ladderRunning) return { pct: 60, label: 'Comparing effort levels…', active: true }
+      if (pending.length) {
+        return { pct: 10 + 80 * (finished / Math.max(1, agents.length)), label: `Digging deeper · ${pending.length} agent${pending.length === 1 ? '' : 's'} working`, active: true }
+      }
+      return { pct: 100, label: 'Done', active: false }
+    }
+  }
+}
 
 export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
   const { phase, title, replay, mock, runId, viewMode } = useCrux(useShallow((s) => ({
@@ -21,19 +51,20 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
   const running = phase !== 'idle' && phase !== 'done' && phase !== 'error'
   const now = useNow(running)
   const elapsed = useCrux((s) => selectTopStatus(s, running ? now : (s.doneTs ?? s.startedTs ?? now)).elapsedMs)
+  const progress = useCrux(useShallow((s) => progressOf(s)))
   const kind = phase === 'done' ? 'ok' : phase === 'error' ? 'bad' : dotForTone(status.tone)
   const textTone = kind === 'active' ? 'text-crux-accent-text' : kind === 'ok' ? 'text-crux-ok' : kind === 'bad' ? 'text-crux-bad' : 'text-crux-text-secondary'
 
   return (
-    <header className="col-span-2 flex h-[52px] min-w-0 items-center gap-4 border-b border-crux-border bg-crux-surface px-4">
+    <header className="dl-topbar col-span-2 flex h-[52px] min-w-0 items-center gap-4 px-4">
       <div className="flex min-w-0 items-center gap-2">
-        <span className="grid size-[22px] flex-none place-items-center rounded-[6px] bg-crux-text text-white">
+        <span className="dl-mark grid size-[22px] flex-none place-items-center rounded-[6px]">
           <Split className="!size-3" />
         </span>
-        <span className="text-[15px] font-semibold">Crux</span>
+        <span className="whitespace-nowrap text-[15px] font-semibold">Decision Lab</span>
         {phase !== 'idle' && title ? (
           <>
-            <ChevronRight className="flex-none text-crux-text-quaternary" />
+            <ChevronRight className="dl-topbar-muted flex-none" />
             <span className="max-w-[460px] truncate text-[14px] font-medium" title={title}>{title}</span>
           </>
         ) : null}
@@ -43,12 +74,20 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
         <div className="flex flex-none items-center gap-2">
           {replay ? <span className="ui-pill">Replay</span> : null}
           {mock ? <span className="ui-pill warn">Mock data</span> : null}
-          <span className={`inline-flex items-center gap-1.5 text-[13px] ${textTone}`}>
-            <Dot kind={kind} />
-            <span>{status.label || 'Starting'}</span>
-            <span className="text-crux-text-quaternary">·</span>
-            <span className="ui-num">{fmtClock(Math.max(0, elapsed))}</span>
-          </span>
+          {progress && progress.label !== 'Done' && progress.label !== 'Stopped' ? (
+            <div className="dl-progress" data-active={progress.active} role="progressbar" aria-label={progress.label}
+              aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.pct)}>
+              <span className="dl-progress-label">{progress.label}<span className="dl-topbar-muted"> · </span><span className="ui-num">{fmtClock(Math.max(0, elapsed))}</span></span>
+              <span className="dl-progress-track"><span className="dl-progress-fill" style={{ width: `${progress.pct}%` }} /></span>
+            </div>
+          ) : (
+            <span className={`inline-flex items-center gap-1.5 text-[13px] ${textTone}`}>
+              <Dot kind={kind} />
+              <span>{status.label || 'Starting'}</span>
+              <span className="dl-topbar-muted">·</span>
+              <span className="ui-num">{fmtClock(Math.max(0, elapsed))}</span>
+            </span>
+          )}
         </div>
       ) : null}
 
@@ -63,7 +102,7 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
         ))}
       </div>
       {viewMode === 'detailed' && runId && !mock ? (
-        <a className="ui-btn icon" href={`${API}/api/runs/${runId}/export`} target="_blank" rel="noreferrer" title="Export run log" aria-label="Export run log">
+        <a className="ui-btn icon" href={`${API}/api/runs/${runId}/export`} target="_blank" rel="noreferrer" download={`decision-lab-${runId}.jsonl`} title="Export the Decision Lab run log" aria-label="Export run log">
           <Download />
         </a>
       ) : null}
