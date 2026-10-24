@@ -56,6 +56,15 @@ function dropSynthesisNotice(ns: RunData['notices']): RunData['notices'] {
   return ns.some((n) => n.id === SYNTHESIS_NOTICE_ID) ? ns.filter((n) => n.id !== SYNTHESIS_NOTICE_ID) : ns
 }
 
+/** Adds receipt lines to the latest user chat message (what it saved to user.md / the research it started). */
+function receiptFor(s: ReducerState, kind: 'memory' | 'research', ...lines: string[]): RunData['receipts'] {
+  const prevAll = s.receipts ?? {}
+  const last = [...s.chat].reverse().find((m) => m.role === 'user')
+  if (!last) return prevAll
+  const prev = prevAll[last.id] ?? { memory: [], research: [] }
+  return { ...prevAll, [last.id]: { ...prev, [kind]: [...prev[kind], ...lines] } }
+}
+
 // ---------- reducer ----------
 
 /** Pure: returns the state patch for one event, or null when the event is ignored. */
@@ -228,6 +237,7 @@ function apply(s: ReducerState, e: CruxEvent): Patch {
       const t = clip(e.question.text, 48)
       return {
         plan,
+        receipts: e.question.origin === 'followup' ? receiptFor(s, 'research', e.question.text) : s.receipts,
         acts: [item(e, 0, 'accent', blind ? 'Researching your blind spot' : `Digging deeper: ${t}`,
           blind ? 'Blind spot research started' : 'Dig deeper started', e.question.text, null, nodeId.question(e.question.id))],
       }
@@ -315,6 +325,7 @@ function apply(s: ReducerState, e: CruxEvent): Patch {
     case 'memory.updated':
       return {
         memory: e.markdown, memoryChanges: e.changes, memorySeq: e.seq,
+        receipts: e.by === 'conversation' && e.changes.length ? receiptFor(s, 'memory', ...e.changes) : s.receipts,
         acts: e.changes.length ? [item(e, 0, 'accent', `Updated what I know about you (${e.changes.length})`, 'Memory updated', e.changes.join('; '), e.by)] : [],
       }
 

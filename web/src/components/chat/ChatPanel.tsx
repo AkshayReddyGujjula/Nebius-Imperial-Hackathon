@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUp, ChevronDown, FileText } from 'lucide-react'
+import { ArrowUp, Check, ChevronDown, FileText, Search } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { nodeId } from '@shared/ids'
 import { useCrux } from '@/store/runStore'
@@ -67,7 +67,7 @@ function Conversation() {
           {chat.map((m) => (
             <motion.div key={m.id} layout="position" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: EASE }}
               className={m.role === 'user' ? 'flex flex-col' : ''}>
-              {m.role === 'user' ? <div className="dl-user">{m.text}</div> : (
+              {m.role === 'user' ? <><div className="dl-user">{m.text}</div><Receipt id={m.id} /></> : (
                 <div>
                   <div className="dl-asst-label">Decision Lab · DeepSeek V4.1 Flash</div>
                   <div className="dl-asst">{m.text}</div>
@@ -141,6 +141,20 @@ function MemoryCard() {
         ) : null}
       </AnimatePresence>
     </section>
+  )
+}
+
+/** Under a user bubble: proof the message reached the agents (user.md) and any research it started. */
+function Receipt({ id }: { id: string }) {
+  const r = useCrux((s) => s.receipts[id])
+  if (!r || (!r.memory.length && !r.research.length)) return null
+  return (
+    <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: EASE }} className="dl-receipt">
+      {r.memory.length ? (
+        <div title={r.memory.join('\n')}><Check className="size-3" /> Saved to <span className="dl-tag">user.md</span> → shared with Planner, Agents 1–4, Writer</div>
+      ) : null}
+      {r.research.map((q, i) => <div key={i}><Search className="size-3" /> Started new research: {q}</div>)}
+    </motion.div>
   )
 }
 
@@ -240,6 +254,7 @@ function ResearchStatus() {
 }
 
 const LINE = 20
+const CHIPS = ['I prefer…', 'Must have…', 'Budget is…']
 
 function ChatInput({ disabled, onSent }: { disabled: boolean; onSent: (text: string) => void }) {
   const draft = useCrux((s) => s.draft)
@@ -269,11 +284,24 @@ function ChatInput({ disabled, onSent }: { disabled: boolean; onSent: (text: str
     finally { window.setTimeout(() => setBusy(false), Math.max(0, 1000 - (Date.now() - started))) }
   }
 
+  const prefill = (p: string) => {
+    setDraft(p, 'text')
+    requestAnimationFrame(() => { const el = ref.current; if (el) { el.focus(); el.setSelectionRange(p.length, p.length) } })
+  }
+
   return (
     <div className="dl-input">
+      {disabled ? null : (
+        <div className="dl-interject">
+          <span className="dl-interject-label">Add anything — preferences, constraints, facts. The agents pick it up live.</span>
+          <div className="flex flex-wrap gap-1">
+            {CHIPS.map((c) => <button key={c} type="button" className="dl-qchip" disabled={busy} onClick={() => prefill(`${c.replace('…', '')} `)}>{c}</button>)}
+          </div>
+        </div>
+      )}
       <div className="dl-input-box">
         <textarea ref={ref} id={INPUT_ID} rows={1} maxLength={4000} value={disabled ? '' : draft} disabled={disabled || busy}
-          placeholder="Reply, or add anything about your situation…" aria-label="Reply to Decision Lab"
+          placeholder="Add anything — preferences, constraints, facts…" aria-label="Reply or add information for the agents"
           onChange={(e) => setDraft(e.target.value, 'text')}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void submit() } }} />
         {disabled ? null : <MicButton onError={setError} />}

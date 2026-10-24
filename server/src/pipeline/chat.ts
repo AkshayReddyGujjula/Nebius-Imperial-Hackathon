@@ -32,6 +32,15 @@ function say(ctx: RunContext, role: "user" | "assistant", text: string, suggesti
   ctx.emit({ type: "chat.message", id, role, text, suggestions, recommendedIndex });
 }
 
+const GENERIC = ["Yes, a lot", "Somewhat", "Not really", "Not sure yet"];
+
+/** Every turn that asks a question carries 2-4 one-tap answers; falls back to generic ones if the model gave none. */
+function answersFor(reply: string, raw: string[], rec: number | null): { suggestions: string[]; recommendedIndex: number | null } {
+  const s = cleanSuggestions(raw, rec);
+  if (s.suggestions.length || !/\?\s*$/.test(reply.trim())) return s;
+  return { suggestions: GENERIC, recommendedIndex: null };
+}
+
 function cleanSuggestions(raw: string[], rec: number | null): { suggestions: string[]; recommendedIndex: number | null } {
   const seen = new Set<string>();
   const picked: { s: string; i: number }[] = [];
@@ -121,7 +130,7 @@ export function openConversation(ctx: RunContext): Promise<void> {
     try {
       const out = await callChat(ctx, CHAT_OPEN_USER(ctx.state.decision, ctx.state.memory));
       updateMemory(ctx, out.memory, "conversation");
-      const s = cleanSuggestions(out.suggestions, out.recommendedIndex);
+      const s = answersFor(out.reply, out.suggestions, out.recommendedIndex);
       say(ctx, "assistant", out.reply.trim(), s.suggestions, s.recommendedIndex);
     } catch (err) {
       console.warn("[chat] opening failed:", err);
@@ -160,7 +169,7 @@ export function userTurn(ctx: RunContext, text: string): Promise<void> {
         ctx.emit({ type: "plan.updated", plan, reason: `Weights changed from the conversation: ${reasons.join(", ")}` });
       }
     }
-    const s = cleanSuggestions(out.suggestions, out.recommendedIndex);
+    const s = answersFor(out.reply, out.suggestions, out.recommendedIndex);
     say(ctx, "assistant", out.reply.trim(), s.suggestions, s.recommendedIndex);
     if (out.action === "research") startResearch(ctx, out.researchRequest?.trim() || text);
     else if (out.action === "update_brief" || weightsChanged) requestBrief(ctx);
@@ -177,12 +186,13 @@ export function afterSynthesis(ctx: RunContext, synthesis: Synthesis | null): vo
   void enqueue(ctx, async () => {
     try {
       const out = await callChat(ctx, `${context(ctx)}\n\n${CHAT_AFTER_SYNTHESIS}`);
-      const s = cleanSuggestions(out.suggestions, out.recommendedIndex);
+      const s = answersFor(out.reply, out.suggestions, out.recommendedIndex);
       say(ctx, "assistant", out.reply.trim(), s.suggestions, s.recommendedIndex);
     } catch (err) {
       console.warn("[chat] after-synthesis turn failed:", err);
       const cond = synthesis.conditions.slice(0, 2).join(" ");
-      say(ctx, "assistant", `The research is in: ${synthesis.recommendation}. ${cond} What matters most to you here?`.replace(/\s+/g, " "));
+      say(ctx, "assistant", `The research is in: ${synthesis.recommendation}. ${cond} What matters most to you here?`.replace(/\s+/g, " "),
+        ["Cost", "Quality", "Risk", "Not sure yet"], null);
     }
   });
 }
