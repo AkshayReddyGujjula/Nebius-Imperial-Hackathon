@@ -6,7 +6,7 @@ import { streamSSE } from "hono/streaming";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import type {
-  BlindSpotAnswerRequest, CreateReplayRequest, CreateRunRequest, CreateRunResponse, DeeperRequest, DeeperResponse,
+  BlindSpotAnswerRequest, ClarifyRequest, ClarifyResponse, CreateReplayRequest, CreateRunRequest, CreateRunResponse, DeeperRequest, DeeperResponse,
   FollowupRequest, HealthResponse, LadderRequest, LadderResponse, SynthesizeRequest, TranscribeResponse,
 } from "@shared/api";
 import { CONFIG } from "./config";
@@ -16,6 +16,7 @@ import { runPipeline } from "./pipeline/runPipeline";
 import { answerBlindSpot, applyFollowup, digDeeper, researchBlindSpot, resynthesize, runLadder, UserFacingError } from "./pipeline/followups";
 import { transcribe } from "./stt/elevenlabs";
 import { fakePipeline } from "./dev/fakePipeline";
+import { clarify } from "./pipeline/clarify";
 
 const app = new Hono();
 
@@ -53,6 +54,19 @@ app.get("/api/health", (c) => {
     jsonMode: CONFIG.jsonMode,
   };
   return c.json(body);
+});
+
+app.post("/api/clarify", async (c) => {
+  const body = await readJson<ClarifyRequest>(c);
+  const decision = typeof body.decision === "string" ? body.decision.trim() : "";
+  if (decision.length < 10 || decision.length > 4000) return fail(c, 400, "Describe your decision in 10–4000 characters.");
+  try {
+    const res: ClarifyResponse = await clarify(decision);
+    return c.json(res);
+  } catch (err) {
+    console.warn("[clarify] failed:", err);
+    return fail(c, 502, "Couldn't prepare questions. " + errMsg(err));
+  }
 });
 
 app.post("/api/runs", async (c) => {
@@ -235,4 +249,4 @@ if (existsSync(CONFIG.webDist)) {
 }
 
 serve({ fetch: app.fetch, port: CONFIG.port });
-console.log(`Crux server on :${CONFIG.port}${process.env.FAKE_PIPELINE === "1" ? " (FAKE_PIPELINE)" : ""}`);
+console.log(`Decision Lab server on :${CONFIG.port}${process.env.FAKE_PIPELINE === "1" ? " (FAKE_PIPELINE)" : ""}`);
