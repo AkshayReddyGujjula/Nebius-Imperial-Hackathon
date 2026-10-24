@@ -9,7 +9,9 @@ import { PlanOut, SynthesisOut } from "./schemas";
 export function shortMessage(err: unknown): string {
   const m = String((err as any)?.message ?? err ?? "error");
   const title = m.match(/<title>([^<]*)<\/title>/i)?.[1];   // nginx HTML error pages
-  return (title ? `${m.match(/^\d{3}/)?.[0] ?? ""} ${title}`.trim() : m).replace(/\s+/g, " ").trim().slice(0, 200);
+  const code = m.match(/^\d{3}/)?.[0] ?? "";
+  const text = title ? (title.startsWith(code) ? title : `${code} ${title}`) : m;
+  return text.replace(/^(\d{3}) \1\b/, "$1").replace(/\s+/g, " ").trim().slice(0, 200);
 }
 
 function validQuote(decision: string, quote: string | null | undefined): string | null {

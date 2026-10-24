@@ -233,7 +233,8 @@ async function replayInfo(dir: string, file: string): Promise<ReplayInfo | null>
 export async function listReplays(): Promise<ReplayInfo[]> {
   const out: ReplayInfo[] = [];
   const seen = new Set<string>();
-  for (const dir of [CONFIG.replaysDir, CONFIG.runsDir]) {
+  // Only curated recordings are offered in the UI; every live run still lands in runsDir.
+  for (const dir of [CONFIG.replaysDir]) {
     if (!existsSync(dir)) continue;
     for (const file of await readdir(dir)) {
       if (!file.endsWith(".jsonl") || seen.has(file)) continue;
