@@ -1,18 +1,19 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'motion/react'
-import { ArrowUp, Check, ChevronDown, FileText, Search } from 'lucide-react'
+import { ArrowDown, ArrowUp, Check, ChevronDown, Search } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { nodeId } from '@shared/ids'
 import { useCrux } from '@/store/runStore'
-import { sendChat } from '@/lib/api'
 import { MicButton } from '@/components/MicButton'
 import { ActivityRail } from '@/components/rail/ActivityRail'
 import { countFacts, isChanged, parseMemory } from './memory'
+import { conditional, errText, openQuestions, send, sentences, useChatUi } from './chatUi'
 import './chat.css'
 
 const EASE = [0.2, 0, 0, 1] as const
 const TYPING_TIMEOUT_MS = 30_000
 const INPUT_ID = 'dl-chat-input'
+const BULLETS = 2
 
 /** Left column of the live layout: Conversation | Research tabs. */
 export function ChatPanel() {
@@ -31,8 +32,7 @@ export function ChatPanel() {
 function Conversation() {
   const chat = useCrux((s) => s.chat)
   const live = useCrux((s) => !s.mock && !s.replay)
-  // Sends awaiting their echo (optimistic bubble) and the assistant reply (typing row).
-  const [pending, setPending] = useState<{ text: string; users: number; assistants: number; at: number } | null>(null)
+  const { pending, skipped, setDeckOpen } = useChatUi(useShallow((s) => ({ pending: s.pending, skipped: s.skipped, setDeckOpen: s.setDeckOpen })))
   const [now, setNow] = useState(Date.now())
   const mountedAt = useRef(Date.now())
   const users = chat.filter((m) => m.role === 'user').length
@@ -41,6 +41,8 @@ function Conversation() {
   const firstWait = live && assistants === 0
   const echoed = pending !== null && users > pending.users
   const waiting = (firstWait || (pending !== null && assistants <= pending.assistants)) && now - (pending?.at ?? mountedAt.current) < TYPING_TIMEOUT_MS
+  const asked = useMemo(() => new Set(openQuestions(chat, pending, skipped).map((m) => m.id)), [chat, pending, skipped])
+  const lastAsst = [...chat].reverse().find((m) => m.role === 'assistant')?.id
 
   useEffect(() => {
     if (!waiting) return
@@ -48,31 +50,24 @@ function Conversation() {
     return () => window.clearInterval(t)
   }, [waiting])
 
-  const latest = chat[chat.length - 1]
-  const answered = latest?.role !== 'assistant' || (pending !== null && pending.assistants >= assistants)
-
   const threadRef = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
     const el = threadRef.current
     if (el) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' })
   }, [chat.length, waiting, pending?.text])
 
-  const onSent = (text: string) => setPending({ text, users, assistants, at: Date.now() })
-
   return (
     <>
-      <MemoryCard />
+      <StatusStrip waiting={waiting} yourTurn={asked.size > 0} />
+      <MemoryRow />
       <div ref={threadRef} className="dl-thread ui-scroll">
         <AnimatePresence initial={false}>
           {chat.map((m) => (
             <motion.div key={m.id} layout="position" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: EASE }}
               className={m.role === 'user' ? 'flex flex-col' : ''}>
-              {m.role === 'user' ? <><div className="dl-user">{m.text}</div><Receipt id={m.id} /></> : (
-                <div>
-                  <div className="dl-asst-label">Decision Lab · DeepSeek V4.1 Flash</div>
-                  <div className="dl-asst">{m.text}</div>
-                </div>
-              )}
+              {m.role === 'user'
+                ? <><div className="dl-user">{m.text}</div><Receipt id={m.id} /></>
+                : <Reply text={m.text} latest={m.id === lastAsst} asked={asked.has(m.id)} onAsk={() => setDeckOpen(true)} />}
             </motion.div>
           ))}
           {pending && !echoed ? (
@@ -81,30 +76,86 @@ function Conversation() {
             </motion.div>
           ) : null}
         </AnimatePresence>
-        <ResearchStatus />
         {waiting ? (
           <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.2 }} aria-label="Decision Lab is thinking">
-            <div className="dl-asst-label">Decision Lab</div>
             <span className="dl-dots"><i /><i /><i /></span>
           </motion.div>
         ) : null}
       </div>
-      <AnimatePresence initial={false}>
-        {latest?.role === 'assistant' && !answered && latest.suggestions.length > 0 ? (
-          <QuestionPopup key={latest.id} text={latest.text} suggestions={latest.suggestions} recommended={latest.recommendedIndex} disabled={!live} onSent={onSent} />
-        ) : null}
-      </AnimatePresence>
-      <ChatInput disabled={!live} onSent={onSent} />
+      <ChatInput disabled={!live} />
     </>
   )
 }
 
-function MemoryCard() {
-  const { memory, changes, seq } = useCrux(useShallow((s) => ({ memory: s.memory, changes: s.memoryChanges, seq: s.memorySeq })))
+/** One assistant reply as chunks: bold lead line, up to 2 bullets, "If X → Y" chips; the rest behind "More".
+ *  Older replies collapse to their lead line. */
+function Reply({ text, latest, asked, onAsk }: { text: string; latest: boolean; asked: boolean; onAsk: () => void }) {
+  const [more, setMore] = useState(false)
+  const all = useMemo(() => sentences(text), [text])
+  // The question itself lives in the centred deck while it is open.
+  const qAt = all.map((s) => s.endsWith('?')).lastIndexOf(true)
+  const body = asked && qAt >= 0 && all.length > 1 ? all.filter((_, i) => i !== qAt) : all
+  const [lead, ...rest] = body
+  const chips = rest.map(conditional).filter((c): c is { when: string; then: string } => c !== null)
+  const bullets = rest.filter((s) => !conditional(s))
+  const open = latest || more
+  const shown = more ? bullets : open ? bullets.slice(0, BULLETS) : []
+  const hasMore = bullets.length > shown.length || (!open && chips.length > 0)
+
+  return (
+    <div className={`dl-reply ${latest ? '' : 'old'}`}>
+      {lead ? <p className="dl-lead">{lead}</p> : null}
+      {shown.length ? <ul className="dl-bullets">{shown.map((s, i) => <li key={i}>{s}</li>)}</ul> : null}
+      {open && chips.length ? (
+        <div className="dl-cond">{chips.map((c, i) => <span key={i} className="dl-cond-chip"><span className="w">{c.when}</span><span className="t">→ {c.then}</span></span>)}</div>
+      ) : null}
+      {hasMore || more || asked ? (
+        <div className="dl-reply-foot">
+          {hasMore || more ? <button type="button" className="dl-more" onClick={() => setMore(!more)}>{more ? 'Less' : 'More'}</button> : null}
+          {asked ? <button type="button" className="dl-ask" onClick={onAsk}><ArrowDown className="size-3.5" />Question for you</button> : null}
+        </div>
+      ) : null}
+    </div>
+  )
+}
+
+/** One line: what is happening, and where to look. */
+function StatusStrip({ waiting, yourTurn }: { waiting: boolean; yourTurn: boolean }) {
+  const { agentMap, phase, briefReady } = useCrux(useShallow((s) => ({ agentMap: s.agents, phase: s.phase, briefReady: s.synthesisStatus === 'ready' })))
+  const select = useCrux((s) => s.select)
+  const agents = Object.values(agentMap)
+  const n = agents.length
+  const done = agents.filter((a) => a.status === 'done' || a.status === 'failed' || a.status === 'timeout').length
+
+  let tone: 'live' | 'you' | 'done' | 'warn' = 'live'
+  let label: string
+  if (yourTurn) { tone = 'you'; label = 'Your turn — answer the question' }
+  else if (phase === 'error') { tone = 'warn'; label = 'Something went wrong' }
+  else if (phase === 'done' || (briefReady && phase !== 'synthesizing')) { tone = 'done'; label = 'Brief ready — see the canvas' }
+  else if (phase === 'synthesizing') label = 'Writing the brief'
+  else if (phase === 'checking') label = 'Checking the evidence'
+  else if (phase === 'researching' && n) label = `Researching — ${done} of ${n} done`
+  else if (phase === 'planning') label = 'Planning the research'
+  else label = waiting ? 'Thinking' : 'Listening'
+  const pct = n ? Math.max(6, (done / n) * 100) : 6
+
+  return (
+    <button type="button" className={`dl-strip ${tone}`} disabled={tone !== 'done'} onClick={() => select(nodeId.recommendation)} aria-live="polite">
+      <span className="dl-strip-dot">{tone === 'done' ? <Check className="size-3" strokeWidth={3} /> : null}</span>
+      <span className="dl-strip-label">{label}</span>
+      {tone === 'live' && n ? <span className="dl-strip-bar"><span style={{ width: `${pct}%` }} /></span> : null}
+    </button>
+  )
+}
+
+/** user.md as a single-line row; flashes the latest change; expands on click (open by default in Detailed). */
+function MemoryRow() {
+  const { memory, changes, seq, detailed } = useCrux(useShallow((s) => ({ memory: s.memory, changes: s.memoryChanges, seq: s.memorySeq, detailed: s.viewMode === 'detailed' })))
   const lines = useMemo(() => parseMemory(memory), [memory])
-  const [open, setOpen] = useState(true)
+  const [open, setOpen] = useState(detailed)
   const [fresh, setFresh] = useState(false)
 
+  useEffect(() => { setOpen(detailed) }, [detailed])
   useEffect(() => {
     if (!seq) return
     setFresh(true)
@@ -113,26 +164,18 @@ function MemoryCard() {
   }, [seq])
 
   const n = countFacts(lines)
+  const latest = changes[changes.length - 1]
   return (
-    <section className="dl-mem">
+    <section className={`dl-mem ${fresh ? 'fresh' : ''}`}>
       <button type="button" className="dl-mem-head" aria-expanded={open} onClick={() => setOpen(!open)}>
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
-            <span className="dl-mem-title">What I know about you</span>
-            <span className="dl-tag">user.md</span>
-            {fresh ? <span className="dl-updated">Updated</span> : null}
-          </div>
-          <div className="mt-0.5 text-[11.5px] text-[color:var(--c-muted)]">
-            {open ? 'Shared with every agent' : n === 0 ? 'Nothing yet' : `${n} thing${n === 1 ? '' : 's'} I know about you`}
-          </div>
-        </div>
+        <span className="dl-tag">user.md</span>
+        <span className="dl-mem-line">{fresh && latest ? <><span className="dl-updated">+</span> {latest}</> : n === 0 ? 'Nothing yet' : `${n} thing${n === 1 ? '' : 's'} I know about you`}</span>
         <ChevronDown className={`size-4 flex-none text-[color:var(--c-muted)] transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
       </button>
       <AnimatePresence initial={false}>
         {open ? (
           <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1 }} exit={{ height: 0, opacity: 0 }} transition={{ duration: 0.2, ease: EASE }} className="overflow-hidden">
             <div className="dl-mem-body ui-scroll">
-              {lines.length === 0 ? <p className="text-[13px] text-[color:var(--c-muted)]">As we talk, I'll note what matters to you here.</p> : null}
               {lines.map((l, i) => l.kind === 'heading'
                 ? <div key={i} className="dl-mem-h">{l.text}</div>
                 : <div key={i} className={`dl-mem-li ${l.kind === 'bullet' ? 'b' : ''} ${fresh && isChanged(l.text, changes) ? 'hl' : ''}`}>{l.text}</div>)}
@@ -147,120 +190,26 @@ function MemoryCard() {
 /** Under a user bubble: proof the message reached the agents (user.md) and any research it started. */
 function Receipt({ id }: { id: string }) {
   const r = useCrux((s) => s.receipts[id])
+  const detailed = useCrux((s) => s.viewMode === 'detailed')
   if (!r || (!r.memory.length && !r.research.length)) return null
   return (
     <motion.div initial={{ opacity: 0, y: 4 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: EASE }} className="dl-receipt">
       {r.memory.length ? (
-        <div title={r.memory.join('\n')}><Check className="size-3" /> Saved to <span className="dl-tag">user.md</span> → shared with Planner, Agents 1–4, Writer</div>
+        <div title={r.memory.join('\n')}><Check className="size-3" />{detailed ? <>Saved to <span className="dl-tag">user.md</span> → shared with Planner, Agents 1–4, Writer</> : 'Saved'}</div>
       ) : null}
-      {r.research.map((q, i) => <div key={i}><Search className="size-3" /> Started new research: {q}</div>)}
+      {r.research.map((q, i) => <div key={i} title={q}><Search className="size-3" />{detailed ? `Started new research: ${q}` : 'New research'}</div>)}
     </motion.div>
   )
 }
 
-const KEYS = 'ABCDEFGH'
-
-/** The question: last sentence of the assistant text ending in "?". */
-function questionOf(text: string): string {
-  const parts = text.replace(/\s+/g, ' ').trim().match(/[^.!?]+[.!?]+|[^.!?]+$/g) ?? []
-  const q = [...parts].reverse().find((p) => p.trim().endsWith('?'))
-  return q ? q.trim() : 'Your answer'
-}
-
-function QuestionPopup({ text, suggestions, recommended, disabled, onSent }: {
-  text: string; suggestions: string[]; recommended: number | null; disabled: boolean; onSent: (text: string) => void
-}) {
-  const [open, setOpen] = useState(true)
-  const [busy, setBusy] = useState(false)
-  const [own, setOwn] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const pick = async (t: string) => {
-    const v = t.trim()
-    if (!v || busy || disabled) return
-    setBusy(true); setError(null)
-    try { await send(v, 'text'); onSent(v) } catch (e) { setError(errText(e)) } finally { setBusy(false) }
-  }
-  return (
-    <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 16 }} transition={{ duration: 0.22, ease: EASE }} className="dl-pop-wrap">
-      {open ? (
-        <section className="dl-pop" aria-label="Answer options">
-          <div className="dl-pop-head">
-            <div className="dl-pop-title">{questionOf(text)}</div>
-            <button type="button" className="dl-pop-x" aria-label="Collapse answer options" onClick={() => setOpen(false)}>×</button>
-          </div>
-          <div className="dl-pop-body ui-scroll">
-            <div className="dl-opts !mt-0">
-              {suggestions.map((s, i) => (
-                <button key={i} type="button" className={`dl-opt ${i === recommended ? 'rec' : ''}`} disabled={busy || disabled} onClick={() => void pick(s)}>
-                  <span className="dl-key">{KEYS[i] ?? i + 1}</span>
-                  <span className="min-w-0 flex-1">{s}</span>
-                  {i === recommended ? <span className="dl-likely">Likely</span> : null}
-                </button>
-              ))}
-            </div>
-            <form className="dl-pop-own" onSubmit={(e) => { e.preventDefault(); void pick(own) }}>
-              <input value={own} maxLength={4000} disabled={busy || disabled} onChange={(e) => setOwn(e.target.value)} placeholder="Or type or say your own answer…" aria-label="Your own answer" />
-              {disabled ? null : <MicButton small onError={setError} onText={(t) => setOwn((o) => (o.trim() ? `${o.trim()} ${t}` : t))} />}
-              <button type="submit" className="ui-btn primary" disabled={busy || disabled || !own.trim()}>Send</button>
-            </form>
-            {error ? <p className="dl-err">{error}</p> : null}
-          </div>
-        </section>
-      ) : (
-        <button type="button" className="dl-chip dl-pop-chip" onClick={() => setOpen(true)}>Answer options ({suggestions.length})</button>
-      )}
-    </motion.div>
-  )
-}
-
-function ResearchStatus() {
-  const { agentMap, phase, briefReady, synthSeq } = useCrux(useShallow((s) => ({
-    agentMap: s.agents, phase: s.phase, briefReady: s.synthesisStatus === 'ready', synthSeq: s.synthesisSeq,
-  })))
-  const select = useCrux((s) => s.select)
-  const agents = useMemo(() => Object.values(agentMap), [agentMap])
-  const active = phase === 'planning' || phase === 'researching' || phase === 'checking' || phase === 'synthesizing'
-  const done = agents.filter((a) => a.status === 'done' || a.status === 'failed' || a.status === 'timeout').length
-  const n = agents.length
-
-  return (
-    <>
-      {active ? (
-        <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: EASE }} className="dl-status">
-          <div className="flex items-center justify-between gap-2">
-            <span className="font-medium">
-              {n === 0 ? 'Planning the research…' : phase === 'synthesizing' ? 'Writing the decision brief…' : phase === 'checking' ? 'Checking the evidence…' : `Researching ${n} question${n === 1 ? '' : 's'}`}
-            </span>
-            {n > 0 ? <span className="ui-num text-[12px] text-[color:var(--c-muted)]">{done} done</span> : null}
-          </div>
-          <div className="dl-bar"><span style={{ width: `${n ? Math.max(4, (done / n) * 100) : 4}%` }} /></div>
-          {n > 0 ? (
-            <div className="flex flex-wrap gap-1">
-              {agents.map((a, i) => {
-                const fin = a.status === 'done' || a.status === 'failed' || a.status === 'timeout'
-                return <span key={a.id} className={`dl-badge ${fin ? 'done' : a.status !== 'queued' ? 'live' : ''}`} title={`${a.id} · ${a.status}`}>{i + 1}</span>
-              })}
-            </div>
-          ) : null}
-        </motion.div>
-      ) : null}
-      {briefReady ? (
-        <motion.button key={synthSeq} type="button" initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.22, ease: EASE }}
-          className="dl-chip" onClick={() => select(nodeId.recommendation)}>
-          <FileText className="size-3.5" />Decision brief updated
-        </motion.button>
-      ) : null}
-    </>
-  )
-}
-
-const LINE = 20
+const LINE = 22
 const CHIPS = ['I prefer…', 'Must have…', 'Budget is…']
 
-function ChatInput({ disabled, onSent }: { disabled: boolean; onSent: (text: string) => void }) {
+function ChatInput({ disabled }: { disabled: boolean }) {
   const draft = useCrux((s) => s.draft)
   const mode = useCrux((s) => s.draftInputMode)
   const setDraft = useCrux((s) => s.setDraft)
+  const markSent = useChatUi((s) => s.markSent)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const ref = useRef<HTMLTextAreaElement>(null)
@@ -280,7 +229,7 @@ function ChatInput({ disabled, onSent }: { disabled: boolean; onSent: (text: str
     try {
       await send(text, mode)
       setDraft('', 'text')
-      onSent(text)
+      markSent(text)
     } catch (e) { setError(errText(e)) }
     finally { window.setTimeout(() => setBusy(false), Math.max(0, 1000 - (Date.now() - started))) }
   }
@@ -294,32 +243,21 @@ function ChatInput({ disabled, onSent }: { disabled: boolean; onSent: (text: str
     <div className="dl-input">
       {disabled ? null : (
         <div className="dl-interject">
-          <span className="dl-interject-label">Add anything — preferences, constraints, facts. The agents pick it up live.</span>
-          <div className="flex flex-wrap gap-1">
-            {CHIPS.map((c) => <button key={c} type="button" className="dl-qchip" disabled={busy} onClick={() => prefill(`${c.replace('…', '')} `)}>{c}</button>)}
-          </div>
+          <span className="dl-interject-label">Tell us more anytime</span>
+          {CHIPS.map((c) => <button key={c} type="button" className="dl-qchip" disabled={busy} onClick={() => prefill(`${c.replace('…', '')} `)}>{c}</button>)}
         </div>
       )}
       <div className="dl-input-box">
         <textarea ref={ref} id={INPUT_ID} rows={1} maxLength={4000} value={disabled ? '' : draft} disabled={disabled || busy}
-          placeholder="Add anything — preferences, constraints, facts…" aria-label="Reply or add information for the agents"
+          placeholder={disabled ? 'Replay — chat is off' : 'Add anything…'} aria-label="Reply or add information for the agents"
           onChange={(e) => setDraft(e.target.value, 'text')}
           onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) { e.preventDefault(); void submit() } }} />
         {disabled ? null : <MicButton onError={setError} />}
-        <button type="button" className="ui-btn primary icon !size-8 !rounded-[8px]" disabled={disabled || busy || !draft.trim()} onClick={() => void submit()} aria-label="Send">
+        <button type="button" className="ui-btn primary icon !size-9 !rounded-[10px]" disabled={disabled || busy || !draft.trim()} onClick={() => void submit()} aria-label="Send">
           <ArrowUp className="!size-4" />
         </button>
       </div>
-      {disabled ? <p className="dl-note">Replay — start a live conversation to chat</p> : null}
       {error ? <p className="dl-err">{error}</p> : null}
     </div>
   )
 }
-
-async function send(text: string, mode: 'text' | 'voice'): Promise<void> {
-  const runId = useCrux.getState().runId
-  if (!runId) throw new Error('No live conversation')
-  await sendChat(runId, text, mode)
-}
-
-const errText = (e: unknown) => `Couldn't send — ${e instanceof Error ? e.message : 'server unreachable'}.`

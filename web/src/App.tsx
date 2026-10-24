@@ -6,6 +6,7 @@ import { Canvas } from '@/graph/Canvas'
 import { TopBar } from '@/components/TopBar'
 import { EmptyState } from '@/components/EmptyState'
 import { ChatPanel } from '@/components/chat/ChatPanel'
+import { QuestionDeck } from '@/components/chat/QuestionDeck'
 import { MatrixDrawer } from '@/components/matrix/MatrixDrawer'
 import { Inspector } from '@/components/inspector/Inspector'
 import { useShortcuts } from '@/components/useShortcuts'
@@ -65,6 +66,7 @@ export default function App() {
           <>
             <div className="dl-fade-in relative min-h-0 flex-1"><Canvas /></div>
             <MatrixDrawer />
+            <QuestionDeck />
           </>
         )}
         <Inspector />
