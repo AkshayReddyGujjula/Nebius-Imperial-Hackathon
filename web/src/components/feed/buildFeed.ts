@@ -102,7 +102,9 @@ export function buildFeed(log: CruxEvent[], s: Pick<RunData, 'agents' | 'plan' |
           tone: 'accent', priority: 2, nodeId: nodeId.decision })
         if (p.blindSpot && p.blindSpot.status === 'open')
           push(e, 1, { actor: actorFor('orchestrator'), title: 'Blind spot: something you didn’t mention',
-            body: p.blindSpot.text, quote: p.blindSpot.quote, tone: 'warn', priority: 3, nodeId: nodeId.blindspot })
+            body: p.blindSpot.text, quote: p.blindSpot.quote, tone: 'warn',
+            // Pinned only while it is still open: once answered, dismissed or researched it drops to the stream.
+            priority: (s.plan?.blindSpot?.status ?? 'open') === 'open' ? 3 : 2, nodeId: nodeId.blindspot })
         break
       }
       case 'agent.spawned': {
