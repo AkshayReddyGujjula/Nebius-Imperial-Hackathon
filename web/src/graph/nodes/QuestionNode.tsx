@@ -60,7 +60,6 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
       <div className="cx-k">
         {agentId && <AgentBadge agentId={agentId} />}
         <span className="cx-agent-name">{agentId ? `Agent ${agentNumber(agentId)}` : 'Waiting for an agent'}</span>
-        {agentId && <ModelBadge family="deepseek" />}
         {detailed && <span className="cx-mono cx-ellipsis">{deeper ? `${label} · deeper` : label}</span>}
         {!detailed && deeper && <span className="cx-ellipsis">Deeper</span>}
         {question.stale && <span className="cx-tag">Superseded</span>}
@@ -69,7 +68,7 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
         </span>
       </div>
       <div className="ax-who" title={agentLine(agentId, agent?.model, question.effort)}>
-        <b>{modelName(agent?.model || 'deepseek')}</b> · effort {EFFORT_WORD[question.effort]}
+        <ModelBadge family="deepseek" /> <b>{modelName(agent?.model || 'deepseek')}</b> · effort {EFFORT_WORD[question.effort]}
         {detailed && agent?.usage ? ` · ${fmtTokens(agent.usage.outputTokens)} tok · ${fmtMs(agent.usage.ms)}` : ''}
       </div>
       <div className={`cx-title ${detailed ? 'cx-clamp-1' : 'cx-clamp-2'}`} title={question.text}>{question.text}</div>
