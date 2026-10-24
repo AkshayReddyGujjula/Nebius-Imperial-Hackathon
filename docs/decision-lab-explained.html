@@ -333,15 +333,18 @@ html.js #arch.in .em{opacity:1}
       </ul>
     </div>
     <figure class="syc">
-      <h3>How often models just agree</h3>
-      <p class="sub">Sycophantic behaviour, share of cases</p>
-      <div class="sbars" role="img" aria-label="SycEval: 58.2% overall, Gemini 1.5 Pro 62.5%, ChatGPT-4o 56.7%, regressive sycophancy 14.7%">
-        <span>All three models</span><div class="strk"><div class="sfill" style="width:58.2%"></div></div><b>58.2%</b>
-        <span>Gemini 1.5 Pro (highest)</span><div class="strk"><div class="sfill lite" style="width:62.5%"></div></div><b>62.5%</b>
-        <span>ChatGPT-4o (lowest)</span><div class="strk"><div class="sfill lite" style="width:56.7%"></div></div><b>56.7%</b>
-        <span>Right answer turned wrong</span><div class="strk"><div class="sfill red" style="width:14.7%"></div></div><b>14.7%</b>
+      <h3>How often models cave when you push back</h3>
+      <p class="sub">Share of claims where the model changed its verdict towards the user's push (scale 0–15%)</p>
+      <div class="sbars" role="img" aria-label="Truestandard AI sycophancy benchmark, October 2026: Claude Opus 5.5 0.0%; GPT-6 Astra 0.0%; GPT-6.1 Sol 1.1%; DeepSeek V4.1 Flash (ours) 2.2%; Claude Sonnet 5.5 8.9%; Kimi K3 10.0%; DeepSeek V4 Pro 13.9%">
+        <span>Claude Opus 5.5</span><div class="strk"><div class="sfill lite" style="width:max(4px,0.0%)"></div></div><b>0.0%</b>
+        <span>GPT-6 Astra</span><div class="strk"><div class="sfill lite" style="width:max(4px,0.0%)"></div></div><b>0.0%</b>
+        <span>GPT-6.1 Sol</span><div class="strk"><div class="sfill lite" style="width:max(4px,7.3%)"></div></div><b>1.1%</b>
+        <span>DeepSeek V4.1 Flash (ours)</span><div class="strk"><div class="sfill " style="width:max(4px,14.7%)"></div></div><b>2.2%</b>
+        <span>Claude Sonnet 5.5</span><div class="strk"><div class="sfill lite" style="width:max(4px,59.3%)"></div></div><b>8.9%</b>
+        <span>Kimi K3</span><div class="strk"><div class="sfill lite" style="width:max(4px,66.7%)"></div></div><b>10.0%</b>
+        <span>DeepSeek V4 Pro</span><div class="strk"><div class="sfill red" style="width:max(4px,92.7%)"></div></div><b>13.9%</b>
       </div>
-      <figcaption class="fine2">Across ChatGPT-4o, Claude Sonnet and Gemini 1.5 Pro. In 14.7% of cases, agreeing with the user turned a right answer into a wrong one (regressive sycophancy). <a class="src" href="https://arxiv.org/abs/2502.08177">SycEval, Fanous et al., Stanford, 2025</a></figcaption>
+      <figcaption class="fine2">The newest flagships rarely flip under direct pushback, but mid-priced models still move on 9–14% of claims. Pushback tests also miss the subtler kinds: protecting your self-image and agreeing with both sides (ELEPHANT), and drifting towards you over a long chat (SPINE). <a class="src" href="https://truestandard.ai/ai-sycophancy-benchmark">Truestandard AI Sycophancy Benchmark, 30 claims × 3 runs, 21–22 Oct 2026</a></figcaption>
     </figure>
   </div>
 </div></section>
