@@ -1,0 +1,460 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Option B — Top-down tree + run timeline + matrix drawer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+<style>
+/* ===== Design tokens (shared by all options) ===== */
+:root{
+  --font:'Inter',system-ui,sans-serif; --mono:'JetBrains Mono',ui-monospace,monospace;
+  --bg:#F7F7F8; --surface:#FFFFFF; --subtle:#F4F4F5; --hover:#FAFAFA;
+  --border:#E4E4E7; --border-strong:#D4D4D8; --link:#C9C9D0;
+  --text:#18181B; --text-2:#52525B; --text-3:#71717A; --text-4:#A1A1AA;
+  --accent:#2563EB; --accent-soft:#EFF6FF; --accent-border:#BFDBFE; --accent-text:#1D4ED8;
+  --ok:#15803D; --ok-soft:#F0FDF4; --ok-border:#BBF7D0;
+  --warn:#B45309; --warn-soft:#FFFBEB; --warn-border:#FDE68A;
+  --bad:#B91C1C; --bad-soft:#FEF2F2; --bad-border:#FECACA;
+  --r-sm:6px; --r:8px; --r-lg:12px;
+  --sh-sm:0 1px 2px rgba(24,24,27,.05);
+  --sh:0 1px 3px rgba(24,24,27,.07),0 1px 2px rgba(24,24,27,.04);
+  --sh-pop:0 8px 24px rgba(24,24,27,.08),0 2px 6px rgba(24,24,27,.05);
+  --ease:cubic-bezier(.2,0,0,1); --dur:150ms;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font);color:var(--text);background:#EDEDF0;font-size:14px;line-height:20px;-webkit-font-smoothing:antialiased;padding:40px}
+.num,.mono{font-variant-numeric:tabular-nums;font-feature-settings:'tnum' 1}
+.mono{font-family:var(--mono);font-size:12px}
+svg.lucide{width:14px;height:14px;stroke-width:1.75;flex:none}
+.doc-h{max-width:1440px;margin:0 auto 12px;display:flex;align-items:baseline;gap:12px}
+.doc-h h1{font-size:18px;font-weight:600}
+.doc-h p{color:var(--text-3);font-size:13px}
+.flabel{max-width:1440px;margin:40px auto 10px;font-size:12px;color:var(--text-3);font-weight:500;letter-spacing:.02em;text-transform:uppercase}
+.frame{width:1440px;height:900px;margin:0 auto;background:var(--surface);border:1px solid var(--border-strong);border-radius:10px;overflow:hidden;position:relative;display:flex;flex-direction:column;box-shadow:var(--sh)}
+
+/* ===== primitives ===== */
+.top{height:52px;flex:none;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:16px;padding:0 16px}
+.brand{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px}
+.brand .mark{width:20px;height:20px;border-radius:5px;background:var(--text);display:grid;place-items:center;color:#fff}
+.brand .mark svg{width:12px;height:12px}
+.crumb{color:var(--text-3);font-size:13px;display:flex;gap:6px;align-items:center;min-width:0}
+.crumb b{color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:420px}
+.sp{flex:1}
+.stats{display:flex;align-items:center;border:1px solid var(--border);border-radius:var(--r);height:32px;font-size:13px}
+.stats>div{padding:0 12px;display:flex;align-items:center;gap:6px;height:100%;border-left:1px solid var(--border);color:var(--text-2);white-space:nowrap}
+.stats>div:first-child{border-left:0}
+.stats b{color:var(--text);font-weight:500}
+.stats .faint{color:var(--text-4)}
+.btn{height:32px;padding:0 12px;border-radius:var(--r);border:1px solid var(--border);background:var(--surface);font:500 13px var(--font);color:var(--text);display:inline-flex;align-items:center;gap:6px;cursor:pointer;box-shadow:var(--sh-sm);white-space:nowrap}
+.btn.primary{background:var(--text);color:#fff;border-color:var(--text)}
+.btn.accent{background:var(--accent);color:#fff;border-color:var(--accent)}
+.btn.ghost{border-color:transparent;box-shadow:none;color:var(--text-2)}
+.btn.sm{height:28px;padding:0 10px;font-size:12px}
+.icon-btn{width:32px;padding:0;justify-content:center}
+.pill{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 8px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:12px;color:var(--text-2);white-space:nowrap}
+.chip{display:inline-flex;align-items:center;gap:4px;height:24px;padding:0 8px;border-radius:var(--r-sm);background:var(--subtle);font-size:12px;color:var(--text-2);white-space:nowrap}
+.chip b{color:var(--text);font-weight:500}
+
+/* status */
+.st{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--text-3);white-space:nowrap}
+.dot{width:8px;height:8px;border-radius:50%;flex:none}
+.st.queued .dot{border:1.5px solid var(--text-4)}
+.st.searching .dot,.st.reading .dot{background:var(--accent);animation:pulse 1.6s ease-in-out infinite}
+.st.searching,.st.reading{color:var(--accent-text)}
+.st.done{color:var(--ok)} .st.done .dot{background:var(--ok)}
+.st.failed{color:var(--bad)} .st.failed .dot{background:var(--bad)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+
+/* effort: 3 bars */
+.eff{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 7px;border:1px solid var(--border);border-radius:var(--r-sm);font-size:12px;font-weight:500;color:var(--text);background:var(--surface)}
+.eff i{display:inline-flex;gap:2px;align-items:flex-end}
+.eff i s{display:block;width:3px;background:var(--border-strong);border-radius:1px}
+.eff i s:nth-child(1){height:5px}.eff i s:nth-child(2){height:8px}.eff i s:nth-child(3){height:11px}
+.eff.low i s:nth-child(1),.eff.high i s:nth-child(-n+2),.eff.max i s{background:var(--text)}
+
+/* citations */
+.cite{display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 7px;border-radius:var(--r-sm);border:1px solid var(--border);font-family:var(--mono);font-size:11.5px;color:var(--text-2);background:var(--surface);white-space:nowrap}
+.cite.ok svg{color:var(--ok)}
+.cite.warn{border-color:var(--warn-border);background:var(--warn-soft);color:var(--warn)}
+.cite.pend svg{color:var(--text-4)}
+.cite svg{width:12px;height:12px}
+.flag{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:2px 7px;border-radius:var(--r-sm)}
+.flag.warn{background:var(--warn-soft);color:var(--warn);border:1px solid var(--warn-border)}
+.flag.bad{background:var(--bad-soft);color:var(--bad);border:1px solid var(--bad-border)}
+.flag svg{width:12px;height:12px}
+
+/* nodes */
+.canvas{position:relative;background:var(--bg);background-image:radial-gradient(#DCDCE0 1px,transparent 1px);background-size:20px 20px;overflow:hidden}
+svg.links{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;overflow:visible}
+.node{position:relative;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);padding:10px 12px;box-shadow:var(--sh-sm);transition:border-color var(--dur) var(--ease)}
+.node .k{display:flex;align-items:center;gap:6px;font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3);margin-bottom:4px}
+.node .k .st{margin-left:auto;text-transform:none;letter-spacing:0;font-weight:400}
+.node .t{font-size:14px;line-height:20px;font-weight:500;color:var(--text)}
+.node .t.reg{font-weight:400;font-size:13px;line-height:19px;color:var(--text)}
+.node .f{display:flex;align-items:center;gap:6px;margin-top:8px;flex-wrap:wrap}
+.node .why{font-size:12px;color:var(--text-3);line-height:16px}
+.node.sel{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.node.blind{border:1px dashed var(--text-4);background:#FCFCFD;box-shadow:none}
+.node.blind .t{font-weight:500}
+.node.ghost{border-style:dashed;background:transparent;box-shadow:none}
+.node.root{border-color:var(--border-strong);box-shadow:var(--sh)}
+.skel{height:8px;border-radius:4px;background:var(--subtle);margin-top:6px}
+.contra-badge{position:absolute;z-index:3;display:inline-flex;align-items:center;gap:4px;height:22px;padding:0 8px;border-radius:999px;background:var(--surface);border:1px solid var(--bad-border);color:var(--bad);font-size:11.5px;font-weight:500;box-shadow:var(--sh-sm)}
+.contra-badge svg{width:12px;height:12px}
+
+/* panel */
+.tabs{display:flex;gap:2px;padding:0 12px;border-bottom:1px solid var(--border);height:44px;align-items:stretch;flex:none}
+.tab{display:flex;align-items:center;gap:6px;padding:0 10px;font-size:13px;font-weight:500;color:var(--text-3);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.on{color:var(--text);border-bottom-color:var(--text)}
+.tab .n{font-size:11px;min-width:18px;height:18px;padding:0 5px;border-radius:9px;background:var(--subtle);color:var(--text-2);display:inline-grid;place-items:center}
+.tab .n.warn{background:var(--warn-soft);color:var(--warn)}
+.sec{padding:12px 16px}
+.sec-h{font-size:11px;font-weight:500;letter-spacing:.04em;text-transform:uppercase;color:var(--text-3);display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.agent{padding:12px 16px;border-top:1px solid var(--border)}
+.agent .row1{display:flex;align-items:center;gap:8px}
+.agent .nm{font-size:13px;font-weight:500;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent .row2{display:flex;align-items:center;gap:8px;margin-top:6px;font-size:12px;color:var(--text-3)}
+.agent .log{margin-top:8px;font-family:var(--mono);font-size:11.5px;color:var(--text-2);line-height:18px}
+.agent .log div{display:flex;gap:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent .log .ts{color:var(--text-4)}
+.bar{height:4px;border-radius:2px;background:var(--subtle);overflow:hidden;margin-top:8px}
+.bar>span{display:block;height:100%;background:var(--accent);border-radius:2px}
+.bar.ok>span{background:var(--ok)}
+
+/* composer */
+.composer{display:flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--r-lg);padding:6px 6px 6px 14px;box-shadow:var(--sh)}
+.composer input{flex:1;border:0;outline:0;font:400 14px var(--font);color:var(--text);background:transparent}
+.composer input::placeholder{color:var(--text-4)}
+.mic{width:36px;height:36px;border-radius:var(--r);border:1px solid var(--border);display:grid;place-items:center;color:var(--text-2);background:var(--surface)}
+.send{width:36px;height:36px;border-radius:var(--r);display:grid;place-items:center;background:var(--text);color:#fff}
+kbd{font-family:var(--mono);font-size:11px;border:1px solid var(--border);border-bottom-width:2px;border-radius:4px;padding:0 4px;color:var(--text-3);background:var(--surface)}
+
+/* matrix */
+table.mx{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
+.mx th,.mx td{border-bottom:1px solid var(--border);padding:10px 12px;text-align:left;vertical-align:top}
+.mx thead th{font-size:12px;font-weight:500;color:var(--text-3);background:var(--hover);position:sticky;top:0}
+.mx .crit{font-weight:500;color:var(--text)}
+.mx .crit small{display:block;font-weight:400;color:var(--text-3);font-size:12px}
+.wt{display:inline-flex;align-items:center;border:1px solid var(--border);border-radius:var(--r-sm);height:26px;overflow:hidden;background:var(--surface)}
+.wt span{width:22px;display:grid;place-items:center;color:var(--text-3);height:100%}
+.wt b{min-width:26px;text-align:center;font-weight:500;border-left:1px solid var(--border);border-right:1px solid var(--border);height:100%;display:grid;place-items:center}
+.score{display:flex;align-items:center;gap:8px}
+.score .v{font-size:15px;font-weight:600;width:14px}
+.pips{display:inline-flex;gap:2px}
+.pips s{width:10px;height:6px;border-radius:2px;background:var(--subtle);display:block;border:1px solid var(--border)}
+.pips s.f{background:var(--text-2);border-color:var(--text-2)}
+.src{font-size:11px;font-weight:500;padding:1px 5px;border-radius:4px;letter-spacing:.02em}
+.src.ai{color:var(--text-3);border:1px dashed var(--text-4)}
+.src.you{color:var(--accent-text);background:var(--accent-soft);border:1px solid var(--accent-border)}
+.just{font-size:12px;color:var(--text-3);line-height:16px;margin-top:4px}
+.cell-sel{background:var(--accent-soft);box-shadow:inset 0 0 0 1px var(--accent)}
+.tot td{background:var(--hover);font-weight:600;border-bottom:0}
+.rank{display:inline-flex;align-items:center;gap:6px}
+.rank .r{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;font-size:11px;font-weight:600;background:var(--subtle);color:var(--text-2)}
+.rank .r.one{background:var(--text);color:#fff}
+.tbar{height:6px;border-radius:3px;background:var(--subtle);margin-top:6px;overflow:hidden}
+.tbar span{display:block;height:100%;background:var(--text-2)}
+.tbar.one span{background:var(--accent)}
+
+/* checks */
+.ck{border:1px solid var(--border);border-radius:var(--r);padding:12px;margin-bottom:8px;background:var(--surface)}
+.ck .h{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:500}
+.ck .b{font-size:13px;color:var(--text-2);margin-top:6px;line-height:19px}
+.ck q{display:block;font-size:12.5px;color:var(--text-2);border-left:2px solid var(--border-strong);padding-left:8px;margin-top:8px;quotes:none;line-height:18px}
+.ck .meta{display:flex;gap:6px;align-items:center;margin-top:8px;flex-wrap:wrap;font-size:12px;color:var(--text-3)}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.kpi{border:1px solid var(--border);border-radius:var(--r);padding:10px 12px}
+.kpi .l{font-size:12px;color:var(--text-3)}
+.kpi .v{font-size:20px;font-weight:600;line-height:28px;letter-spacing:-.01em}
+.kpi .v small{font-size:12px;font-weight:400;color:var(--text-3)}
+.tl{display:grid;grid-template-columns:76px 1fr 56px;gap:8px;align-items:center;font-size:12px;color:var(--text-2);margin-top:6px}
+.tl .track{height:10px;border-radius:3px;background:var(--subtle);position:relative}
+.tl .track span{position:absolute;top:0;bottom:0;border-radius:3px}
+.legend{display:flex;gap:14px;align-items:center;font-size:12px;color:var(--text-3)}
+
+
+/* ===== Option B layout ===== */
+.body{flex:1;display:flex;min-height:0}
+.rail{width:300px;flex:none;border-right:1px solid var(--border);display:flex;flex-direction:column;background:var(--surface);min-height:0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;min-height:0}
+.canvas{flex:1}
+.seg{display:flex;padding:3px;background:var(--subtle);border-radius:var(--r);gap:2px}
+.seg span{flex:1;text-align:center;height:28px;display:flex;align-items:center;justify-content:center;gap:6px;border-radius:6px;font-size:13px;font-weight:500;color:var(--text-3)}
+.seg span.on{background:var(--surface);color:var(--text);box-shadow:var(--sh-sm)}
+.tlist{flex:1;overflow:hidden;padding:4px 16px}
+.ev{display:grid;grid-template-columns:40px 14px 1fr;gap:8px;padding:7px 0;position:relative;font-size:13px;line-height:18px}
+.ev .tm{font-family:var(--mono);font-size:11.5px;color:var(--text-4);padding-top:1px}
+.ev .mk{display:flex;justify-content:center;padding-top:5px;position:relative}
+.ev .mk::before{content:'';position:absolute;top:0;bottom:-14px;left:50%;width:1px;background:var(--border)}
+.ev:last-child .mk::before{display:none}
+.ev .mk .dot{position:relative;z-index:1;box-shadow:0 0 0 3px var(--surface)}
+.ev .tx{color:var(--text)}
+.ev .tx small{display:block;color:var(--text-3);font-size:12px;line-height:16px;margin-top:2px}
+.ev .sub{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.ev .sub div{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text-2)}
+.mk .dot.n{background:var(--text-4)} .mk .dot.a{background:var(--accent)} .mk .dot.g{background:var(--ok)} .mk .dot.w{background:#D97706} .mk .dot.r{background:var(--bad)}
+.rail-foot{border-top:1px solid var(--border);padding:12px 16px;display:flex;flex-direction:column;gap:10px}
+.mini{display:grid;grid-template-columns:1fr 1fr;gap:6px 12px;font-size:12px;color:var(--text-3)}
+.mini b{display:block;color:var(--text);font-size:15px;font-weight:600;line-height:20px}
+.drawer{flex:none;border-top:1px solid var(--border-strong);background:var(--surface);box-shadow:0 -8px 24px rgba(24,24,27,.05);display:flex;flex-direction:column}
+.drawer-h{height:48px;display:flex;align-items:center;gap:12px;padding:0 16px;flex:none}
+.drawer-h .ttl{font-weight:600;font-size:13px;display:flex;align-items:center;gap:8px}
+.ttree{position:absolute;inset:0}
+.qcol{position:absolute;width:204px;display:flex;flex-direction:column;gap:28px}
+.qcol .node{width:100%}
+</style>
+</head>
+<body>
+<div class="doc-h"><h1>Option B — Top-down tree, run timeline, matrix drawer</h1><p>The tree grows downward and converges into one recommendation bar. Left rail is the run's story (timeline) or its audit (checks). The trade-off matrix lives in a bottom drawer under the tree.</p></div>
+
+<!-- ============ FRAME 1 ============ -->
+<div class="flabel">Frame 1 · Mid-run, timeline rail, drawer collapsed · 1440 × 900</div>
+<div class="frame" id="f1">
+  <div class="top">
+    <div class="brand"><span class="mark"><i data-lucide="git-fork"></i></span>Forkline</div>
+    <div class="crumb"><i data-lucide="chevron-right"></i><b>Hackathon tomorrow, ML exam the day after</b></div>
+    <div class="sp"></div>
+    <span class="st searching" style="font-size:13px"><span class="dot"></span>Researching · 3 of 5 agents active · <span class="num">00:38</span></span>
+    <button class="btn"><i data-lucide="square"></i>Stop</button>
+    <button class="btn"><i data-lucide="share"></i>Share</button>
+  </div>
+  <div class="body">
+    <aside class="rail">
+      <div style="padding:12px 16px 8px"><div class="seg"><span class="on"><i data-lucide="list-tree"></i>Timeline</span><span><i data-lucide="shield-check"></i>Checks <span class="n" style="font-size:11px;color:var(--warn)">3</span></span></div></div>
+      <div class="tlist num">
+        <div class="ev"><span class="tm">00:00</span><span class="mk"><span class="dot n"></span></span><div class="tx">Decision received<small>Voice · 14 s · transcribed</small></div></div>
+        <div class="ev"><span class="tm">00:01</span><span class="mk"><span class="dot g"></span></span><div class="tx">Orchestrator planned the tree<small>DeepSeek V4.1 Flash · max effort · 6.1 s</small><small>3 options · 4 questions · 1 blind spot</small></div></div>
+        <div class="ev"><span class="tm">00:07</span><span class="mk"><span class="dot n"></span></span><div class="tx">Spawned 5 research agents in parallel
+          <div class="sub">
+            <div><span class="eff high"><i><s></s><s></s><s></s></i>High</span>Q1 Sleep — conflicting studies</div>
+            <div><span class="eff low"><i><s></s><s></s><s></s></i>Low</span>Q2 Career — well documented</div>
+            <div><span class="eff high"><i><s></s><s></s><s></s></i>High</span>Q3 Cramming — depends on material</div>
+            <div><span class="eff low"><i><s></s><s></s><s></s></i>Low</span>Q4 Partial — scheduling check</div>
+            <div><span class="eff high"><i><s></s><s></s><s></s></i>High</span>Blind spot — policy varies</div>
+          </div></div></div>
+        <div class="ev"><span class="tm">00:15</span><span class="mk"><span class="dot g"></span></span><div class="tx">Q2 finished<small>3 sources · 1 unsupported claim flagged</small></div></div>
+        <div class="ev"><span class="tm">00:28</span><span class="mk"><span class="dot g"></span></span><div class="tx">Q1 finished<small>4 sources · 1 quote not found</small></div></div>
+        <div class="ev"><span class="tm">00:31</span><span class="mk"><span class="dot r"></span></span><div class="tx">Contradiction: Q1 ↔ Q4<small>Evening study after a long day</small></div></div>
+        <div class="ev"><span class="tm">00:33</span><span class="mk"><span class="dot r"></span></span><div class="tx">Q3 fetch failed · apa.org<small>Retrying with next result</small></div></div>
+        <div class="ev"><span class="tm">now</span><span class="mk"><span class="dot a" style="animation:pulse 1.6s infinite"></span></span><div class="tx">Q3 reading 2/5 · Q4 searching<small>Blind spot queued</small></div></div>
+      </div>
+      <div class="rail-foot">
+        <div class="mini num"><div>Tokens<b>41.2k</b></div><div>Cost<b>$0.018</b></div><div>Wall-clock<b>38 s</b></div><div>Sequential<b style="color:var(--text-3)">2 m 41 s</b></div></div>
+        <div class="composer" style="padding:4px 4px 4px 12px">
+          <input placeholder="Add context…" style="font-size:13px">
+          <div class="mic" style="width:32px;height:32px"><i data-lucide="mic"></i></div>
+          <div class="send" style="width:32px;height:32px"><i data-lucide="arrow-up"></i></div>
+        </div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="canvas">
+        <svg class="links"></svg>
+        <div class="canvas-h" style="position:absolute;left:24px;right:24px;top:14px;display:flex;align-items:center;gap:8px;z-index:2">
+          <div class="legend"><span class="st queued"><span class="dot"></span>Queued</span><span class="st searching"><span class="dot"></span>Searching</span><span class="st reading"><span class="dot"></span>Reading</span><span class="st done"><span class="dot"></span>Done</span><span class="st failed"><span class="dot"></span>Failed</span></div>
+          <div class="sp"></div>
+          <span class="pill"><i data-lucide="mouse-pointer-click"></i>Click any branch to dig deeper</span>
+          <button class="btn sm icon-btn"><i data-lucide="scan"></i></button>
+        </div>
+        <div class="ttree">
+          <div class="node root" id="root" style="position:absolute;left:242px;top:52px;width:640px;padding:12px 16px">
+            <div class="k"><i data-lucide="split"></i>Decision</div>
+            <div class="t" style="font-size:17px;line-height:24px">I have a hackathon tomorrow and my Machine Learning exam is the day after. Should I go?</div>
+            <div class="f" style="margin-top:10px">
+              <span class="chip">Exam <b>40%</b></span><span class="chip">Prepared <b>~70%</b></span><span class="chip">Hackathon <b class="num">10:00–19:00</b></span><span class="chip">Values <b>career, learning</b></span>
+              <span style="width:1px;height:16px;background:var(--border);margin:0 4px"></span>
+              <span class="pill">A · Full day</span><span class="pill">B · Until 15:00</span><span class="pill">C · Skip</span>
+            </div>
+          </div>
+
+          <div class="qcol" style="left:24px;top:250px">
+            <div class="node sel" id="q1"><div class="k">Q1<span class="st done"><span class="dot"></span>Done</span></div><div class="t">How does one night of reduced sleep affect exam performance?</div><div class="f"><span class="eff high"><i><s></s><s></s><s></s></i>High</span><span class="why">Conflicting studies</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="s1">
+              <div class="node" id="f11"><div class="t reg">Under 6 h sleep cuts next-day recall by ~20–40%.</div><div class="f"><span class="cite ok"><i data-lucide="badge-check"></i>nature.com</span></div></div>
+              <div class="node" id="f12"><div class="t reg">7 h+ sleepers scored a grade higher.</div><div class="f"><span class="cite warn"><i data-lucide="alert-triangle"></i>sleepfoundation.org</span></div><div class="why" style="color:var(--warn);margin-top:4px">Quote not found in source</div></div>
+            </div>
+          </div>
+          <div class="qcol" style="left:242px;top:250px">
+            <div class="node" id="q2"><div class="k">Q2<span class="st done"><span class="dot"></span>Done</span></div><div class="t">What is the career value of student hackathons?</div><div class="f"><span class="eff low"><i><s></s><s></s><s></s></i>Low</span><span class="why">Well documented</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="s2">
+              <div class="node" id="f21"><div class="t reg">Hackathon projects come up in internship interviews as proof of shipping.</div><div class="f"><span class="cite ok"><i data-lucide="badge-check"></i>devpost.com</span></div></div>
+              <div class="node" id="f22"><div class="t reg" style="color:var(--text-2)">“Most interns are hired via hackathons.”</div><div class="f"><span class="flag warn"><i data-lucide="circle-help"></i>Unsupported claim</span></div></div>
+            </div>
+          </div>
+          <div class="qcol" style="left:460px;top:250px">
+            <div class="node" id="q3"><div class="k">Q3<span class="st reading"><span class="dot"></span>Reading 2/5</span></div><div class="t">How effective is last-day cramming vs spaced review?</div><div class="f"><span class="eff high"><i><s></s><s></s><s></s></i>High</span><span class="why">Depends on material</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="s3">
+              <div class="node" id="f31"><div class="t reg">Spaced review beats massed study; a final pass on weak topics still helps.</div><div class="f"><span class="cite ok"><i data-lucide="badge-check"></i>kent.edu · Dunlosky 2013</span></div></div>
+            </div>
+          </div>
+          <div class="qcol" style="left:678px;top:250px">
+            <div class="node" id="q4"><div class="k">Q4<span class="st searching"><span class="dot"></span>Searching</span></div><div class="t">Can I get most of the value by attending partially?</div><div class="f"><span class="eff low"><i><s></s><s></s><s></s></i>Low</span><span class="why">Scheduling check</span></div></div>
+            <div style="display:flex;flex-direction:column;gap:8px" id="s4">
+              <div class="node" id="f41"><div class="t reg">Leaving at 15:00 leaves ~6 h for evening revision.</div><div class="f"><span class="cite pend"><i data-lucide="loader"></i>verifying…</span></div></div>
+            </div>
+          </div>
+          <div class="qcol" style="left:896px;top:250px">
+            <div class="node blind" id="q5"><div class="k"><i data-lucide="eye-off"></i>Blind spot<span class="st queued"><span class="dot"></span>Queued</span></div><div class="t"><span style="color:var(--text-3);font-weight:400">You may be overlooking:</span> retake policy and exam weighting — what if it goes badly?</div></div>
+            <div id="s5"><div class="node ghost"><div class="skel" style="width:80%;margin:0"></div><div class="skel" style="width:50%"></div></div></div>
+          </div>
+
+          <div class="node" id="syn" style="position:absolute;left:24px;right:24px;top:700px;display:flex;align-items:center;gap:16px;padding:12px 16px;border-color:var(--border-strong)">
+            <i data-lucide="sparkles" style="color:var(--text-3)"></i>
+            <div style="flex:1"><div class="k" style="margin:0">Recommendation <span class="st queued" style="margin-left:8px"><span class="dot"></span>Pending · waits on Q3, Q4, blind spot</span></div>
+            <div style="display:flex;gap:8px;margin-top:8px"><div class="skel" style="width:280px;margin:0"></div><div class="skel" style="width:180px;margin:0"></div></div></div>
+            <button class="btn sm">Synthesise now with 3 of 5</button>
+          </div>
+        </div>
+        <div class="contra-badge" id="cb1"><i data-lucide="git-compare-arrows"></i>Q1 ↔ Q4 contradict</div>
+      </div>
+      <div class="drawer">
+        <div class="drawer-h">
+          <span class="ttl"><i data-lucide="table-2"></i>Trade-off matrix</span>
+          <span style="font-size:13px;color:var(--text-3)">3 options × 5 criteria · 12 of 15 scores proposed</span>
+          <div class="sp"></div>
+          <span style="font-size:13px;color:var(--text-2)" class="num">Leading: <b style="font-weight:600;color:var(--text)">B · Until 15:00</b> 3.79</span>
+          <button class="btn sm"><i data-lucide="chevron-up"></i>Open</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ FRAME 2 ============ -->
+<div class="flabel">Frame 2 · Drawer open (matrix) + rail on Checks · run complete</div>
+<div class="frame" id="f2">
+  <div class="top">
+    <div class="brand"><span class="mark"><i data-lucide="git-fork"></i></span>Forkline</div>
+    <div class="crumb"><i data-lucide="chevron-right"></i><b>Hackathon tomorrow, ML exam the day after</b></div>
+    <div class="sp"></div>
+    <span class="st done" style="font-size:13px"><span class="dot"></span>Complete · <span class="num">00:52</span></span>
+    <button class="btn"><i data-lucide="share"></i>Share</button>
+  </div>
+  <div class="body">
+    <aside class="rail">
+      <div style="padding:12px 16px 8px"><div class="seg"><span><i data-lucide="list-tree"></i>Timeline</span><span class="on"><i data-lucide="shield-check"></i>Checks <span style="font-size:11px;color:var(--warn)">3</span></span></div></div>
+      <div style="padding:4px 16px;flex:1;overflow:hidden">
+        <div class="kpis num" style="grid-template-columns:1fr 1fr">
+          <div class="kpi"><div class="l">Tokens</div><div class="v" style="font-size:17px">58.9k</div></div>
+          <div class="kpi"><div class="l">Cost</div><div class="v" style="font-size:17px">$0.026</div></div>
+          <div class="kpi"><div class="l">Calls</div><div class="v" style="font-size:17px">31</div></div>
+          <div class="kpi"><div class="l">Speed-up</div><div class="v" style="font-size:17px">4.4×</div></div>
+        </div>
+        <div class="tl num" style="grid-template-columns:70px 1fr 52px"><span>Parallel</span><div class="track"><span style="left:0;width:23%;background:var(--accent)"></span></div><span style="text-align:right">52 s</span></div>
+        <div class="tl num" style="grid-template-columns:70px 1fr 52px"><span>Sequential</span><div class="track"><span style="left:0;width:100%;background:var(--text-4)"></span></div><span style="text-align:right">3 m 48 s</span></div>
+        <div class="sec-h" style="margin-top:16px">Citations · <span class="num">14</span></div>
+        <div style="display:flex;height:8px;border-radius:4px;overflow:hidden;gap:2px"><span style="flex:12;background:var(--ok)"></span><span style="flex:1;background:#D97706"></span><span style="flex:1;background:var(--border-strong)"></span></div>
+        <div class="legend num" style="margin-top:6px"><span><b style="color:var(--ok)">12</b> verified</span><span><b style="color:var(--warn)">1</b> not found</span><span><b>1</b> unreachable</span></div>
+        <div class="sec-h" style="margin-top:16px">Needs attention</div>
+        <div class="ck"><div class="h"><span class="flag bad"><i data-lucide="git-compare-arrows"></i>Contradiction</span><span style="font-size:12px;color:var(--text-3);font-weight:400">Q1 ↔ Q4</span></div><div class="b">Q4 assumes 6 good revision hours after 15:00; Q1 finds retention drops after a long, intense day.</div></div>
+        <div class="ck"><div class="h"><span class="flag warn"><i data-lucide="alert-triangle"></i>Quote not found</span></div><div class="b">“…scored a full letter grade higher.” is not on the cited page.</div><div class="meta"><span class="cite warn">sleepfoundation.org</span></div></div>
+        <div class="ck"><div class="h"><span class="flag warn"><i data-lucide="circle-help"></i>Unsupported claim</span></div><div class="b">“Most interns are hired via hackathons.”</div></div>
+      </div>
+    </aside>
+    <div class="main">
+      <div class="canvas" style="flex:1">
+        <div class="node root" style="position:absolute;left:224px;top:28px;width:640px;padding:12px 16px;opacity:.9"><div class="k">Decision</div><div class="t" style="font-size:17px;line-height:24px">I have a hackathon tomorrow and my Machine Learning exam is the day after. Should I go?</div></div>
+        <div style="position:absolute;left:24px;right:24px;top:150px;display:flex;gap:14px;opacity:.6">
+          <div class="node" style="width:204px"><div class="k">Q1<span class="st done"><span class="dot"></span>Done</span></div></div><div class="node" style="width:204px"><div class="k">Q2<span class="st done"><span class="dot"></span>Done</span></div></div><div class="node" style="width:204px"><div class="k">Q3<span class="st done"><span class="dot"></span>Done</span></div></div><div class="node" style="width:204px"><div class="k">Q4<span class="st done"><span class="dot"></span>Done</span></div></div><div class="node blind" style="width:204px"><div class="k">Blind spot<span class="st done"><span class="dot"></span>Done</span></div></div>
+        </div>
+      </div>
+      <div class="drawer" style="height:560px">
+        <div class="drawer-h" style="border-bottom:1px solid var(--border)">
+          <span class="ttl"><i data-lucide="table-2"></i>Trade-off matrix</span>
+          <span class="src ai">AI</span><span style="font-size:12px;color:var(--text-3)">proposed from citations</span><span class="src you">You</span><span style="font-size:12px;color:var(--text-3)">set by you</span>
+          <div class="sp"></div>
+          <span style="font-size:12px;color:var(--text-3)">Weighted total = Σ(w·s) / Σw · computed in code</span>
+          <button class="btn sm"><i data-lucide="chevron-down"></i>Close</button>
+        </div>
+        <div style="padding:0 16px;overflow:hidden">
+        <table class="mx num">
+          <thead><tr><th style="width:170px">Option</th>
+            <th>Exam performance<div style="margin-top:6px"><span class="wt"><span>−</span><b>5</b><span>+</span></span></div></th>
+            <th>Career value<div style="margin-top:6px"><span class="wt"><span>−</span><b>3</b><span>+</span></span></div></th>
+            <th>Learning<div style="margin-top:6px"><span class="wt"><span>−</span><b>3</b><span>+</span></span></div></th>
+            <th>Sleep, wellbeing<div style="margin-top:6px"><span class="wt"><span>−</span><b>4</b><span>+</span></span></div></th>
+            <th>Downside if it goes badly<div style="margin-top:6px"><span class="wt"><span>−</span><b style="color:var(--accent-text);background:var(--accent-soft)">5</b><span>+</span></span></div></th>
+            <th style="width:150px">Weighted total</th></tr></thead>
+          <tbody>
+            <tr style="background:var(--accent-soft)"><td class="crit"><div class="rank"><span class="r one">1</span>B · Until 15:00</div><small style="margin-left:26px">then revise</small></td>
+              <td><div class="score"><span class="v">4</span><span class="pips"><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s><s></s></span><span class="src ai">AI</span></div><div class="just">Normal night's sleep. <span class="cite ok" style="height:20px"><i data-lucide="badge-check"></i>nature.com</span></div></td>
+              <td><div class="score"><span class="v">4</span><span class="pips"><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s><s></s></span><span class="src ai">AI</span></div><div class="just">Misses final judging.</div></td>
+              <td><div class="score"><span class="v">4</span><span class="pips"><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s><s></s></span><span class="src ai">AI</span></div><div class="just">Most build time before 15:00.</div></td>
+              <td><div class="score"><span class="v">3</span><span class="pips"><s class="f"></s><s class="f"></s><s class="f"></s><s></s><s></s></span><span class="src ai">AI</span></div><div class="just">Long day, early night possible.</div></td>
+              <td><div class="score"><span class="v">4</span><span class="pips"><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s><s></s></span><span class="src ai">AI</span></div><div class="just">Moderate risk.</div></td>
+              <td><b style="font-size:18px">3.80</b><div class="tbar one"><span style="width:76%"></span></div></td></tr>
+            <tr><td class="crit"><div class="rank"><span class="r">2</span>C · Skip and revise</div></td>
+              <td><div class="score"><span class="v">5</span><span class="pips"><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s></span><span class="src ai">AI</span></div><div class="just">Full day of spaced review.</div></td>
+              <td><div class="score"><span class="v">1</span><span class="pips"><s class="f"></s><s></s><s></s><s></s><s></s></span><span class="src ai">AI</span></div><div class="just">No project to show.</div></td>
+              <td><div class="score"><span class="v">2</span><span class="pips"><s class="f"></s><s class="f"></s><s></s><s></s><s></s></span><span class="src ai">AI</span></div><div class="just">Revision only.</div></td>
+              <td><div class="score"><span class="v">4</span><span class="pips"><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s><s></s></span><span class="src ai">AI</span></div><div class="just">Lowest load.</div></td>
+              <td><div class="score"><span class="v">5</span><span class="pips"><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s></span><span class="src ai">AI</span></div><div class="just">Lowest risk.</div></td>
+              <td><b style="font-size:18px">3.75</b><div class="tbar"><span style="width:75%"></span></div></td></tr>
+            <tr><td class="crit"><div class="rank"><span class="r">3</span>A · Go full day</div></td>
+              <td><div class="score"><span class="v">2</span><span class="pips"><s class="f"></s><s class="f"></s><s></s><s></s><s></s></span><span class="src ai">AI</span></div><div class="just">Short sleep → lower recall.</div></td>
+              <td><div class="score"><span class="v">5</span><span class="pips"><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s></span><span class="src ai">AI</span></div><div class="just">Demo, judging, networking.</div></td>
+              <td><div class="score"><span class="v">5</span><span class="pips"><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s><s class="f"></s></span><span class="src you">You</span></div><div class="just">Set by you.</div></td>
+              <td><div class="score"><span class="v">2</span><span class="pips"><s class="f"></s><s class="f"></s><s></s><s></s><s></s></span><span class="src ai">AI</span></div><div class="just">19:00 finish, then revising.</div></td>
+              <td><div class="score"><span class="v">2</span><span class="pips"><s class="f"></s><s class="f"></s><s></s><s></s><s></s></span><span class="src ai">AI</span></div><div class="just">Resit capped at 40%.</div></td>
+              <td><b style="font-size:18px">2.90</b><div class="tbar"><span style="width:58%"></span></div></td></tr>
+          </tbody>
+        </table>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px;color:var(--text-3)"><i data-lucide="arrow-up-down"></i>Re-ranked just now: you raised <b style="color:var(--text);font-weight:500">Downside</b> weight 4 → 5. B stays first; C closes the gap.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ EMPTY ============ -->
+<div class="flabel">Empty / start state · ghost tree previews what will appear</div>
+<div class="frame" style="height:480px">
+  <div class="top"><div class="brand"><span class="mark"><i data-lucide="git-fork"></i></span>Forkline</div><div class="sp"></div><span class="pill"><i data-lucide="cpu"></i>Open models on Nebius Token Factory</span></div>
+  <div class="canvas" style="flex:1;position:relative">
+    <div style="position:absolute;left:300px;top:40px;width:720px">
+      <div class="node root" style="padding:16px">
+        <div class="k"><i data-lucide="split"></i>Decision</div>
+        <div class="composer" style="box-shadow:none;border-color:var(--border);margin-top:6px"><input placeholder="What are you deciding? Say it the way you'd say it out loud." style="font-size:16px"><div class="mic"><i data-lucide="mic"></i></div><div class="send"><i data-lucide="arrow-up"></i></div></div>
+        <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;align-items:center"><span style="font-size:12px;color:var(--text-3)">Try:</span><span class="pill">Take the Berlin job offer or stay?</span><span class="pill">Rent or buy in Manchester?</span><span class="pill">Should I go to the hackathon before my exam?</span></div>
+      </div>
+      <div style="display:flex;gap:14px;margin-top:40px">
+        <div class="node ghost" style="flex:1"><div class="k">Options</div><div class="skel" style="width:70%"></div></div>
+        <div class="node ghost" style="flex:1"><div class="k">Key questions</div><div class="skel" style="width:80%"></div></div>
+        <div class="node ghost" style="flex:1"><div class="k">Research agents</div><div class="skel" style="width:60%"></div></div>
+        <div class="node ghost" style="flex:1;border-color:var(--text-4)"><div class="k">Blind spot</div><div class="skel" style="width:70%"></div></div>
+      </div>
+      <div class="node ghost" style="margin-top:28px"><div class="k">Recommendation · with citations and checks</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+lucide.createIcons();
+const LINKS = { f1: [
+  ['root','q1',{v:1,sel:1}],['root','q2',{v:1}],['root','q3',{v:1}],['root','q4',{v:1}],['root','q5',{v:1,dash:1}],
+  ['q1','s1',{v:1,sel:1}],['q2','s2',{v:1}],['q3','s3',{v:1}],['q4','s4',{v:1,dash:1}],['q5','s5',{v:1,dash:1}],
+  ['s1','syn',{v:1,end:1}],['s2','syn',{v:1,end:1}],['s3','syn',{v:1,end:1,dash:1}],['s4','syn',{v:1,end:1,dash:1}],['s5','syn',{v:1,end:1,dash:1}],
+]};
+function draw(){
+  for (const [fid, links] of Object.entries(LINKS)){
+    const fr=document.getElementById(fid), cv=fr.querySelector('.canvas'), svg=cv.querySelector('svg.links');
+    const b=cv.getBoundingClientRect(); let h='';
+    const R=id=>{const r=fr.querySelector('#'+id).getBoundingClientRect();return {l:r.left-b.left,r:r.right-b.left,t:r.top-b.top,bt:r.bottom-b.top,cy:(r.top+r.bottom)/2-b.top,cx:(r.left+r.right)/2-b.left}};
+    for (const [a,c,o={}] of links){
+      const A=R(a),C=R(c); const x1=A.cx,y1=A.bt,x2=o.end?A.cx:C.cx,y2=C.t,dy=(y2-y1)/2;
+      const d=`M${x1} ${y1} C${x1} ${y1+dy},${x2} ${y2-dy},${x2} ${y2}`;
+      h+=`<path d="${d}" fill="none" stroke="${o.sel?'#2563EB':'#C9C9D0'}" stroke-width="${o.sel?1.5:1.25}" ${o.dash?'stroke-dasharray="4 4"':''}/>`;
+    }
+    // contradiction arc f12 -> f41
+    const A=R('f12'),C=R('f41'); const y=Math.max(A.bt,C.bt)+22;
+    h+=`<path d="M${A.cx} ${A.bt} C${A.cx} ${y},${C.cx} ${y},${C.cx} ${C.bt}" fill="none" stroke="#DC2626" stroke-width="1.25" stroke-dasharray="3 3"/>`;
+    const el=document.getElementById('cb1'); el.style.left=((A.cx+C.cx)/2-60)+'px'; el.style.top=(y-16)+'px';
+    svg.innerHTML=h;
+  }
+}
+document.fonts.ready.then(draw);
+</script>
+</body>
+</html>
