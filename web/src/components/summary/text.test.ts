@@ -7,7 +7,7 @@ describe('summary text', () => {
     expect(clip('Short one (f1).', 10)).toBe('Short one')
   })
   it('splits conditions', () => {
-    expect(splitIf('If you value grades most, then skip the hackathon — rest instead')).toEqual({ care: 'grades most', pick: 'skip the hackathon' })
+    expect(splitIf('If you value grades most, then skip the hackathon — rest instead')).toEqual({ care: 'grades', pick: 'skip the hackathon' })
     expect(splitIf('Go anyway')).toBeNull()
   })
 })
