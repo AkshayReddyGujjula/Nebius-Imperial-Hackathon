@@ -49,7 +49,7 @@ export function QuestionActions({ questionId }: { questionId: string }) {
   const finished = status === 'done' || status === 'failed' || status === 'timeout'
   return (
     <>
-      <Btn busy={deeper.busy} className="primary block" disabled={!finished}
+      <Btn busy={deeper.busy} className="primary wide" disabled={!finished}
         title={finished ? undefined : 'Available once this branch finishes'}
         onClick={() => deeper.run(async (runId) => {
           const r = await digDeeper(runId, { nodeId: nodeId.question(questionId) })
@@ -60,7 +60,7 @@ export function QuestionActions({ questionId }: { questionId: string }) {
       <Err text={deeper.error} />
       {detailed ? (
         <>
-          <Btn busy={ladder.busy} className="block" disabled={!finished}
+          <Btn busy={ladder.busy} className="wide" disabled={!finished}
             onClick={() => ladder.run((runId) => runLadder(runId, { questionId }))}>
             Compare effort levels
           </Btn>
@@ -115,7 +115,7 @@ export function FindingActions({ findingId }: { findingId: string }) {
   const a = useAction()
   return (
     <div className="flex flex-col gap-2">
-      <Btn busy={a.busy} className="block" onClick={() => a.run(async (runId) => {
+      <Btn busy={a.busy} className="wide" onClick={() => a.run(async (runId) => {
         const r = await digDeeper(runId, { nodeId: nodeId.finding(findingId) })
         select(nodeId.question(r.questionId))
       })}><Search />Dig deeper on this claim</Btn>
