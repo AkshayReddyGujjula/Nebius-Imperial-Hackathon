@@ -1,3 +1,4 @@
+@layer components {
 /* Shell primitives (Lane W2). Values mirror design/options/option-b.html and §11.1. */
 
 .ui-label { font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--crux-text-tertiary); display: flex; align-items: center; gap: 6px; }
@@ -158,3 +159,4 @@ button.ui-cite:hover { border-color: var(--crux-border-strong); }
 
 .ui-composer kbd, .ui-kbd { font-family: var(--font-mono); font-size: 11px; border: 1px solid var(--crux-border); border-bottom-width: 2px; border-radius: 4px; padding: 0 4px; color: var(--crux-text-tertiary); background: var(--crux-surface); }
 .ui-canvas-bg { background-color: var(--crux-page); background-image: radial-gradient(var(--crux-grid) 1px, transparent 1px); background-size: 20px 20px; }
+}
