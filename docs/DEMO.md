@@ -46,10 +46,11 @@ Say: "The trade-offs are my weights, and the maths is done in code, not by the m
 
 **2:45 — Close.**
 Point at the progress bar / Checks tab (cost, speed-up).
-Say: "Four agents in parallel, [N]× faster than in sequence, about four cents a decision. Decision Lab: talk it through, see the evidence, decide for yourself."
+Say: "Four agents in parallel, [N]× faster than in sequence, about seven cents a decision. Decision Lab: talk it through, see the evidence, decide for yourself."
 
 ## Numbers you can quote (all real, from our runs)
-- One decision: about **$0.03–0.04** in Nebius tokens; about **55–70 s** of research; **2.4–3.5×** faster in parallel than in sequence.
+- One decision: about **$0.05–0.08** (about seven cents) in Nebius tokens — measured over 6 recorded live runs, each ~95k input and ~34k output tokens; about **55–70 s** of research; **2.4–3.5×** faster in parallel than in sequence.
+- The same tokens would cost about **$0.49 on GPT-6.1 Sol** and **$0.97 on Claude Opus 5.5** at list prices (8× / 16×).
 - Quote checks: **12 of 12** quotes verified in the recorded hackathon run.
 - Recorded fallback for this story: `server/replays/demo-claude-code-vs-codex.jsonl` — a live run with the terminal / privacy / £20 interjection sent mid-research.
 - Smoke tests: GLM-5.3-Flash returned empty summaries **3 of 6** times → switched to NVIDIA Nemotron (~0.3 s per line). Max effort used **1.3k–12k** reasoning tokens on the same problem.
@@ -59,7 +60,7 @@ Say: "Four agents in parallel, [N]× faster than in sequence, about four cents a
 - **"Isn't this just a chatbot?"** — A chatbot answers. This researches in parallel while it talks, checks every quote in code, keeps a shared memory of you that every agent reads, and never picks for you.
 - **"Why not tell me the answer?"** — Because the right answer depends on what you value. We show the evidence and the trade-offs; the matrix ranks by *your* weights.
 - **"How do you know it's not hallucinating?"** — We don't trust it: every quote is matched against the retrieved page in code, and a different model family audits for contradictions. Failures are shown, not hidden.
-- **"Cost?"** — About four cents per decision on Nebius, plus ~30 Tavily credits.
+- **"Cost?"** — About seven cents ($0.05–0.08) per decision on Nebius — roughly 8× cheaper than GPT-6.1 Sol and 16× cheaper than Claude Opus 5.5 for the same tokens, plus ~30 Tavily credits.
 - **"What's next?"** — Persist user.md across decisions (it already lives in a file), team decisions with dissent, and fine-tuning the planner on accepted plans via Token Factory.
 
 ## If something goes wrong
