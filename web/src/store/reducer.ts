@@ -308,6 +308,16 @@ function apply(s: ReducerState, e: CruxEvent): Patch {
 
     case 'nodes.stale': return applyStale(s, e)
 
+    case 'chat.message':
+      if (s.chat.some((m) => m.id === e.id)) return {}
+      return { chat: [...s.chat, { id: e.id, role: e.role, text: e.text, suggestions: e.suggestions, recommendedIndex: e.recommendedIndex, ts: e.ts }] }
+
+    case 'memory.updated':
+      return {
+        memory: e.markdown, memoryChanges: e.changes, memorySeq: e.seq,
+        acts: e.changes.length ? [item(e, 0, 'accent', `Updated what I know about you (${e.changes.length})`, 'Memory updated', e.changes.join('; '), e.by)] : [],
+      }
+
     case 'notice': {
       const tone: ActivityTone = e.level === 'error' ? 'bad' : e.level === 'warn' ? 'warn' : 'neutral'
       return {

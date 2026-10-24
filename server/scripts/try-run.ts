@@ -21,7 +21,7 @@ const state: RunState = {
   id: "try", decision, inputMode: "text", replay: false, createdAt: t0, phase: "planning", plan: null,
   agents: new Map(), sources: new Map(), sourceIdByUrl: new Map(), findings: new Map(), proposals: [],
   contradictions: [], synthesis: null, usages: [], tavily: { searches: 0, credits: 0 }, jsonRepairs: 0,
-  fingerprint: null, counters: { question: 0, agent: 0, finding: 0, source: 0, fact: 0, contradiction: 0, search: 0, ladder: 0 },
+  fingerprint: null, counters: { question: 0, agent: 0, finding: 0, source: 0, fact: 0, contradiction: 0, search: 0, ladder: 0 }, memory: "", chat: [],
 };
 const log: CruxEvent[] = [];
 let chunkChars = 0;

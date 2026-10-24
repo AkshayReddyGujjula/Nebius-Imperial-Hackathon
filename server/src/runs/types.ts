@@ -38,6 +38,10 @@ export interface RunState {
   jsonRepairs: number;
   fingerprint: string | null;
   counters: Record<CounterKind, number>;
+  /** Shared memory about the user (user.md). Every prompt includes it; every chat turn may update it. */
+  memory: string;
+  /** The live conversation, oldest first. */
+  chat: { id: string; role: "user" | "assistant"; text: string }[];
 }
 
 export interface RunContext {

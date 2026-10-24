@@ -14,7 +14,7 @@ export const initialRun = (mock = false): RunData => ({
   findingSeq: {}, factSeq: {}, proposals: [], contradictions: [],
   contradictionsStatus: 'idle', synthesis: null, synthesisSeq: 0,
   synthesisStatus: 'idle', stats: null, reasoning: {}, activity: [], ladders: {},
-  notices: [], fatalError: null,
+  notices: [], fatalError: null, chat: [], memory: "", memoryChanges: [], memorySeq: 0,
 })
 
 export const initialUi = (): UiState => ({

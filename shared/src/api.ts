@@ -28,3 +28,7 @@ export interface ClarifyQuestion {
   suggestions: string[];         // 2–4 short one-tap answers
 }
 export interface ClarifyResponse { questions: ClarifyQuestion[]; ms: number; model: string }
+
+/** One user turn in the live conversation (POST /api/runs/:id/chat). The reply arrives as chat.message events. */
+export interface ChatRequest { text: string; inputMode?: "text" | "voice" }
+export interface ChatResponse { ok: true }

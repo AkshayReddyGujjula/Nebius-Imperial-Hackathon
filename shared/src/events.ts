@@ -29,6 +29,11 @@ export type CruxEventBody =
   | { type: "ladder.arm"; ladderId: string; arm: LadderArm }
   | { type: "plan.updated"; plan: Plan; reason: string }                // P2
   | { type: "nodes.stale"; nodeIds: string[]; reason: string }          // P2
+  // The live conversation. Assistant turns usually end with one question; `suggestions` are 2–4 one-tap
+  // multiple-choice answers (the UI always adds "Type my own answer"); `recommendedIndex` marks the likeliest
+  // answer given user.md (null when none stands out).
+  | { type: "chat.message"; id: string; role: "user" | "assistant"; text: string; suggestions: string[]; recommendedIndex: number | null }
+  | { type: "memory.updated"; markdown: string; changes: string[]; by: string }  // shared user.md every agent reads
   | { type: "notice"; level: "info" | "warn" | "error"; message: string }
   | { type: "run.error"; message: string; fatal: boolean };
 

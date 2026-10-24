@@ -55,6 +55,12 @@ export interface RunData {
   ladders: Record<string, LadderView>;
   notices: { id: string; level: "info" | "warn" | "error"; message: string; ts: number }[];
   fatalError: string | null;
+  /** The live conversation (chat.message events), oldest first. */
+  chat: { id: string; role: "user" | "assistant"; text: string; suggestions: string[]; recommendedIndex: number | null; ts: number }[];
+  /** Shared memory about the user (user.md) and what changed last. */
+  memory: string;
+  memoryChanges: string[];
+  memorySeq: number;
 }
 
 export interface UiState {

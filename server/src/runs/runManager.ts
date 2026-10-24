@@ -31,6 +31,8 @@ function freshState(id: string, decision: string, inputMode: "text" | "voice", r
     jsonRepairs: 0,
     fingerprint: null,
     counters: { question: 0, agent: 0, finding: 0, source: 0, fact: 0, contradiction: 0, search: 0, ladder: 0 },
+    memory: "",
+    chat: [],
   };
 }
 

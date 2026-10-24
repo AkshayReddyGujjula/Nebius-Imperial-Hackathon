@@ -18,7 +18,7 @@ export function runContext(findings: Finding[] = []): { ctx: RunContext; events:
     sourceIdByUrl: new Map(), findings: new Map(findings.map((f) => [f.id, f])), proposals: [],
     contradictions: [], synthesis: null, usages: [], tavily: { searches: 0, credits: 0 },
     jsonRepairs: 0, fingerprint: null,
-    counters: { question: 0, agent: 0, finding: 0, source: 0, fact: 0, contradiction: 0, search: 0, ladder: 0 },
+    counters: { question: 0, agent: 0, finding: 0, source: 0, fact: 0, contradiction: 0, search: 0, ladder: 0 }, memory: "", chat: [],
   };
   const ctx: RunContext = {
     state,
