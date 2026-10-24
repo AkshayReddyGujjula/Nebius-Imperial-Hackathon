@@ -36,7 +36,7 @@ export function MatrixDrawer() {
             <span title="Ranked by your weights, not by Decision Lab" className="cursor-help underline decoration-dotted underline-offset-2">Top for your weights:</span>
             <b className="truncate font-semibold text-crux-text">{optionLetter(li)} · {leadOpt.label}</b>
             {detailed ? <span className="ui-num font-medium text-crux-accent-text">{leader.point.toFixed(2)}</span> : null}
-            {leader.tooClose ? <span className="ui-pill warn">too close to call</span> : null}
+            {null}
           </span>
         ) : (
           <span className="ui-num text-[13px] text-crux-text-tertiary">{k ? `${k} of ${o * c} scores in` : "Waiting for the agents' scores…"}</span>

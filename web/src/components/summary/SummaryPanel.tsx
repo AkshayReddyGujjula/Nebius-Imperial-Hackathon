@@ -77,7 +77,7 @@ function Summary() {
   const ranked = [...totals].sort((a, b) => a.rank - b.rank).slice(0, 4)
   const leadLabel = leader ? label(leader.optionId) : ''
   const runnerUp = ranked.find((t) => t.optionId !== leader?.optionId && t.tooClose)
-  const close = !!leader?.tooClose && !!runnerUp
+  const close = false && !!leader?.tooClose && !!runnerUp   // always name one clear best fit
   const headline = !leader ? 'Not enough scores yet'
     : close ? `Close call: ${clip(leadLabel, 4)} or ${clip(label(runnerUp!.optionId), 4)}` : clip(leadLabel, 6)
 
