@@ -8,9 +8,9 @@ export const MOCK_RUN_ID = 'mock-run'
 const BASE_TS = 1_761_300_000_000
 
 const M = {
-  orchestrator: 'deepseek-ai/DeepSeek-V4.1-Flash',
-  agent: 'Qwen/Qwen3.5-35B-A3B',
-  summary: 'nvidia/Nemotron-Nano-9B-v3',
+  orchestrator: 'deepseek-ai/DeepSeek-V4.1-Flash-1017',
+  agent: 'deepseek-ai/DeepSeek-V4.1-Flash-1017',
+  summary: 'nvidia/Nemotron-3_5-Lightning',
   audit: 'MiniMaxAI/MiniMax-M3.1-Flash',
 }
 
@@ -390,9 +390,9 @@ for (let t = 2; t <= END; t += 2) {
     llmCalls: Math.round(2 + 18 * f), tavilySearches: searchesSoFar, tavilyCredits: searchesSoFar,
     inputTokens: Math.round(55_000 * f), outputTokens: Math.round(14_000 * f), reasoningTokens: Math.round(7_300 * f),
     costUsd: Math.round(cost * 10_000) / 10_000,
+    // Planner, synthesizer and research agents all run on the same DeepSeek model, so they share one entry.
     byModel: {
-      [M.orchestrator]: { calls: t >= 65 ? 2 : 1, inputTokens: Math.round(8_700 * f), outputTokens: Math.round(3_800 * f), reasoningTokens: Math.round(2_600 * f), costUsd: Math.round(0.008 * f * 10_000) / 10_000 },
-      [M.agent]: { calls: Math.round(16 * f), inputTokens: Math.round(43_500 * f), outputTokens: Math.round(10_100 * f), reasoningTokens: Math.round(4_700 * f), costUsd: Math.round(0.0172 * f * 10_000) / 10_000 },
+      [M.agent]: { calls: (t >= 65 ? 2 : 1) + Math.round(16 * f), inputTokens: Math.round(52_200 * f), outputTokens: Math.round(13_900 * f), reasoningTokens: Math.round(7_300 * f), costUsd: Math.round(0.0252 * f * 10_000) / 10_000 },
     },
     findings: findingsSoFar.length,
     quoteVerified: findingsSoFar.filter((x) => x.checks.quote === 'verified').length,
