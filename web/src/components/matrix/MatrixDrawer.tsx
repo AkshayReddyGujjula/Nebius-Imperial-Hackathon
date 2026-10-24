@@ -19,7 +19,7 @@ export function MatrixDrawer() {
 
   return (
     <section aria-label="Trade-off matrix"
-      className="flex flex-none flex-col border-t border-crux-border-strong bg-crux-surface shadow-[0_-8px_24px_rgba(24,24,27,.05)]"
+      className="flex flex-none flex-col border-t border-crux-border-strong bg-crux-surface shadow-[0_-1px_0_rgba(28,27,23,.04)]"
       style={{ height: open ? 'min(440px, 55%)' : 48 }}>
       <div className="flex h-12 flex-none items-center gap-3 px-4">
         <button type="button" className="flex items-center gap-2 text-[13px] font-semibold" onClick={() => setMatrixOpen(!open)}>

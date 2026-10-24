@@ -1,4 +1,4 @@
-import { ChevronRight, Download, Plus, Split } from 'lucide-react'
+import { ChevronRight, Download, Plus } from 'lucide-react'
 import { useShallow } from 'zustand/react/shallow'
 import { useCrux } from '@/store/runStore'
 import type { CruxStore } from '@/store/types'
@@ -58,9 +58,7 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
   return (
     <header className="dl-topbar col-span-2 flex h-[52px] min-w-0 items-center gap-4 px-4">
       <div className="flex min-w-0 items-center gap-2">
-        <span className="dl-mark grid size-[22px] flex-none place-items-center rounded-[6px]">
-          <Split className="!size-3" />
-        </span>
+        <span className="dl-mark grid size-[18px] flex-none place-items-center rounded-[4px]" aria-hidden="true">DL</span>
         <span className="whitespace-nowrap text-[15px] font-semibold">Decision Lab</span>
         {phase !== 'idle' && title ? (
           <>

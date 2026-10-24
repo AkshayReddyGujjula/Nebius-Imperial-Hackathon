@@ -51,7 +51,7 @@ export default function App() {
   }, [])
 
   return (
-    <div className="grid h-dvh grid-cols-[280px_minmax(0,1fr)] grid-rows-[52px_minmax(0,1fr)] overflow-hidden bg-crux-page text-crux-text">
+    <div className="dl-app grid h-dvh grid-cols-[280px_minmax(0,1fr)] grid-rows-[52px_minmax(0,1fr)] overflow-hidden bg-crux-page text-crux-text">
       <TopBar onNewDecision={newDecision} />
       <ActivityRail />
       <main className="relative flex min-h-0 min-w-0 flex-col">
