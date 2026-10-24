@@ -1,5 +1,5 @@
 import type {
-  BlindSpotAnswerRequest, CreateReplayRequest, CreateRunRequest, CreateRunResponse,
+  BlindSpotAnswerRequest, ClarifyRequest, ClarifyResponse, CreateReplayRequest, CreateRunRequest, CreateRunResponse,
   DeeperRequest, DeeperResponse, FollowupRequest, HealthResponse, LadderRequest,
   LadderResponse, ReplayInfo, SynthesizeRequest, TranscribeResponse,
 } from '@shared/api'
@@ -140,3 +140,16 @@ export const currentRunId = (): string | null => useCrux.getState().runId
 
 /** Phase 0 name kept for compatibility: raw fetch of the SSE stream (prefer `connectRun`). */
 export const getRunEvents = (runId: string): Promise<Response> => fetch(runEventsUrl(runId))
+
+/** Pre-run interview: 2–4 clarifying questions for the decision. Aborts after `timeoutMs`. */
+export async function clarify(body: ClarifyRequest, timeoutMs = 25_000): Promise<ClarifyResponse> {
+  const ctrl = new AbortController()
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs)
+  try {
+    const res = await fetch(`${API}/api/clarify`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctrl.signal,
+    })
+    if (!res.ok) return fail(res)
+    return (await res.json()) as ClarifyResponse
+  } finally { clearTimeout(timer) }
+}
