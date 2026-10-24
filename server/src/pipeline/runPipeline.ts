@@ -4,6 +4,8 @@ import { Summarizer } from "../llm/summarizer";
 import type { RunContext } from "../runs/types";
 import { runAgent } from "./agent";
 import { plan, shortMessage, synthesize } from "./orchestrator";
+import { afterSynthesis, onPlanReady, openConversation } from "./chat";
+import { initMemory } from "./memory";
 
 // DECISION: follow-ups (dig deeper, blind spot, re-synthesis) need the run's Summarizer after
 // runPipeline returns, so it is kept here per run state and fetched with summarizerFor(ctx).
@@ -25,7 +27,10 @@ export async function runPipeline(run: RunContext): Promise<void> {
     ctx.emit({ type: "run.started", decision: ctx.state.decision, inputMode: ctx.state.inputMode, replay: false, replayOf: null,
       models: { ...CONFIG.models } });
     phase("planning");
+    initMemory(ctx);                 // instant, so the planner already reads user.md
+    void openConversation(ctx);      // the assistant talks while the plan is drawn up
     const p = await plan(ctx, summarizer);
+    onPlanReady(ctx);
 
     phase("researching");
     const tasks = p.questions.map((q) => runAgent(ctx, summarizer, q));
@@ -38,7 +43,8 @@ export async function runPipeline(run: RunContext): Promise<void> {
     try { auditContradictions(ctx).catch(() => {}); } catch { /* stub may throw synchronously */ }
 
     phase("synthesizing");
-    await synthesize(ctx, summarizer, Object.fromEntries(p.criteria.map((c) => [c.id, c.weight])));
+    const synthesis = await synthesize(ctx, summarizer, Object.fromEntries(p.criteria.map((c) => [c.id, c.weight])));
+    afterSynthesis(ctx, synthesis);
     phase("done");
     ctx.flushStats();
   } catch (err) {

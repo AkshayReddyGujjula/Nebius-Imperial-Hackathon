@@ -5,8 +5,9 @@ import { callJson } from "../llm/json";
 import type { RunContext } from "../runs/types";
 import { runAgent } from "./agent";
 import { isSynthesizing, shortMessage, synthesize } from "./orchestrator";
-import { FINISH_RULE_SALVAGE, SEARCH_RULE_NONE, buildAgentSystem } from "./prompts";
-import { SubmitOut } from "./schemas";
+import { FINISH_RULE_SALVAGE, FOLLOWUP_SYSTEM, SEARCH_RULE_NONE, buildAgentSystem, memoryBlock } from "./prompts";
+import { FollowupOut, SubmitOut } from "./schemas";
+import { afterSynthesis, requestBrief } from "./chat";
 import { summarizerFor } from "./runPipeline";
 
 function requirePlan(ctx: RunContext) {
@@ -105,7 +106,8 @@ export async function resynthesize(ctx: RunContext, weights: Record<string, numb
   const prevPhase = ctx.state.phase;
   setPhase("synthesizing");
   try {
-    await synthesize(ctx, summarizerFor(ctx), weights);
+    const synthesis = await synthesize(ctx, summarizerFor(ctx), weights);
+    afterSynthesis(ctx, synthesis);
   } finally {
     // Plan agents may still be running (soft-deadline window): only report "done" once every one is terminal.
     const settled = [...ctx.state.agents.values()].every((a) => a.status === "done" || a.status === "failed" || a.status === "timeout");
@@ -151,6 +153,69 @@ ${agent.promptSourcesText}` },
   return { ladderId };
 }
 
+/** §9.8 P2: folds something new the person said into the plan, and researches up to 2 new questions. */
 export async function applyFollowup(ctx: RunContext, text: string): Promise<void> {
-  throw new Error("not implemented: applyFollowup");
+  const plan = requirePlan(ctx);
+  const state = [
+    `PLAN: ${plan.title}`,
+    "OPTIONS:", ...plan.options.map((o) => `- ${o.id} ${o.label}: ${o.description}`),
+    "CRITERIA:", ...plan.criteria.map((c) => `- ${c.id} ${c.label} — weight ${c.weight}`),
+    "QUESTIONS:", ...plan.questions.filter((q) => !q.stale).map((q) => `- ${q.id}: ${q.text}`),
+    "FACTS:", ...plan.facts.map((f) => `- ${f.text}`),
+  ].join("\n");
+  const { data } = await callJson(ctx, "orchestrator", FollowupOut, {
+    model: CONFIG.models.orchestrator, reasoningEffort: "low", maxTokens: 6000, timeoutMs: 40_000,
+    messages: [
+      { role: "system", content: FOLLOWUP_SYSTEM + memoryBlock(ctx.state.memory) },
+      { role: "user", content: `${state}\n\nTHE PERSON NOW SAYS: """${text}"""` },
+    ],
+  });
+  for (const f of data.newFacts.slice(0, 4)) {
+    if (!f.text.trim()) continue;
+    const fact: Fact = { id: ctx.nextId("fact"), kind: f.kind, text: f.text.trim(), quote: null, origin: "followup" };
+    plan.facts.push(fact);
+    ctx.emit({ type: "fact.added", fact });
+  }
+  const changes: string[] = [];
+  for (const w of data.weightChanges) {
+    const c = plan.criteria.find((x) => x.id === w.criterionId);
+    const weight = Math.max(0, Math.min(10, Math.round(w.weight)));
+    if (!c || !Number.isFinite(weight) || c.weight === weight) continue;
+    c.weight = weight; c.weightReason = w.reason || "From your follow-up";
+    changes.push(`${c.label} → ${weight}`);
+  }
+  for (const o of data.newOptions.slice(0, 1)) {
+    if (!o.label.trim() || plan.options.length >= 5 || plan.options.some((x) => x.label.toLowerCase() === o.label.trim().toLowerCase())) continue;
+    plan.options.push({ id: `o${plan.options.length + 1}`, label: o.label.trim(), description: o.description, origin: "ai" });
+    changes.push(`new option "${o.label.trim()}"`);
+  }
+  if (changes.length) {
+    plan.version++;
+    ctx.emit({ type: "plan.updated", plan, reason: data.note || changes.join(", ") });
+  }
+  const stale = data.staleQuestionIds.filter((id) => plan.questions.some((q) => q.id === id && !q.stale));
+  if (stale.length) {
+    for (const q of plan.questions) if (stale.includes(q.id)) q.stale = true;
+    ctx.emit({ type: "nodes.stale", nodeIds: stale.map((id) => `q:${id}`), reason: data.note || "No longer relevant after your update" });
+  }
+  const tasks: Promise<void>[] = [];
+  for (const nq of data.newQuestions.slice(0, 2)) {
+    if (nq.text.trim().length < 10) continue;
+    const optionIds = nq.optionIds.filter((id) => plan.options.some((o) => o.id === id));
+    const criterionIds = nq.criterionIds.filter((id) => plan.criteria.some((c) => c.id === id));
+    const effort: Effort = nq.effort === "max" ? "high" : nq.effort;
+    const question: Question = {
+      id: ctx.nextId("question"), text: nq.text.trim(), why: nq.why,
+      optionIds: optionIds.length ? optionIds : plan.options.map((o) => o.id),
+      criterionIds: criterionIds.length ? criterionIds : plan.criteria.map((c) => c.id),
+      effort, effortRequested: nq.effort, effortReason: nq.effortReason || "From the conversation",
+      seedQueries: nq.seedQueries.map((s) => s.trim()).filter(Boolean).slice(0, 3),
+      parentNodeId: null, origin: "followup" as Question["origin"], stale: false,
+    };
+    plan.questions.push(question);
+    ctx.emit({ type: "question.added", question });
+    tasks.push(runAgent(ctx, summarizerFor(ctx), question));
+  }
+  if (tasks.length) void Promise.allSettled(tasks).then(() => requestBrief(ctx));
+  else if (changes.length || stale.length || data.newFacts.length) requestBrief(ctx);
 }

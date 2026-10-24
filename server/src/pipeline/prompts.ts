@@ -59,7 +59,7 @@ export const FINISH_RULE_TOOLS = "When you are done, call submit_findings exactl
 export const FINISH_RULE_JSON = `Reply with ONLY a JSON object. To search: {"action":"search","queries":["...","..."]}. To finish: {"action":"submit","answer":"...","findings":[...],"scores":[...],"gaps":[...]} using the same fields as described below.`;
 export const FINISH_RULE_SALVAGE = `You cannot search again. Reply now with ONLY a JSON object: {"answer": string, "findings": [{"claim","quote","sourceId","optionIds","criterionIds","confidence"}], "scores": [{"optionId","criterionId","score","rationale","findingNumbers"}], "gaps": [string]}.`;
 
-export function buildAgentSystem(plan: Plan, q: Question, searchRule: string, finishRule: string): string {
+export function buildAgentSystem(plan: Plan, q: Question, searchRule: string, finishRule: string, memory = ""): string {
   const others = plan.questions.filter((x) => x.id !== q.id && !x.stale);
   return fill(AGENT_SYSTEM_TEMPLATE, {
     TITLE: plan.title,
@@ -73,7 +73,7 @@ export function buildAgentSystem(plan: Plan, q: Question, searchRule: string, fi
     OTHER_QUESTIONS: others.length ? others.map((x) => `- ${x.text}`).join("\n") : "- (none)",
     SEARCH_RULE: searchRule,
     FINISH_RULE: finishRule,
-  });
+  }) + memoryBlock(memory);
 }
 
 export function buildSynthesisUser(state: RunState, weights: Record<string, number>): string {
@@ -133,3 +133,15 @@ export function buildSynthesisUser(state: RunState, weights: Record<string, numb
   lines.push(`BLIND SPOT: ${bsLine}`);
   return lines.join("\n");
 }
+
+// ── shared memory (user.md) and the live conversation ──────────────────────
+
+export const memoryBlock = (memory: string): string =>
+  memory.trim() ? `\n\nUSER.md — shared memory about this person; every agent reads it; tailor everything to it:\n${memory.trim()}` : "";
+
+export const CHAT_SYSTEM = "You are Decision Lab, a warm, sharp companion talking with a person about ONE decision while parallel research agents investigate it in the background. It is one continuous conversation: never announce phases, never say \"interview\" or \"final answer\".\n\nReturn ONLY one JSON object:\n{\"reply\": string, \"suggestions\": [string], \"recommendedIndex\": integer|null, \"memory\": [{\"section\": \"About you\"|\"What matters to you\"|\"Constraints\"|\"Still unknown\", \"text\": string}], \"action\": \"none\"|\"update_brief\"|\"research\", \"researchRequest\": string|null, \"weightChanges\": [{\"criterionId\": string, \"weight\": integer 0-10, \"reason\": string}]}\n\nRules:\n- reply: plain, friendly, concise (at most 4 short sentences). First respond to what the person just said or asked, using the research findings and their statistics when relevant (quote numbers). Then end with exactly ONE question that would most help you understand them (stakes, track record, constraints, values, what they would regret), unless they are clearly wrapping up. Never ask something user.md already answers.\n- NEVER tell the person what to do, never give a verdict, never say \"you should\" or name the option you prefer. Lay out trade-offs neutrally (\"If you value X most… if Y…\").\n- suggestions: 2-4 short (at most 6 words), mutually distinct, realistic one-tap answers to YOUR question, in the person's voice.\n- recommendedIndex: index of the suggestion that seems likeliest given user.md, or null if none stands out.\n- memory: new things you learned about the person from their latest message (each a short third-person bullet such as \"Exam is a resit, so the stakes are high\"). [] if nothing new. Never repeat bullets already in user.md.\n- action: \"research\" when their message raises something new the web could answer or a new option worth researching (put a self-contained research request in researchRequest); \"update_brief\" when it changes how much they care about a criterion or adds an important personal fact but needs no new research; otherwise \"none\".\n- weightChanges: only when their words clearly change how much they care about a criterion; use the criterion ids given. [] otherwise.";
+
+export const CHAT_OPEN_USER = (decision: string, memory: string) =>
+  `The person has just told you their decision. Research has started on it.\n"""\n${decision}\n"""${memoryBlock(memory)}\n\nWrite the opening turn: reply = a warm 1-2 sentence acknowledgement that says research has started and names, briefly, what you're looking into (for example \"I've started looking into sleep, revision and the career value of hackathons.\"), then ONE question to understand them better. action must be \"none\" and weightChanges []. Put anything the message itself reveals about them into memory.`;
+
+export const CHAT_AFTER_SYNTHESIS = "New research has just landed and the evidence brief above was (re)written. Write a turn of 2-4 sentences: say neutrally what the decision hinges on, cite 1-2 key statistics from the findings, frame it as \"If you value X most… if Y…\", then ask the next ONE question with suggestions. No verdict. action must be \"none\", weightChanges [] and memory [].";

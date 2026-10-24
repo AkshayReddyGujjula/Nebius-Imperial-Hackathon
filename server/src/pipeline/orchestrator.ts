@@ -3,7 +3,7 @@ import { CONFIG } from "../config";
 import { callJson } from "../llm/json";
 import type { Summarizer } from "../llm/summarizer";
 import type { RunContext } from "../runs/types";
-import { PLAN_SYSTEM, PLAN_USER, SYNTHESIS_SYSTEM, buildSynthesisUser } from "./prompts";
+import { PLAN_SYSTEM, PLAN_USER, SYNTHESIS_SYSTEM, buildSynthesisUser, memoryBlock } from "./prompts";
 import { PlanOut, SynthesisOut } from "./schemas";
 
 export function shortMessage(err: unknown): string {
@@ -33,7 +33,7 @@ export function clampEfforts(questions: Question[]): void {
 export async function plan(ctx: RunContext, summarizer: Summarizer): Promise<Plan> {
   const decision = ctx.state.decision;
   const date = new Date().toISOString().slice(0, 10);
-  const messages = [{ role: "system", content: PLAN_SYSTEM(date) }, { role: "user", content: PLAN_USER(decision) }];
+  const messages = [{ role: "system", content: PLAN_SYSTEM(date) }, { role: "user", content: PLAN_USER(decision) + memoryBlock(ctx.state.memory) }];
   const onReasoning = (d: string) => summarizer.feed("orchestrator", d);
   let out: Awaited<ReturnType<typeof callJson<PlanOut>>>;
   try {

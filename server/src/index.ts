@@ -6,7 +6,7 @@ import { streamSSE } from "hono/streaming";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 import type {
-  BlindSpotAnswerRequest, ClarifyRequest, ClarifyResponse, CreateReplayRequest, CreateRunRequest, CreateRunResponse, DeeperRequest, DeeperResponse,
+  BlindSpotAnswerRequest, ChatRequest, ChatResponse, ClarifyRequest, ClarifyResponse, CreateReplayRequest, CreateRunRequest, CreateRunResponse, DeeperRequest, DeeperResponse,
   FollowupRequest, HealthResponse, LadderRequest, LadderResponse, SynthesizeRequest, TranscribeResponse,
 } from "@shared/api";
 import { CONFIG } from "./config";
@@ -17,6 +17,7 @@ import { answerBlindSpot, applyFollowup, digDeeper, researchBlindSpot, resynthes
 import { transcribe } from "./stt/elevenlabs";
 import { fakePipeline } from "./dev/fakePipeline";
 import { clarify } from "./pipeline/clarify";
+import { userTurn } from "./pipeline/chat";
 
 const app = new Hono();
 
@@ -217,6 +218,20 @@ app.post("/api/runs/:id/followup", async (c) => {   // P2
   if (!text) return fail(c, 400, "Follow-up is empty.");
   background(g.run, applyFollowup(g.run, text));
   return c.json({ ok: true });
+});
+
+app.post("/api/runs/:id/chat", async (c) => {
+  const run = getRun(c.req.param("id") ?? "");
+  if (!run) return fail(c, 404, "Run not found");
+  if (run.state.replay) return fail(c, 409, "This is a replay. Start a live run to interact.");
+  const body = await readJson<ChatRequest>(c);
+  const text = typeof body.text === "string" ? body.text.trim() : "";
+  if (!text) return fail(c, 400, "Message is empty.");
+  if (text.length > 2000) return fail(c, 400, "Message is longer than 2000 characters.");
+  // Allowed during planning: memory and the reply still work; research actions wait for the plan.
+  background(run, userTurn(run, text));
+  const res: ChatResponse = { ok: true };
+  return c.json(res);
 });
 
 app.post("/api/transcribe", async (c) => {
