@@ -46,8 +46,31 @@ export async function digDeeper(ctx: RunContext, nodeId: string): Promise<{ ques
   return { questionId: question.id };
 }
 
+/** §9.8: spawns a high-effort agent on a researchable, open blind spot; its answer closes the blind spot. */
 export async function researchBlindSpot(ctx: RunContext): Promise<{ questionId: string }> {
-  throw new Error("not implemented: researchBlindSpot");
+  const plan = requirePlan(ctx);
+  const bs = plan.blindSpot;
+  if (!bs) throw new Error("There is no blind spot");
+  if (!bs.researchable) throw new Error("This blind spot can't be researched on the web");
+  if (bs.status !== "open") throw new Error(`The blind spot is already ${bs.status}`);
+  const question: Question = {
+    id: ctx.nextId("question"), text: bs.text, why: bs.reason,
+    optionIds: plan.options.map((o) => o.id), criterionIds: plan.criteria.map((c) => c.id),
+    effort: "high", effortRequested: "high", effortReason: "You asked to research the blind spot",
+    seedQueries: [...bs.seedQueries], parentNodeId: "blindspot", origin: "blindspot", stale: false,
+  };
+  plan.questions.push(question);
+  bs.status = "researching"; bs.questionId = question.id;
+  ctx.emit({ type: "question.added", question });
+  ctx.emit({ type: "blindspot.updated", blindSpot: { ...bs } });
+  void runAgent(ctx, summarizerFor(ctx), question).then(() => {
+    if (bs.status !== "researching") return;   // the person answered it themselves meanwhile
+    const agent = agentFor(ctx, question.id);
+    bs.status = "answered";
+    bs.answer = agent?.answer || "Research didn't find a clear answer.";
+    ctx.emit({ type: "blindspot.updated", blindSpot: { ...bs } });
+  });
+  return { questionId: question.id };
 }
 
 export async function answerBlindSpot(ctx: RunContext, answer: string): Promise<void> {
