@@ -39,6 +39,7 @@ function Summary() {
   const { totals, leader, cells } = useMatrix()
   const [collapsed, setCollapsed] = useState(false)
   const [updating, setUpdating] = useState(false)
+  const [copied, setCopied] = useState(false)
   const ready = status === 'ready' && !!synthesis && !!plan
   const wasReady = useRef(ready)
   const [justRevealed, setJustRevealed] = useState(false)
@@ -94,6 +95,19 @@ function Summary() {
   const go = (i: number) => { touched.current = true; setSlide(i) }
 
   const openEvidence = () => { setViewMode('detailed'); select(nodeId.recommendation) }
+  const copyDecision = async () => {
+    const best = ranked.find((t) => t.optionId === bestId)
+    const lines = [
+      `My decision: ${plan.title}`,
+      '',
+      `Best fit: ${leadLabel}${best?.point != null ? ` (${best.point.toFixed(1)}/5)` : ''}`,
+      ...(reasons.length ? ['', 'Why:', ...reasons.map((r) => `- ${r}`)] : []),
+      ...(ifs.length ? ['', 'If you care most about…', ...ifs.map((x) => `- ${x.care} → ${x.pick}`)] : []),
+      '',
+      'Checked by 4 research agents · quotes verified · audited by MiniMax',
+    ]
+    try { await navigator.clipboard.writeText(lines.join('\n')); setCopied(true); setTimeout(() => setCopied(false), 2000) } catch { /* clipboard blocked */ }
+  }
 
   if (collapsed) {
     return (
@@ -146,8 +160,8 @@ function Summary() {
               {decidedBy ? <p className="text-[12.5px] text-crux-text-secondary">Close on totals, so it follows what matters most to you: <b>{decidedBy}</b></p> : null}
               <ul className="sm-bars">
                 {ranked.map((t, i) => (
-                  <li key={t.optionId} data-lead={t.optionId === bestId}>
-                    <span className="sm-bar-label" title={label(t.optionId)}>{clip(label(t.optionId), 4)}</span>
+                  <li key={t.optionId} data-lead={t.optionId === bestId} className={t.optionId === bestId ? 'sm-win' : 'sm-lose'}>
+                    <span className="sm-bar-label" title={label(t.optionId)}>{clip(label(t.optionId), 4)}{t.optionId === bestId ? <span className="sm-tag">Best fit</span> : null}</span>
                     <span className="sm-track"><span style={{ width: `${t.point != null ? (t.point / 5) * 100 : 0}%`, animationDelay: `${200 + i * 120}ms` }} /></span>
                     <span className="sm-val ui-num">{t.point != null ? t.point.toFixed(1) : '–'}</span>
                   </li>
@@ -182,6 +196,7 @@ function Summary() {
             <span>From your answers and {sourceCount} checked sources.</span>
             <button type="button" onClick={() => setMatrixOpen(true)}>Change what matters</button>
             <button type="button" onClick={openEvidence}>See the evidence</button>
+            <button type="button" className="sm-copy" onClick={copyDecision}>{copied ? 'Copied ✓' : 'Copy my decision'}</button>
           </footer>
         </>
       )}
