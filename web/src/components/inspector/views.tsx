@@ -210,7 +210,7 @@ export function RecommendationView({ onClose, actions }: { onClose: () => void; 
             <Sec>
               <h2 className="text-[17px] leading-6 font-semibold">{syn.recommendation}</h2>
               <div className="mt-2 flex flex-wrap items-center gap-2">
-                <span className="ui-pill capitalize">{syn.confidence} confidence</span>
+                <span className="ui-pill">{syn.confidence[0].toUpperCase() + syn.confidence.slice(1)} confidence</span>
                 {optIdx >= 0 && plan ? <span className="ui-pill">Option {optionLetter(optIdx)} · {plan.options[optIdx].label}</span> : <span className="ui-pill">Hybrid of the options</span>}
               </div>
               <p className="mt-3 text-[14px] leading-5 text-crux-text-secondary">{syn.summary}</p>

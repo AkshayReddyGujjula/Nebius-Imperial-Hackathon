@@ -62,7 +62,7 @@ export function FindingCard({ finding, n }: { finding: Finding; n: number }) {
       {finding.quote ? <blockquote className="ui-quote mt-2">“{finding.quote}”</blockquote> : null}
       <div className="mt-2 flex items-center gap-2">
         <CitationChip finding={finding} onClick={() => select(nodeId.finding(finding.id))} />
-        <span className="text-[12px] text-crux-text-tertiary capitalize">{finding.confidence} confidence</span>
+        <span className="text-[12px] text-crux-text-tertiary">{finding.confidence[0].toUpperCase() + finding.confidence.slice(1)} confidence</span>
       </div>
       {finding.checks.quote !== 'verified' || !finding.checks.sourceRetrieved ? <div className="mt-2"><CheckNote finding={finding} /></div> : null}
       <div className="mt-2 empty:hidden"><ContradictionBoxes findingId={finding.id} /></div>
