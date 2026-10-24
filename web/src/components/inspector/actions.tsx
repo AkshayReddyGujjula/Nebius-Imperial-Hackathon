@@ -4,6 +4,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { EFFORT_ORDER, type Effort } from '@shared/index'
 import { nodeId } from '@shared/ids'
 import { useCrux } from '@/store/runStore'
+import { selectRecommendationStale } from '@/store/selectors'
 import { answerBlindSpot, digDeeper, dismissBlindSpot, researchBlindSpot, runLadder, synthesize } from '@/lib/api'
 import { fmtMs, fmtTokens, fmtUsd, pct } from '@/lib/format'
 import { effortWord } from '../common/EffortBadge'
@@ -135,6 +136,16 @@ export function BlindSpotActions() {
   const research = useAction()
   const save = useAction()
   const dismiss = useAction()
+  const canUpdate = useCrux((s) => s.synthesis !== null && (s.synthesisStatus === 'running' || selectRecommendationStale(s).stale))
+  if (bs?.status === 'answered' && canUpdate) {
+    // The stale banner's button sits under this overlay, so offer the update right where the answer was saved.
+    return (
+      <div className="flex flex-col gap-2">
+        <p className="text-[12.5px] leading-[18px] text-crux-text-secondary">Saved. Update the recommendation to take your answer into account.</p>
+        <UpdateRecommendation primary />
+      </div>
+    )
+  }
   if (!bs || bs.status !== 'open') return null
 
   const onDismiss = () => {
@@ -179,12 +190,12 @@ export function BlindSpotActions() {
 
 // ---------- Recommendation: update ----------
 
-export function UpdateRecommendation() {
+export function UpdateRecommendation({ primary = false }: { primary?: boolean }) {
   const a = useAction()
   const running = useCrux((s) => s.synthesisStatus === 'running')
   return (
     <div className="flex flex-col gap-1.5">
-      <Btn busy={a.busy || running} className="sm self-start"
+      <Btn busy={a.busy || running} className={primary ? 'primary self-start' : 'sm self-start'}
         onClick={() => a.run((runId) => synthesize(runId, { weights: useCrux.getState().weights }))}>
         {running ? 'Updating…' : 'Update recommendation'}
       </Btn>
