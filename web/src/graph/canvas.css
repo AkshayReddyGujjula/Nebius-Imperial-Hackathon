@@ -1,0 +1,146 @@
+/* Canvas + node styles (Lane W1). Values mirror design/options/option-b.html and §11.1. */
+
+.cx-canvas { position: relative; width: 100%; height: 100%; background: var(--crux-page); }
+.cx-canvas .react-flow { background: var(--crux-page); }
+.cx-canvas .react-flow__node { cursor: pointer; }
+.cx-canvas .react-flow__node.selected,
+.cx-canvas .react-flow__node:focus,
+.cx-canvas .react-flow__node:focus-visible { outline: none; box-shadow: none; }
+.cx-canvas .react-flow__attribution { background: transparent; font-size: 10px; opacity: .6; }
+
+.cx-handle { opacity: 0; pointer-events: none; width: 1px !important; height: 1px !important; min-width: 0 !important; min-height: 0 !important; border: 0 !important; background: transparent !important; }
+
+/* Edges */
+.cx-canvas .react-flow__edge-path { stroke: var(--crux-edge); stroke-width: 1.25; transition: stroke var(--crux-duration) var(--crux-ease); }
+.cx-canvas .react-flow__edge.edge-queued .react-flow__edge-path { stroke-dasharray: 4 4; }
+.cx-canvas .react-flow__edge.edge-active .react-flow__edge-path { stroke: var(--crux-accent); stroke-width: 1.5; }
+.cx-canvas .react-flow__edge.edge-contradiction .react-flow__edge-path { stroke: var(--crux-contradiction); stroke-dasharray: 3 3; stroke-width: 1.25; }
+
+/* Overlays */
+.cx-overlay { position: absolute; z-index: 5; display: flex; align-items: center; gap: 8px; pointer-events: none; }
+.cx-overlay > * { pointer-events: auto; }
+.cx-overlay-tl { left: 16px; top: 14px; }
+.cx-overlay-tr { right: 16px; top: 12px; }
+.cx-overlay-bl { left: 16px; bottom: 16px; }
+.cx-legend { display: flex; gap: 14px; align-items: center; padding: 0 2px; }
+.cx-hint { font-size: 12px; line-height: 16px; color: var(--crux-text-tertiary); }
+.cx-icon-btn { width: 32px; height: 32px; display: inline-grid; place-items: center; border-radius: var(--crux-radius-card); border: 1px solid var(--crux-border); background: var(--crux-surface); color: var(--crux-text-secondary); box-shadow: var(--crux-shadow-sm); cursor: pointer; transition: background var(--crux-duration) var(--crux-ease), border-color var(--crux-duration) var(--crux-ease); }
+.cx-icon-btn:hover { background: var(--crux-hover); border-color: var(--crux-border-strong); color: var(--crux-text); }
+.cx-icon-btn:focus-visible { outline: 2px solid var(--crux-accent); outline-offset: 1px; }
+.cx-zoom { display: inline-flex; border: 1px solid var(--crux-border); border-radius: var(--crux-radius-card); background: var(--crux-surface); box-shadow: var(--crux-shadow-sm); overflow: hidden; }
+.cx-zoom .cx-icon-btn { border: 0; border-radius: 0; box-shadow: none; }
+.cx-zoom .cx-icon-btn + .cx-icon-btn { border-left: 1px solid var(--crux-border); }
+
+/* Status dot */
+.cx-st { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; line-height: 16px; color: var(--crux-text-tertiary); white-space: nowrap; font-weight: 400; letter-spacing: 0; text-transform: none; }
+.cx-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; box-sizing: border-box; }
+.cx-st-queued .cx-dot { border: 1.5px solid var(--crux-text-quaternary); }
+.cx-st-active { color: var(--crux-accent-text); }
+.cx-st-active .cx-dot { background: var(--crux-accent); animation: crux-pulse var(--crux-pulse-duration) ease-in-out infinite; }
+.cx-st-done { color: var(--crux-ok); }
+.cx-st-done .cx-dot { background: var(--crux-ok); }
+.cx-st-failed { color: var(--crux-bad); }
+.cx-st-failed .cx-dot { background: var(--crux-bad); }
+
+/* Effort badge */
+.cx-eff { display: inline-flex; align-items: center; gap: 6px; height: 22px; padding: 2px 6px; border: 1px solid var(--crux-border); border-radius: var(--crux-radius-chip); font-size: 12px; line-height: 16px; font-weight: 500; color: var(--crux-text); background: var(--crux-surface); flex: none; white-space: nowrap; }
+.cx-eff i { display: inline-flex; gap: 2px; align-items: flex-end; height: 10px; }
+.cx-eff s { display: block; width: 3px; background: var(--crux-border-strong); border-radius: 1px; }
+.cx-eff s:nth-child(1) { height: 4px; }
+.cx-eff s:nth-child(2) { height: 7px; }
+.cx-eff s:nth-child(3) { height: 10px; }
+.cx-eff s.on { background: var(--crux-text); }
+
+/* Citation chip */
+.cx-cite { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 7px; max-width: 100%; min-width: 0; border-radius: var(--crux-radius-chip); border: 1px solid var(--crux-border); background: var(--crux-surface); font-family: var(--font-mono); font-size: 11px; color: var(--crux-text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.cx-cite-d { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.cx-cite svg { width: 12px; height: 12px; flex: none; }
+.cx-cite em { font-style: normal; font-family: var(--font-sans); color: var(--crux-text-tertiary); margin-left: 2px; }
+.cx-cite-ok svg { color: var(--crux-ok); }
+.cx-cite-warn { border-color: var(--crux-warn-border); background: var(--crux-warn-soft); color: var(--crux-warn); }
+.cx-cite-bad { border-color: var(--crux-bad-border); background: var(--crux-bad-soft); color: var(--crux-bad); }
+.cx-cite-pend svg, .cx-muted-icon { color: var(--crux-text-quaternary); }
+.cx-spin { animation: cx-spin 1.2s linear infinite; }
+@keyframes cx-spin { to { transform: rotate(360deg); } }
+
+/* Flags / pills */
+.cx-flag { display: inline-flex; align-items: center; gap: 4px; height: 22px; padding: 0 7px; border-radius: var(--crux-radius-chip); font-size: 12px; font-weight: 500; white-space: nowrap; flex: none; }
+.cx-flag svg { width: 12px; height: 12px; }
+.cx-flag-bad { background: var(--crux-bad-soft); color: var(--crux-bad); border: 1px solid var(--crux-bad-border); }
+.cx-flag-warn { background: var(--crux-warn-soft); color: var(--crux-warn); border: 1px solid var(--crux-warn-border); }
+.cx-pill { display: inline-flex; align-items: center; gap: 5px; height: 22px; padding: 0 8px; border-radius: 999px; border: 1px solid var(--crux-border); background: var(--crux-surface); font-size: 12px; color: var(--crux-text-secondary); white-space: nowrap; flex: none; }
+.cx-tag { display: inline-flex; align-items: center; height: 18px; padding: 0 6px; border-radius: var(--crux-radius-chip); background: var(--crux-subtle); color: var(--crux-text-tertiary); font-size: 11px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+
+/* Node shell */
+.cx-node { position: relative; width: 100%; height: 100%; display: flex; flex-direction: column; overflow: hidden; background: var(--crux-surface); border: 1px solid var(--crux-border); border-radius: var(--crux-radius-card); padding: 10px 12px; box-shadow: var(--crux-shadow-sm); transition: border-color var(--crux-duration) var(--crux-ease), box-shadow var(--crux-duration) var(--crux-ease), opacity var(--crux-duration) var(--crux-ease); text-align: left; }
+.react-flow__node:hover .cx-node:not(.is-selected) { border-color: var(--crux-border-strong); }
+.cx-node.is-selected { border-color: var(--crux-accent); box-shadow: 0 0 0 1px var(--crux-accent); }
+.cx-node.is-stale { opacity: .5; }
+.cx-node.is-warn:not(.is-selected) { border-color: var(--crux-warn-border); }
+.cx-node-root { border-color: var(--crux-border-strong); box-shadow: var(--crux-shadow); padding: 10px 16px; }
+.cx-node-blind { border: 1px dashed var(--crux-text-quaternary); background: #FCFCFD; box-shadow: none; }
+.cx-node-blind.is-selected { border-style: solid; }
+
+.cx-k { display: flex; align-items: center; gap: 6px; height: 16px; margin-bottom: 6px; font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--crux-text-tertiary); flex: none; min-width: 0; }
+.cx-k > svg { width: 13px; height: 13px; }
+.cx-k .cx-right { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.cx-mono { font-family: var(--font-mono); font-size: 11px; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
+.cx-meta-mono { font-family: var(--font-mono); font-size: 12px; line-height: 16px; color: var(--crux-text-tertiary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; letter-spacing: 0; text-transform: none; font-weight: 400; }
+
+.cx-title { font-size: 14px; line-height: 20px; font-weight: 500; color: var(--crux-text); flex: none; }
+.cx-title-lg { font-size: 17px; line-height: 24px; font-weight: 600; letter-spacing: -.005em; }
+.cx-body { font-size: 13px; line-height: 19px; color: var(--crux-text-secondary); }
+.cx-body-strong { color: var(--crux-text); }
+.cx-muted { color: var(--crux-text-tertiary); font-weight: 400; }
+.cx-clamp-1, .cx-clamp-2, .cx-clamp-3 { display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
+.cx-clamp-1 { -webkit-line-clamp: 1; line-clamp: 1; }
+.cx-clamp-2 { -webkit-line-clamp: 2; line-clamp: 2; }
+.cx-clamp-3 { -webkit-line-clamp: 3; line-clamp: 3; }
+.cx-ellipsis { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.cx-foot { margin-top: auto; display: flex; align-items: center; gap: 6px; min-width: 0; flex: none; }
+.cx-row { display: flex; align-items: center; gap: 6px; min-width: 0; flex: none; }
+
+.cx-trust { font-size: 12px; line-height: 16px; display: inline-flex; align-items: center; gap: 5px; min-width: 0; }
+.cx-trust svg { width: 12px; height: 12px; flex: none; }
+.cx-trust-ok { color: var(--crux-ok); }
+.cx-trust-warn { color: var(--crux-warn); }
+.cx-trust-neutral { color: var(--crux-text-tertiary); }
+
+/* Decision chips */
+.cx-chips { display: flex; gap: 6px; min-width: 0; height: 22px; flex: none; overflow: hidden; }
+.cx-chip { display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: var(--crux-radius-chip); background: var(--crux-subtle); font-size: 12px; color: var(--crux-text-secondary); white-space: nowrap; min-width: 0; flex: 0 1 auto; }
+.cx-chip > span { overflow: hidden; text-overflow: ellipsis; }
+.cx-chip b { color: var(--crux-text); font-weight: 500; margin-right: 4px; flex: none; }
+.cx-chip-more { flex: none; color: var(--crux-text-tertiary); }
+.cx-skel { height: 8px; border-radius: 4px; background: var(--crux-subtle); }
+.cx-skel-chip { height: 22px; border-radius: var(--crux-radius-chip); background: var(--crux-subtle); flex: none; }
+.cx-live { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.cx-live .cx-dot { background: var(--crux-accent); animation: crux-pulse var(--crux-pulse-duration) ease-in-out infinite; }
+
+/* Buttons inside nodes */
+.cx-btn { height: 28px; padding: 0 10px; border-radius: var(--crux-radius-card); border: 1px solid var(--crux-border); background: var(--crux-surface); font-size: 12px; font-weight: 500; color: var(--crux-text); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; white-space: nowrap; box-shadow: var(--crux-shadow-sm); transition: background var(--crux-duration) var(--crux-ease), border-color var(--crux-duration) var(--crux-ease); }
+.cx-btn:hover { background: var(--crux-hover); border-color: var(--crux-border-strong); }
+.cx-btn:focus-visible { outline: 2px solid var(--crux-accent); outline-offset: 1px; }
+.cx-btn:disabled { color: var(--crux-text-quaternary); cursor: default; }
+.cx-btn-ghost { border-color: transparent; box-shadow: none; color: var(--crux-text-secondary); }
+.cx-btn svg { width: 13px; height: 13px; }
+
+/* Recommendation */
+.cx-rec { display: flex; gap: 24px; min-height: 0; flex: 1; }
+.cx-rec-main { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; }
+.cx-rec-why { flex: 0 0 42%; min-width: 0; display: flex; flex-direction: column; gap: 6px; padding-left: 20px; border-left: 1px solid var(--crux-border); }
+.cx-rec-why ol { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.cx-rec-why li { display: flex; gap: 8px; min-width: 0; }
+.cx-rec-why .cx-num { flex: none; width: 16px; height: 19px; font-size: 12px; color: var(--crux-text-tertiary); font-variant-numeric: tabular-nums; }
+.cx-fchip { display: inline-flex; align-items: center; height: 18px; padding: 0 5px; border-radius: var(--crux-radius-chip); border: 1px solid var(--crux-border); background: var(--crux-surface); font-family: var(--font-mono); font-size: 11px; color: var(--crux-text-secondary); cursor: pointer; }
+.cx-fchip:hover { border-color: var(--crux-accent-border); color: var(--crux-accent-text); background: var(--crux-accent-soft); }
+.cx-stale { display: inline-flex; align-items: center; gap: 8px; height: 22px; padding: 0 4px 0 8px; border-radius: var(--crux-radius-chip); background: var(--crux-warn-soft); border: 1px solid var(--crux-warn-border); color: var(--crux-warn); font-size: 12px; letter-spacing: 0; text-transform: none; font-weight: 500; }
+.cx-stale .cx-btn { height: 18px; padding: 0 6px; font-size: 11px; box-shadow: none; border-color: var(--crux-warn-border); }
+
+/* Contradiction label */
+.cx-contra { position: absolute; display: inline-grid; place-items: center; width: 20px; height: 20px; padding: 0; border-radius: 999px; background: var(--crux-bad-soft); border: 1px solid var(--crux-bad-border); color: var(--crux-bad); font-size: 11px; font-weight: 500; white-space: nowrap; box-shadow: var(--crux-shadow-sm); cursor: pointer; pointer-events: all; }
+.cx-contra svg { width: 12px; height: 12px; }
+.cx-contra:hover { background: var(--crux-surface); }
+
+.cx-legend .cx-dot { animation: none; }
+.cx-btn-icon { width: 28px; padding: 0; justify-content: center; }
