@@ -281,7 +281,7 @@ function apply(s: ReducerState, e: CruxEvent): Patch {
       return {
         synthesisStatus: s.synthesis ? 'ready' : 'failed',
         notices: [...dropSynthesisNotice(s.notices), { id: SYNTHESIS_NOTICE_ID, level: 'error', message: e.error, ts: e.ts }],
-        acts: [item(e, 0, 'bad', "Couldn't write the recommendation", 'Synthesis failed', e.error, 'orchestrator', nodeId.recommendation)],
+        acts: [item(e, 0, 'bad', s.synthesis ? "Couldn't update the recommendation" : "Couldn't write the recommendation", 'Synthesis failed', e.error, 'orchestrator', nodeId.recommendation)],
       }
 
     case 'stats.updated':

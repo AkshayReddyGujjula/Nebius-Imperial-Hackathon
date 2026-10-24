@@ -52,7 +52,16 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
       <div className="cx-k">
         <Sparkles />
         Recommendation
-        {ready && stale.stale && (
+        {ready && failure && (
+          <span className="cx-right" style={{ minWidth: 0 }}>
+            <span className="cx-stale" style={{ minWidth: 0 }}>
+              <TriangleAlert style={{ width: 12, height: 12, flex: 'none' }} />
+              <span className="cx-ellipsis" title={failure}>Couldn't update the recommendation ({failure}). Showing the previous one.</span>
+              <RetryButton disabled={updating || !live} replay={replay} onClick={update} />
+            </span>
+          </span>
+        )}
+        {ready && !failure && stale.stale && (
           <span className="cx-right">
             <span className="cx-stale" title={stale.reasons}>
               <TriangleAlert style={{ width: 12, height: 12 }} />
@@ -66,14 +75,6 @@ function RecommendationNodeImpl({ id }: NodeProps<CruxNode>) {
         )}
       </div>
       {error && <p className="text-xs" style={{ color: 'var(--crux-bad)', margin: '0 0 4px' }}>{error}</p>}
-      {ready && failure && (
-        <div className="cx-row" style={{ gap: 8, margin: '0 0 6px', color: 'var(--crux-warn)', fontSize: 12, lineHeight: '16px' }}>
-          <TriangleAlert style={{ width: 12, height: 12, flex: 'none' }} />
-          <span className="cx-ellipsis" title={failure}>Couldn't update the recommendation ({failure}). Showing the previous one.</span>
-          <RetryButton disabled={updating || !live} replay={replay} onClick={update} />
-        </div>
-      )}
-
       {ready ? (
         <div className="cx-rec">
           <div className="cx-rec-main">
