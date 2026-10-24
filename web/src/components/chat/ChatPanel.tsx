@@ -129,7 +129,7 @@ function StatusStrip({ waiting, yourTurn }: { waiting: boolean; yourTurn: boolea
 
   let tone: 'live' | 'you' | 'done' | 'warn' = 'live'
   let label: string
-  if (yourTurn) { tone = 'you'; label = 'Your turn — answer the question' }
+  if (yourTurn) { tone = 'you'; label = 'Your turn' }
   else if (phase === 'error') { tone = 'warn'; label = 'Something went wrong' }
   else if (phase === 'done' || (briefReady && phase !== 'synthesizing')) { tone = 'done'; label = 'Brief ready — see the canvas' }
   else if (phase === 'synthesizing') label = 'Writing the brief'
