@@ -1,8 +1,12 @@
-import { parseNodeId, type Fact, type Question } from "@shared/index";
-import { bumpEffort } from "../config";
+import { EFFORT_ORDER, parseNodeId, type Effort, type Fact, type LadderArm, type Question } from "@shared/index";
+import { CONFIG, EFFORT, bumpEffort } from "../config";
+import { checkQuote } from "../checks/quote";
+import { callJson } from "../llm/json";
 import type { RunContext } from "../runs/types";
 import { runAgent } from "./agent";
-import { isSynthesizing, synthesize } from "./orchestrator";
+import { isSynthesizing, shortMessage, synthesize } from "./orchestrator";
+import { FINISH_RULE_SALVAGE, SEARCH_RULE_NONE, buildAgentSystem } from "./prompts";
+import { SubmitOut } from "./schemas";
 import { summarizerFor } from "./runPipeline";
 
 function requirePlan(ctx: RunContext) {
@@ -102,8 +106,41 @@ export async function resynthesize(ctx: RunContext, weights: Record<string, numb
   }
 }
 
+/** §9.8: answers one question at low/high/max effort on the SAME sources, concurrently. Not added to the graph. */
 export async function runLadder(ctx: RunContext, questionId: string): Promise<{ ladderId: string }> {
-  throw new Error("not implemented: runLadder");
+  const plan = requirePlan(ctx);
+  const question = plan.questions.find((q) => q.id === questionId);
+  if (!question) throw new Error(`Unknown question: ${questionId}`);
+  const agent = [...ctx.state.agents.values()].find((a) => a.info.questionId === questionId && a.promptSourcesText.trim());
+  if (!agent) throw new Error("This branch has no sources to compare yet");
+  const ladderId = ctx.nextId("ladder");
+  ctx.emit({ type: "ladder.started", ladderId, questionId });
+  const messages = [
+    { role: "system", content: buildAgentSystem(plan, question, SEARCH_RULE_NONE, FINISH_RULE_SALVAGE) },
+    { role: "user", content: `SEARCH RESULTS
+
+${agent.promptSourcesText}` },
+  ];
+  const blank = (effort: Effort): LadderArm => ({ effort, status: "running", ms: 0, reasoningTokens: 0, outputTokens: 0,
+    costUsd: 0, findings: 0, quotePassRate: 0, answer: "", error: null });
+  const arm = async (effort: Effort) => {
+    ctx.emit({ type: "ladder.arm", ladderId, arm: blank(effort) });
+    try {
+      const { data, result } = await callJson(ctx, ladderId, SubmitOut, {
+        model: CONFIG.models.agent, reasoningEffort: effort, maxTokens: EFFORT[effort].maxTokens, timeoutMs: 90_000, messages });
+      const passed = data.findings.filter((f) => {
+        const r = checkQuote(f.quote, ctx.state.sources.get(f.sourceId.trim().replace(/^\[|\]$/g, ""))?.content ?? "").result;
+        return r === "verified" || r === "partial";
+      }).length;
+      ctx.emit({ type: "ladder.arm", ladderId, arm: { ...blank(effort), status: "done", ms: result.usage.ms,
+        reasoningTokens: result.usage.reasoningTokens, outputTokens: result.usage.outputTokens, costUsd: result.usage.costUsd,
+        findings: data.findings.length, quotePassRate: data.findings.length ? passed / data.findings.length : 0, answer: data.answer } });
+    } catch (err) {
+      ctx.emit({ type: "ladder.arm", ladderId, arm: { ...blank(effort), status: "failed", error: shortMessage(err) } });
+    }
+  };
+  void Promise.all(EFFORT_ORDER.map(arm)).then(() => ctx.flushStats());
+  return { ladderId };
 }
 
 export async function applyFollowup(ctx: RunContext, text: string): Promise<void> {
