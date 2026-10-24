@@ -145,7 +145,7 @@ export function MatrixTable() {
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <p className="flex-none px-4 pb-2 text-[12.5px] leading-[18px] text-crux-text-secondary">
+      <p className="mx-howto flex-none px-4 pb-2 text-[12.5px] leading-[18px] text-crux-text-secondary">
         <span className="mx-neutral mr-2">Ranked by YOUR weights — not a recommendation</span>
         <b className="font-semibold text-crux-text">How to read this:</b> each cell scores how well an option fits one thing you care about, from <b className="font-semibold">1 (poor)</b> to <b className="font-semibold">5 (great)</b>, proposed by the research agents from cited sources.
         Set how much each thing <b className="font-semibold">matters to you (0–10)</b>; the overall fit and ranking are recalculated in code. It's a lens on your priorities, not a verdict.
@@ -214,9 +214,9 @@ export function MatrixTable() {
             <i style={{ background: 'repeating-linear-gradient(135deg, var(--crux-surface) 0 3px, var(--crux-hover) 3px 4px)' }} /> unknown
           </span>
           <span>Overall fit = Σ(matters × fit) / Σ matters · computed in code, not by the AI{sumW === 0 ? ' · all weights are 0' : ''}</span>
-          <span className="flex items-center gap-1.5"><span className="ui-tag ai">from research</span>score proposed by an agent from a cited source</span>
-          <span className="flex items-center gap-1.5"><span className="ui-tag you">your score</span>set by you</span>
-          {anyUnknown ? <span>Ranges show totals if unknown cells scored 1 to 5</span> : null}
+          <span className="mx-extra flex items-center gap-1.5"><span className="ui-tag ai">from research</span>score proposed by an agent from a cited source</span>
+          <span className="mx-extra flex items-center gap-1.5"><span className="ui-tag you">your score</span>set by you</span>
+          {anyUnknown ? <span className="mx-extra">Ranges show totals if unknown cells scored 1 to 5</span> : null}
         </div>
       </div>
     </div>

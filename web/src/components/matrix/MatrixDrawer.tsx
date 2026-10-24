@@ -20,7 +20,7 @@ export function MatrixDrawer() {
   return (
     <section aria-label="Trade-off matrix"
       className="flex flex-none flex-col border-t border-crux-border-strong bg-crux-surface shadow-[0_-1px_0_rgba(28,27,23,.04)]"
-      style={{ height: open ? 'min(440px, 55%)' : 48, transition: 'height 220ms var(--crux-ease)' }}>
+      style={{ height: open ? 'min(440px, max(55%, 360px))' : 48, transition: 'height 220ms var(--crux-ease)' }}>
       <div className="flex h-12 flex-none items-center gap-3 px-4">
         <button type="button" className="flex items-center gap-2 text-[13px] font-semibold" onClick={() => setMatrixOpen(!open)}>
           <Table2 className="!size-4 text-crux-text-secondary" />Trade-off matrix<span className="hidden font-normal text-crux-text-tertiary xl:inline">· how each option fits what matters to you</span>
