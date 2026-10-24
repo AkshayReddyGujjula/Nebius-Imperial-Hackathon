@@ -48,11 +48,14 @@ function cleanSuggestions(raw: string[], rec: number | null): { suggestions: str
 }
 
 async function callChat(ctx: RunContext, user: string): Promise<ChatOut> {
-  const { data } = await callJson(ctx, "orchestrator", ChatOut, {
+  const once = async () => (await callJson(ctx, "orchestrator", ChatOut, {
     model: CONFIG.models.orchestrator, reasoningEffort: "low", maxTokens: 2500, timeoutMs: 25_000,
     messages: [{ role: "system", content: CHAT_SYSTEM }, { role: "user", content: user }],
-  });
-  return data;
+  })).data;
+  try { return await once(); } catch (err) {
+    console.warn("[chat] retrying turn:", String((err as Error)?.message ?? err).slice(0, 200));
+    return await once();
+  }
 }
 
 /** Plan, latest brief, top findings and recent chat, as context for a chat turn. */

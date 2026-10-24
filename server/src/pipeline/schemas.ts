@@ -94,7 +94,14 @@ export const FollowupOut = z.object({
 });
 export type FollowupOut = z.infer<typeof FollowupOut>;
 
-export const ChatOut = z.object({
+// Models sometimes name the reply field differently; accept the common aliases.
+const aliasReply = (v: unknown) => {
+  if (!v || typeof v !== "object") return v;
+  const o = v as Record<string, unknown>;
+  const reply = o.reply ?? o.message ?? o.response ?? o.text ?? o.answer ?? o.assistant;
+  return { ...o, reply: typeof reply === "object" && reply ? (reply as any).text ?? JSON.stringify(reply) : reply };
+};
+export const ChatOut = z.preprocess(aliasReply, z.object({
   reply: z.string().min(1),
   suggestions: z.array(z.string()).default([]),
   recommendedIndex: z.number().int().nullable().catch(null).default(null),
@@ -102,5 +109,5 @@ export const ChatOut = z.object({
   action: z.enum(["none", "update_brief", "research"]).catch("none").default("none"),
   researchRequest: z.string().nullable().catch(null).default(null),
   weightChanges: z.array(z.object({ criterionId: z.string(), weight: z.number(), reason: z.string().default("") })).catch([]).default([]),
-});
+}));
 export type ChatOut = z.infer<typeof ChatOut>;
