@@ -80,7 +80,7 @@
 .cx-node.is-stale { opacity: .5; }
 .cx-node.is-warn:not(.is-selected) { border-color: var(--crux-warn-border); }
 .cx-node-root { border-color: var(--crux-border-strong); box-shadow: var(--crux-shadow); padding: 10px 16px; }
-.cx-node-blind { border: 1px dashed var(--crux-text-quaternary); background: #FCFCFD; box-shadow: none; }
+.cx-node-blind { border: 1px dashed var(--crux-text-quaternary); background: var(--crux-surface); box-shadow: none; }
 .cx-node-blind.is-selected { border-style: solid; }
 
 .cx-k { display: flex; align-items: center; gap: 6px; height: 16px; margin-bottom: 6px; font-size: 11px; line-height: 14px; font-weight: 500; letter-spacing: .04em; text-transform: uppercase; color: var(--crux-text-tertiary); flex: none; min-width: 0; }
