@@ -70,11 +70,25 @@ app.post("/api/clarify", async (c) => {
   }
 });
 
+const DEFAULT_MODELS = { ...CONFIG.models };
+const ALLOWED_MODELS = {
+  orchestrator: ["deepseek-ai/DeepSeek-V4.1-Flash-1017", "deepseek-ai/DeepSeek-V4.1-Flash"],
+  agent: ["deepseek-ai/DeepSeek-V4.1-Flash-1017", "deepseek-ai/DeepSeek-V4.1-Flash"],
+  audit: ["MiniMaxAI/MiniMax-M3.1-Flash", "zai-org/GLM-5.3-Flash", "Qwen/Qwen3-30B-A3B-Instruct-2507"],
+};
+
 app.post("/api/runs", async (c) => {
   const body = await readJson<CreateRunRequest>(c);
   const decision = typeof body.decision === "string" ? body.decision.trim() : "";
   if (decision.length < 10 || decision.length > 4000) return fail(c, 400, "Describe your decision in 10–4000 characters.");
   const inputMode = body.inputMode === "voice" ? "voice" : "text";
+  // DECISION: model choice from the start page's Models menu. Runs are one at a time in the demo, so the choice is
+  // applied process-wide for this run (defaults first) and only allow-listed Nebius model ids are accepted.
+  Object.assign(CONFIG.models, DEFAULT_MODELS);
+  const m = body.models ?? {};
+  if (m.orchestrator && ALLOWED_MODELS.orchestrator.includes(m.orchestrator)) CONFIG.models.orchestrator = m.orchestrator;
+  if (m.agent && ALLOWED_MODELS.agent.includes(m.agent)) CONFIG.models.agent = m.agent;
+  if (m.audit && ALLOWED_MODELS.audit.includes(m.audit)) CONFIG.models.audit = m.audit;
   const run = createRun(decision, inputMode);
   const pipeline = process.env.FAKE_PIPELINE === "1" ? fakePipeline : runPipeline;
   pipeline(run).catch((err) => {

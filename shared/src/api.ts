@@ -1,4 +1,5 @@
-export interface CreateRunRequest { decision: string; inputMode: "text" | "voice" }
+export interface RunModels { orchestrator?: string; agent?: string; audit?: string }
+export interface CreateRunRequest { decision: string; inputMode: "text" | "voice"; models?: RunModels }
 export interface CreateRunResponse { runId: string }
 export interface DeeperRequest { nodeId: string }                 // "q:q2" or "f:F5"
 export interface DeeperResponse { questionId: string }

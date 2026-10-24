@@ -1,3 +1,4 @@
+import { getRunModels } from './modelPrefs'
 import type {
   BlindSpotAnswerRequest, ChatRequest, ChatResponse, ClarifyRequest, ClarifyResponse, CreateReplayRequest, CreateRunRequest, CreateRunResponse,
   DeeperRequest, DeeperResponse, FollowupRequest, HealthResponse, LadderRequest,
@@ -125,7 +126,7 @@ export async function resumeActiveRun(): Promise<boolean> {
 export async function startRun(decision: string, mode: 'text' | 'voice'): Promise<void> {
   stopRun()
   useCrux.getState().reset()
-  const { runId } = await createRun({ decision, inputMode: mode })
+  const { runId } = await createRun({ decision, inputMode: mode, models: getRunModels() })
   remember(runId, false)
   attach(runId)
 }

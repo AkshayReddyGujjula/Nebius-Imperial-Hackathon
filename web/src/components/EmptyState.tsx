@@ -7,6 +7,7 @@ import { listReplays } from '@/lib/api'
 import { fmtMs } from '@/lib/format'
 import { Composer } from './Composer'
 import { MicButton } from './MicButton'
+import { ModelMenu } from './ModelMenu'
 
 export const EXAMPLES = [
   {
@@ -38,6 +39,7 @@ export function EmptyState({ onRun, onReplay, error }: {
   const [replayError, setReplayError] = useState<string | null>(null)
   const [open, setOpen] = useState(false)
 
+  const detailed = useCrux((s) => s.viewMode === 'detailed')
   const toggleReplays = async () => {
     if (open) { setOpen(false); return }
     setOpen(true); setReplayError(null)
@@ -72,6 +74,7 @@ export function EmptyState({ onRun, onReplay, error }: {
         </motion.div>
 
         <div className="mt-5 flex items-center justify-center gap-3 px-1">
+          {detailed ? <ModelMenu /> : null}
           <button type="button" className="ui-link inline-flex items-center gap-1.5 !font-normal !text-crux-text-tertiary hover:!text-crux-text" onClick={toggleReplays}>
             <RotateCcw className="!size-3.5" />Replay a recorded run
           </button>
