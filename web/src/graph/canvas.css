@@ -176,3 +176,20 @@
 .cx-cond > div { white-space: normal; }
 .cx-node-auditor { border-color: var(--crux-border-strong); padding: 10px 16px; }
 .cx-aud-pulse { background: var(--crux-accent); animation: crux-pulse var(--crux-pulse-duration) ease-in-out infinite; }
+
+/* Lane B: agents talking — memory, quote check, packets */
+.cx-canvas .react-flow__edge.edge-memory .react-flow__edge-path { stroke: var(--crux-ok); stroke-opacity: .55; stroke-dasharray: 2 4; }
+.cx-packet { transition: opacity .4s var(--crux-ease); }
+.cx-packet-t { font-family: var(--font-mono); font-size: 11px; dominant-baseline: auto; }
+.cx-node-memory { border-color: color-mix(in srgb, var(--crux-ok) 45%, var(--crux-border)); overflow: visible; }
+.cx-mem-pulse { position: absolute; inset: -1px; border-radius: inherit; border: 2px solid var(--crux-ok); pointer-events: none; }
+.cx-mem-body { flex: 1; min-height: 0; overflow-y: auto; font-size: 12px; line-height: 17px; }
+.cx-mem-change { border-radius: 4px; padding: 2px 4px; margin: 0 -4px; color: var(--crux-text); overflow-wrap: anywhere; }
+.cx-node-qc { padding: 8px 12px; }
+.cx-qc-row { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.cx-qc { display: inline-flex; align-items: baseline; gap: 4px; height: 22px; padding: 2px 8px; border-radius: var(--crux-radius-chip); background: var(--crux-subtle); font-size: 12px; color: var(--crux-text-secondary); white-space: nowrap; }
+.cx-qc b { font-variant-numeric: tabular-nums; color: var(--crux-text); font-weight: 600; }
+.cx-qc-ok b { color: var(--crux-ok); }
+.cx-qc-warn b { color: var(--crux-warn); }
+.cx-qc-bad b { color: var(--crux-bad); }
+.cx-qc-tot { margin-left: auto; }

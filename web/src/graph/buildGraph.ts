@@ -1,7 +1,8 @@
 import type { Edge, Node } from '@xyflow/react'
-import { nodeId, type Contradiction } from '@shared/index'
+import { nodeId, type Contradiction, type Finding } from '@shared/index'
 import type { AgentView } from '../store/types'
-import { AUDITOR_ID, type LayoutResult } from './layout'
+import { AUDITOR_ID, MEMORY_ID, QUOTECHECK_ID, type LayoutResult } from './layout'
+import type { FlowEdgeData } from './edges/FlowEdge'
 import { agentColor } from './helpers'
 
 export type CruxNodeData = { refId: string | null }
@@ -17,6 +18,13 @@ export interface EdgeInput {
   contradictions: Contradiction[]
   detailed: boolean
   selectedNodeId: string | null
+  /** Optional hand-off state (packets on edges). */
+  findings?: Record<string, Finding>
+  phase?: string
+  contradictionsStatus?: string
+  synthesisStatus?: string
+  memorySeq?: number
+  memoryChange?: string | null
 }
 
 export function buildNodes(layout: LayoutResult): CruxNode[] {
@@ -67,26 +75,76 @@ export function buildEdges(input: EdgeInput): Edge[] {
     return !!status && WORKING.has(status)
   }
 
+  const { findings = {}, phase = 'idle', contradictionsStatus = 'idle', synthesisStatus = 'idle', memorySeq = 0, memoryChange = null } = input
   const edges: Edge[] = []
-  const tree = (source: string, target: string, type: 'smoothstep' | 'straight' | 'bus', dashed: boolean, working = false): Edge => ({
+  const tree = (
+    source: string, target: string, shape: FlowEdgeData['shape'], dashed: boolean, working = false, data: Partial<FlowEdgeData> = {},
+  ): Edge => ({
     id: `e:${source}>${target}`,
-    source, target, type,
+    source, target, type: 'flow',
     sourceHandle: 'b', targetHandle: 't',
     className: onPath.has(`${source}>${target}`) ? 'edge-active' : working ? 'edge-working' : dashed ? 'edge-queued' : 'edge-solid',
+    data: { shape, ...data },
     selectable: false,
     focusable: false,
   })
 
-  for (const col of layout.columns) {
-    if (col.length === 0) continue
-    const head = tree(nodeId.decision, col[0], 'smoothstep', headQueued(col[0]), headWorking(col[0]))
+  const allFindings = Object.values(findings)
+  const anyWorking = Object.values(agents).some((a) => WORKING.has(a.status))
+  const checking = contradictionsStatus === 'idle' && phase === 'checking'
+  const writing = synthesisStatus === 'running'
+  const verified = allFindings.filter((f) => f.checks.quote === 'verified' || f.checks.quote === 'partial').length
+  const middleCol = Math.floor((layout.columns.length - 1) / 2)
+
+  layout.columns.forEach((col, ci) => {
+    if (col.length === 0) return
+    const agentId = agentByQuestion[col[0].slice(2)]
+    const agent = agents[agentId]
+    const color = agentColor(agentId)
+    // Planner → agent: a packet carries the brief (agent + effort) the moment the agent spawns.
+    const head = tree(nodeId.decision, col[0], 'smooth', headQueued(col[0]), headWorking(col[0]), agent
+      ? { packet: `${agent.id.toUpperCase()} · ${agent.effort}`, packetKey: agent.startedAt, tone: color }
+      : {})
     // A working agent's edge flows in that agent's colour (quiet earth tone); the dash animation stays in CSS.
-    if (head.className === 'edge-working') head.style = { stroke: agentColor(agentByQuestion[col[0].slice(2)]) }
+    if (head.className === 'edge-working') head.style = { stroke: color }
     edges.push(head)
-    for (let i = 1; i < col.length; i++) edges.push(tree(col[i - 1], col[i], 'straight', false))
-    edges.push(tree(col[col.length - 1], AUDITOR_ID, 'bus', !synthesisReady))
+    for (let i = 1; i < col.length; i++) {
+      const fid = col[i].startsWith('f:') ? col[i].slice(2) : null
+      edges.push(tree(col[i - 1], col[i], 'straight', false, false, fid ? { packet: fid, packetKey: fid, tone: agentColor(findings[fid]?.agentId) } : {}))
+    }
+    // Findings → quote check: dots while agents write findings; one labelled packet (middle column) keeps it legible.
+    const bus = tree(col[col.length - 1], QUOTECHECK_ID, 'bus', !synthesisReady && allFindings.length === 0, anyWorking && agent?.status !== 'done',
+      anyWorking && allFindings.length > 0
+        ? { packet: ci === middleCol ? `checking ${allFindings.length} quote${allFindings.length === 1 ? '' : 's'}` : '', packetMode: 'loop', tone: color, dur: 2.8 }
+        : {})
+    if (bus.className === 'edge-working') bus.style = { stroke: color }
+    edges.push(bus)
+  })
+  if (layout.columns.length > 0) {
+    edges.push(tree(QUOTECHECK_ID, AUDITOR_ID, 'straight', allFindings.length === 0, checking,
+      checking || contradictionsStatus === 'ready' ? { packet: `${verified} verified`, packetMode: checking ? 'loop' : 'once', packetKey: verified } : {}))
+    const tensions = contradictions.length
+    edges.push(tree(AUDITOR_ID, nodeId.recommendation, 'straight', !synthesisReady, writing,
+      contradictionsStatus === 'ready'
+        ? { packet: tensions ? `${tensions} tension${tensions === 1 ? '' : 's'}` : 'no tensions', packetMode: writing ? 'loop' : 'once', packetKey: `${tensions}:${synthesisStatus}`, tone: tensions ? 'var(--crux-contradiction)' : undefined }
+        : {}))
+
+    // Shared memory (user.md) → every agent + the brief writer. Each update sends a packet down every edge.
+    const memData = (label: string): Partial<FlowEdgeData> =>
+      memorySeq > 0 ? { packet: label, packetKey: memorySeq, tone: 'var(--crux-ok)', dur: 1.8 } : {}
+    const change = memoryChange ? `+ ${memoryChange.length > 34 ? memoryChange.slice(0, 33) + '…' : memoryChange}` : ''
+    layout.columns.forEach((col, ci) => {
+      if (col.length === 0) return
+      edges.push({
+        ...tree(MEMORY_ID, col[0], 'smooth', false, false, memData(ci === 0 ? change : '')),
+        id: `m:${col[0]}`, sourceHandle: 'r', targetHandle: ci === 0 ? 'l' : 't', className: 'edge-memory',
+      })
+    })
+    edges.push({
+      ...tree(MEMORY_ID, nodeId.recommendation, 'smooth', false, false, memData(change)),
+      id: 'm:rec', sourceHandle: 'b', targetHandle: 'l', className: 'edge-memory',
+    })
   }
-  if (layout.columns.length > 0) edges.push(tree(AUDITOR_ID, nodeId.recommendation, 'straight', !synthesisReady))
 
   if (detailed) {
     const colOf = new Map<string, number>()

@@ -17,6 +17,9 @@ import { RecommendationNode } from './nodes/RecommendationNode'
 import { ContradictionEdge } from './edges/ContradictionEdge'
 import { BusEdge } from './edges/BusEdge'
 import { AuditorNode } from './nodes/AuditorNode'
+import { MemoryNode } from './nodes/MemoryNode'
+import { QuoteCheckNode } from './nodes/QuoteCheckNode'
+import { FlowEdge } from './edges/FlowEdge'
 import './canvas.css'
 
 const nodeTypes: NodeTypes = {
@@ -26,10 +29,13 @@ const nodeTypes: NodeTypes = {
   blindspot: BlindSpotNode,
   recommendation: RecommendationNode,
   auditor: AuditorNode,
+  memory: MemoryNode,
+  quotecheck: QuoteCheckNode,
 }
 // DECISION: column → recommendation edges use a custom smoothstep ("bus") that turns just above the
 // recommendation; the stock smoothstep turns at the midpoint and runs behind finding cards.
-const edgeTypes: EdgeTypes = { contradiction: ContradictionEdge, bus: BusEdge }
+// Tree edges are 'flow' edges: same shapes, plus travelling packets on agent hand-offs.
+const edgeTypes: EdgeTypes = { contradiction: ContradictionEdge, bus: BusEdge, flow: FlowEdge }
 const defaultEdgeOptions = { style: { strokeWidth: 1.25 } }
 // Pixel padding: clears the legend overlay at the top and keeps cards as large as possible for a projector.
 const FIT = { padding: { top: '56px', right: '24px', bottom: '28px', left: '24px' }, duration: 400, maxZoom: 1 } as const
@@ -51,6 +57,12 @@ function CanvasInner() {
     synthesisReady: s.synthesisStatus === 'ready',
     contradictions: s.contradictions,
     selectedNodeId: s.selectedNodeId,
+    findings: s.findings,
+    phase: s.phase,
+    contradictionsStatus: s.contradictionsStatus,
+    synthesisStatus: s.synthesisStatus,
+    memorySeq: s.memorySeq,
+    memoryChange: s.memoryChanges[0] ?? null,
   })))
   const userMovedViewport = useCrux((s) => s.userMovedViewport)
   const { select, selectCell, setUserMovedViewport } = useCrux(useShallow((s) => ({
@@ -93,7 +105,7 @@ function CanvasInner() {
   const onMoveStart: OnMoveStart = useCallback((event) => {
     if (event) setUserMovedViewport(true)
   }, [setUserMovedViewport])
-  const onNodeClick: NodeMouseHandler = useCallback((_e, node) => { if (node.type !== 'auditor') select(node.id) }, [select])
+  const onNodeClick: NodeMouseHandler = useCallback((_e, node) => { if (node.type !== 'auditor' && node.type !== 'memory' && node.type !== 'quotecheck') select(node.id) }, [select])
   const onPaneClick = useCallback(() => { select(null); selectCell(null) }, [select, selectCell])
   const fit = useCallback(() => {
     setUserMovedViewport(false)

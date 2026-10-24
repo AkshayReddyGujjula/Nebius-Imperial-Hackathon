@@ -25,7 +25,9 @@ function DecisionNodeImpl({ id }: NodeProps<CruxNode>) {
       <div className="cx-k">
         <Split />
         Decision
-        <span className="cx-byline cx-ellipsis">· Planned by DeepSeek V4.1 Flash · max reasoning</span>
+        <span className="cx-byline cx-ellipsis" title="Planner: DeepSeek V4.1 Flash, max reasoning">
+          · Planner · DeepSeek V4.1 Flash · max{plan ? ` — split into ${plan.questions.filter((q) => q.parentNodeId === null).length} questions, set each agent's effort` : ''}
+        </span>
         {detailed && !plan && (
           <span className="cx-right cx-meta-mono">{fmtTokens(reasoningTok)} reasoning tok</span>
         )}
