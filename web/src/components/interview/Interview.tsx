@@ -27,12 +27,14 @@ export function Interview({ decision, onStart, onBack, error }: {
   const [answers, setAnswers] = useState<(string | null)[]>([])
   const [failNote, setFailNote] = useState('')
   const started = useRef(false)
+  const lastText = useRef(decision)
   const scroller = useRef<HTMLDivElement>(null)
   const index = answers.length
 
   const start = useCallback((text: string) => {
     if (started.current) return
     started.current = true
+    lastText.current = text
     onStart(text)
   }, [onStart])
 
@@ -128,6 +130,7 @@ export function Interview({ decision, onStart, onBack, error }: {
         {error ? (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[12px] leading-4 text-crux-warn">
             <span>{error}</span>
+            <button type="button" className="ui-link" onClick={() => start(lastText.current)}>Try again</button>
             <button type="button" className="ui-link" onClick={onBack}>Edit decision</button>
           </div>
         ) : null}
