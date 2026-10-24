@@ -23,6 +23,7 @@ This file is the single source of truth. Any coding agent should be able to buil
    - Never compute a weighted total, score or cost with a model. Code computes all numbers.
 7. Where this document gives code, **copy it verbatim**. Where it gives a spec, implement exactly that behaviour.
 8. Run your lane's verification commands (§14) before reporting done. Report: what you built, how you verified it, what is unfinished, and any `DECISION:` comments.
+9. **Browsers:** for any visual check use only the built-in T3 Code browser (`preview_*` tools) or headless Chrome (Playwright). **Never use the Jev browser or the `jev-browser` skill.**
 
 ---
 
@@ -2737,7 +2738,7 @@ All Opus agents run at effort medium. GPT-6.1 Sol is slower, so it gets only off
 
 ### 15.3 Browser verification
 
-Use the `jev-browser` skill (the user's real Chrome) or Playwright to click through §15.2 items 2–12 and take screenshots at 1440×900 and 1920×1080. If Chrome is unreachable, say so; do not silently switch engines.
+Use **only** the built-in T3 Code browser (the `preview_*` tools) or headless Chrome (Playwright, `npx playwright screenshot`). **Never use the Jev browser / `jev-browser` skill.** Click through §15.2 items 2–12 and take screenshots at 1440×900 and 1920×1080. If neither browser works, say so; do not substitute another tool silently.
 
 ---
 
