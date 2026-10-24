@@ -126,10 +126,10 @@ Measured from the final stats event of each recorded run, in Nebius tokens:
 
 | Run | Findings | Quotes verified | Model calls | Searches | Cost | Wall-clock | Speed-up vs sequential |
 |---|---|---|---|---|---|---|---|
-| Hackathon vs exam | 12 | 12 of 12 | 31 | 15 | $0.038 | 69 s | 2.4x |
-| Startup: open vs closed models | 6 | 6 of 6 | 16 | 15 | $0.030 | 55 s | 2.8x |
+| Hackathon vs exam | 12 | 12 of 12 | 31 | 15 | $0.062 | 69 s | 2.4x |
+| Startup: open vs closed models | 6 | 6 of 6 | 16 | 15 | $0.079 | 55 s | 2.8x |
 
-Expect about $0.03-0.04 per decision in Nebius tokens (about $0.07 including a full set of follow-ups), plus about 30 Tavily credits (30 in each recorded run). Nearly all of the spend is DeepSeek (about $0.037 of $0.038 in the first run); Nemotron summaries cost under $0.001.
+Expect about $0.05-0.08 per decision in Nebius tokens (measured across 6 live runs: about 95k input and 34k output tokens each), plus about 30 Tavily credits. Nearly all of the spend is DeepSeek; the MiniMax audit is about $0.0003 and Nemotron summaries are not metered (well under $0.001). Priced at list rates, the same tokens would cost about $0.49 on GPT-6.1 Sol ($2/$10 per 1M) and $0.97 on Claude Opus 5.5 ($4/$20 per 1M): 8x and 16x more.
 
 ## Docs
 
