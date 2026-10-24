@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Decision Lab — one-page summary</title>
+<style>
+  :root{
+    --page:#F4F1EA; --surface:#FFFDF8; --border:#E2DCCF; --border-strong:#D4CCBB;
+    --text:#1C1B17; --text2:#57524A; --text3:#736D61;
+    --accent:#1F4D3A; --accent-soft:#DDE8E1; --accent-border:#B9CFC2;
+    --reading:#3E5C76; --reading-soft:#E1E8EE; --warn:#A26B12; --warn-soft:#F3E7CF; --done:#4F6B47;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{background:var(--page);color:var(--text);font:400 clamp(10px,1.02vw,14.5px)/1.4 ui-sans-serif,system-ui,"Segoe UI",Inter,sans-serif;
+    display:grid;grid-template-rows:auto 1fr auto;gap:1.6vh;padding:2.6vh 2.4vw}
+  h1{font:600 2.1em/1.1 Georgia,"Times New Roman",serif;letter-spacing:-.01em}
+  h2{font-size:.78em;font-weight:650;text-transform:uppercase;letter-spacing:.09em;color:var(--text3);margin-bottom:1.1vh}
+  header{display:flex;align-items:flex-end;justify-content:space-between;gap:2vw}
+  header p{color:var(--text2);font-size:1.08em;max-width:62ch;margin-top:.5vh}
+  .tags{display:flex;gap:.5em;flex-wrap:wrap;justify-content:flex-end}
+  .tag{border:1px solid var(--border-strong);background:var(--surface);border-radius:99px;padding:.25em .8em;font-size:.86em;color:var(--text2);white-space:nowrap}
+  .tag b{color:var(--accent)}
+  main{display:grid;grid-template-columns:1.32fr 1fr;gap:1.6vw;min-height:0}
+  .panel{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:2vh 1.4vw;min-height:0;display:flex;flex-direction:column}
+  /* architecture */
+  .arch{display:grid;grid-template-columns:1fr 1.25fr 1fr;grid-template-rows:auto 1fr auto;gap:1.4vh 1.1vw;flex:1;min-height:0;position:relative}
+  .box{border:1px solid var(--border-strong);border-radius:10px;padding:.9vh .7vw;background:var(--surface);position:relative}
+  .box .t{font-weight:650;font-size:.98em}
+  .box .m{font-size:.8em;color:var(--text3);margin-top:.15em}
+  .box .d{font-size:.84em;color:var(--text2);margin-top:.3em}
+  .model{display:inline-block;font:600 .74em/1 ui-monospace,Consolas,monospace;padding:.3em .5em;border-radius:5px;margin-top:.45em;background:var(--accent-soft);color:var(--accent)}
+  .model.mm{background:var(--warn-soft);color:var(--warn)}
+  .model.nv{background:#E6EBDF;color:var(--done)}
+  .model.ext{background:var(--reading-soft);color:var(--reading)}
+  .model.code{background:#ECE7DC;color:var(--text2)}
+  .you{grid-column:1;grid-row:1}
+  .server{grid-column:2;grid-row:1;border-color:var(--accent-border)}
+  .narr{grid-column:3;grid-row:1}
+  .col{display:flex;flex-direction:column;gap:1.1vh;min-height:0}
+  .left{grid-column:1;grid-row:2}
+  .mid{grid-column:2;grid-row:2}
+  .right{grid-column:3;grid-row:2}
+  .agents{display:grid;grid-template-columns:1fr 1fr;gap:.6vh .5vw}
+  .agent{border:1px solid var(--border);border-radius:8px;padding:.55vh .45vw;font-size:.82em;background:var(--page)}
+  .agent span{display:block;font:600 .9em ui-monospace,Consolas,monospace;color:var(--accent)}
+  .memory{grid-column:1/4;grid-row:3;border:1.5px dashed var(--accent);background:var(--accent-soft);display:flex;align-items:center;gap:1vw;padding:1vh 1vw}
+  .memory .t{color:var(--accent);font-family:ui-monospace,Consolas,monospace;font-size:1.05em;white-space:nowrap}
+  .memory .d{margin:0;color:var(--text)}
+  .arrow{color:var(--accent);font-weight:700;text-align:center;font-size:.9em;line-height:1;margin:-.3vh 0}
+  .brief{border-color:var(--accent);border-width:1.5px}
+  .loop{font-size:.8em;color:var(--accent);font-weight:600;margin-top:.35em}
+  /* stats */
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1vh .7vw}
+  .stat{border:1px solid var(--border);border-radius:10px;padding:1vh .7vw;background:var(--page)}
+  .stat .n{font:600 1.75em/1.05 Georgia,serif;color:var(--accent);letter-spacing:-.01em}
+  .stat .l{font-size:.8em;color:var(--text2);margin-top:.25em}
+  .bench{margin-top:1.6vh;display:flex;flex-direction:column;gap:.85vh}
+  .bar{display:grid;grid-template-columns:12.5em 1fr 4.2em;align-items:center;gap:.6vw;font-size:.86em}
+  .bar .lab{color:var(--text2)}
+  .track{height:.85em;background:#E6E0D3;border-radius:99px;overflow:hidden;position:relative}
+  .fill{position:absolute;inset:0 auto 0 0;border-radius:99px;background:var(--accent)}
+  .fill.warn{background:var(--warn)}.fill.muted{background:var(--border-strong)}.fill.read{background:var(--reading)}
+  .bar .v{font:600 .95em ui-monospace,Consolas,monospace;text-align:right}
+  .note{font-size:.78em;color:var(--text3);margin-top:.9vh}
+  .lessons{margin-top:1.4vh;display:grid;grid-template-columns:1fr 1fr;gap:.6vh .9vw;font-size:.84em;color:var(--text2)}
+  .lessons div::before{content:"→ ";color:var(--warn);font-weight:700}
+  footer{display:flex;justify-content:space-between;color:var(--text3);font-size:.82em}
+  footer b{color:var(--text2);font-weight:600}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Decision Lab</h1>
+    <p>Talk a hard decision through. While you chat, open models on Nebius research it in parallel, every agent shares one memory of you, and it never decides for you. You get the evidence and what the decision hinges on.</p>
+  </div>
+  <div class="tags">
+    <span class="tag"><b>3</b> open model families · 1 Token Factory key</span>
+    <span class="tag"><b>4</b> agents in parallel</span>
+    <span class="tag">Every quote <b>checked in code</b></span>
+    <span class="tag"><b>No verdict</b>, only evidence</span>
+  </div>
+</header>
+
+<main>
+  <section class="panel">
+    <h2>Architecture</h2>
+    <div class="arch">
+      <div class="box you">
+        <div class="t">You</div>
+        <div class="d">Chat or voice. One question at a time, with one-tap answers and a <i>Likely</i> option.</div>
+        <span class="model ext">ElevenLabs Scribe v2 · STT</span>
+      </div>
+      <div class="box server">
+        <div class="t">Conversation engine</div>
+        <div class="m">Hono · event-sourced SSE · JSONL replay log</div>
+        <div class="d">Replies, asks the next question, updates memory and re-runs research for each answer.</div>
+        <span class="model">DeepSeek V4.1 Flash</span>
+      </div>
+      <div class="box narr">
+        <div class="t">Live narration</div>
+        <div class="d">Turns raw reasoning streams into one-line status updates.</div>
+        <span class="model nv">Nemotron 3.5 Lightning</span>
+      </div>
+
+      <div class="col left">
+        <div class="box">
+          <div class="t">Planner</div>
+          <div class="d">Options, weighted criteria, 3–4 research questions and a blind spot. It gives each branch a reasoning effort and says why.</div>
+          <span class="model">DeepSeek V4.1 Flash · max</span>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="box">
+          <div class="t">Web search</div>
+          <div class="d">Tavily, which Nebius is acquiring.</div>
+          <span class="model ext">Tavily advanced</span>
+        </div>
+      </div>
+
+      <div class="col mid">
+        <div class="box">
+          <div class="t">Research agents (parallel) <span style="font-weight:400;color:var(--text3);font-size:.85em">e.g. hackathon vs exam</span></div>
+          <div class="agents" style="margin-top:.6vh">
+            <div class="agent"><span>Agent 1 · max</span>Exam impact</div>
+            <div class="agent"><span>Agent 2 · high</span>Sleep &amp; recall</div>
+            <div class="agent"><span>Agent 3 · high</span>Career value</div>
+            <div class="agent"><span>Agent 4 · low</span>Time cost</div>
+          </div>
+          <span class="model">DeepSeek V4.1 Flash · per-branch effort</span>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="box">
+          <div class="t">Trust layer</div>
+          <div class="d">Each quote is matched against the retrieved page <b>in code</b>, and a different model family audits agents for contradictions.</div>
+          <span class="model code">quote check · code</span> <span class="model mm">MiniMax M3.1 Flash · auditor</span>
+        </div>
+      </div>
+
+      <div class="col right">
+        <div class="box brief">
+          <div class="t">Decision brief</div>
+          <div class="d">What it hinges on, the stats on each side, and “If you value X most → …”. No recommendation.</div>
+          <span class="model">DeepSeek V4.1 Flash · max</span>
+          <div class="loop">↺ asks the next question</div>
+        </div>
+        <div class="arrow">↓</div>
+        <div class="box">
+          <div class="t">Trade-off matrix</div>
+          <div class="d">Your weights. The ranking is computed in code; unknown cells are never treated as 0.</div>
+          <span class="model code">shared/matrix.ts</span>
+        </div>
+      </div>
+
+      <div class="box memory">
+        <div class="t">user.md</div>
+        <p class="d"><b>Shared memory.</b> Every answer is written here and every agent reads it (planner, researchers, writer), so they stay in sync, it never asks twice, and the research tailors itself to you.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Measured on our runs</h2>
+    <div class="stats">
+      <div class="stat"><div class="n">~$0.04</div><div class="l">Nebius tokens per decision ($0.03–0.04)</div></div>
+      <div class="stat"><div class="n">55–70 s</div><div class="l">research time for 4 agents</div></div>
+      <div class="stat"><div class="n">2.4–3.5×</div><div class="l">faster in parallel than in sequence</div></div>
+      <div class="stat"><div class="n">12 / 12</div><div class="l">quotes verified in the recorded run</div></div>
+      <div class="stat"><div class="n">~0.3 s</div><div class="l">per Nemotron status line</div></div>
+      <div class="stat"><div class="n">~2 s</div><div class="l">Scribe v2 speech-to-text</div></div>
+    </div>
+
+    <h2 style="margin-top:2vh">Model benchmarks &amp; limits</h2>
+    <div class="bench">
+      <div class="bar"><span class="lab">DeepSeek HLE, no tools</span><div class="track"><div class="fill muted" style="width:36.8%"></div></div><span class="v">36.8</span></div>
+      <div class="bar"><span class="lab">DeepSeek HLE, with tools</span><div class="track"><div class="fill" style="width:63.9%"></div></div><span class="v">63.9</span></div>
+      <div class="bar"><span class="lab">Non-hallucination, Sep build</span><div class="track"><div class="fill muted" style="width:4%"></div></div><span class="v">4%</span></div>
+      <div class="bar"><span class="lab">Non-hallucination, 1017</span><div class="track"><div class="fill warn" style="width:33%"></div></div><span class="v">33%</span></div>
+      <div class="bar"><span class="lab">GLM-5.3 empty summaries</span><div class="track"><div class="fill warn" style="width:50%"></div></div><span class="v">3 / 6</span></div>
+      <div class="bar"><span class="lab">Scribe v2 word error rate</span><div class="track"><div class="fill read" style="width:2.2%"></div></div><span class="v">2.2%</span></div>
+    </div>
+    <p class="note">HLE and AA-Omniscience from Artificial Analysis; GLM and Scribe timings from our smoke tests. Tools nearly double DeepSeek's score, which is why every claim must be grounded in search.</p>
+
+    <h2 style="margin-top:1.8vh">Where the models struggled, and what we did</h2>
+    <div class="lessons">
+      <div>Quotes paraphrased: shown amber, not hidden</div>
+      <div>GLM empty lines: switched to Nemotron</div>
+      <div>Max effort varied 1.3k–12k reasoning tokens</div>
+      <div>Nebius 503s: retry 2/4/8/12 s, then fall back</div>
+      <div>Same-model agents aren't independent: MiniMax audits</div>
+      <div>Default 8k max_tokens too small for max effort: set 32k</div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <span><b>Stack:</b> TypeScript · React 19 + React Flow · Hono SSE · zod · Nebius Token Factory (OpenAI-compatible) · Tavily · ElevenLabs</span>
+  <span>Noetic × Nebius hackathon · 24 Oct 2026 · <b>Akshay Reddy Gujjula</b></span>
+</footer>
+</body>
+</html>
