@@ -136,3 +136,22 @@
 .dl-feed-models-wrap { margin-top: 10px; border-top: 1px solid var(--crux-border); padding-top: 7px; }
 .dl-feed-models-wrap > summary { cursor: pointer; font-size: 11px; letter-spacing: .04em; text-transform: uppercase; font-weight: 600; color: var(--crux-text-tertiary); }
 .dl-feed-models-wrap .dl-feed-models { margin-top: 6px; border-top: 0; padding-top: 0; }
+
+/* Simple mode: fewer, bigger blocks. */
+.dl-feed-kpis.is-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.dl-feed-stats.is-simple { padding: 8px; }
+.dl-feed-stats.is-simple .dl-feed-kpi { padding: 7px 8px; }
+.dl-feed-stats.is-simple .dl-feed-kpi .l { font-size: 11px; }
+.dl-feed-stats.is-simple .dl-feed-kpi .v { font-size: 18px; line-height: 24px; text-overflow: clip; }
+.dl-feed.is-simple .dl-feed-label { font-size: 12px; }
+.dl-feed.is-simple .dl-feed-card { padding: 11px 28px 11px 11px; }
+.dl-feed.is-simple .dl-feed-card-title { font-size: 15px; line-height: 20px; font-weight: 600; }
+.dl-feed.is-simple .dl-feed-body {
+  display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; white-space: normal;
+}
+.dl-feed.is-simple .dl-feed-quote, .dl-feed.is-simple .dl-feed-chips, .dl-feed.is-simple .dl-feed-model { display: none; }
+.dl-feed-toggle {
+  width: 100%; padding: 9px 12px; border-radius: var(--crux-radius-card); border: 1px dashed var(--crux-border-strong);
+  font-size: 13px; font-weight: 600; color: var(--crux-text-secondary); text-align: center; background: transparent;
+}
+.dl-feed-toggle:hover { background: var(--crux-hover); color: var(--crux-text); }

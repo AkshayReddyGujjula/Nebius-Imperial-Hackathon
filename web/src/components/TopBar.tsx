@@ -38,6 +38,12 @@ function progressOf(s: CruxStore): { pct: number; label: string; active: boolean
   }
 }
 
+function simpleLabel(label: string): string {
+  if (label === 'Done') return 'Brief ready'
+  if (label === 'Checking citations') return 'Checking quotes'
+  return label
+}
+
 export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
   const { phase, title, replay, mock, runId, viewMode } = useCrux(useShallow((s) => ({
     phase: s.phase, title: s.plan?.title ?? s.decision, replay: s.replay, mock: s.mock,
@@ -72,7 +78,16 @@ export function TopBar({ onNewDecision }: { onNewDecision: () => void }) {
         <div className="flex flex-none items-center gap-2">
           {replay ? <span className="ui-pill">Replay</span> : null}
           {mock ? <span className="ui-pill warn">Mock data</span> : null}
-          {progress && progress.label !== 'Done' && progress.label !== 'Stopped' ? (
+          {viewMode === 'simple' && progress ? (
+            // Simple mode: one big phase line over the bar, always shown (incl. "Brief ready").
+            <div className="dl-progress" data-active={progress.active} role="progressbar" aria-label={simpleLabel(progress.label)}
+              aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.pct)} style={{ minWidth: 280 }}>
+              <span className={`text-[14px] font-semibold leading-[17px] ${progress.label === 'Stopped' ? 'text-crux-bad' : progress.label === 'Done' ? 'text-crux-ok' : 'text-crux-text'}`}>
+                {simpleLabel(progress.label)}<span className="dl-topbar-muted font-normal"> · </span><span className="ui-num font-normal">{fmtClock(Math.max(0, elapsed))}</span>
+              </span>
+              <span className="dl-progress-track" style={{ height: 6 }}><span className="dl-progress-fill" style={{ width: `${progress.pct}%` }} /></span>
+            </div>
+          ) : progress && progress.label !== 'Done' && progress.label !== 'Stopped' ? (
             <div className="dl-progress" data-active={progress.active} role="progressbar" aria-label={progress.label}
               aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(progress.pct)}>
               <span className="dl-progress-label">{progress.label}<span className="dl-topbar-muted"> · </span><span className="ui-num">{fmtClock(Math.max(0, elapsed))}</span></span>

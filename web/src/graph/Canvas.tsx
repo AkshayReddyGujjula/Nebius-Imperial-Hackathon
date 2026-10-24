@@ -40,7 +40,10 @@ const nodeTypes: NodeTypes = {
 const edgeTypes: EdgeTypes = { contradiction: ContradictionEdge, bus: BusEdge, flow: FlowEdge }
 const defaultEdgeOptions = { style: { strokeWidth: 1.25 } }
 // Pixel padding: clears the legend overlay at the top and keeps cards as large as possible for a projector.
-const FIT = { padding: { top: '56px', right: '24px', bottom: '64px', left: '24px' }, duration: 400, maxZoom: 1 } as const
+const FIT_DETAILED = { padding: { top: '56px', right: '24px', bottom: '64px', left: '24px' }, duration: 400, maxZoom: 1 } as const
+// Simple mode leaves room for the floating question card at the centre-bottom of the canvas.
+const FIT_SIMPLE = { ...FIT_DETAILED, padding: { ...FIT_DETAILED.padding, bottom: '128px' } } as const
+let FIT: typeof FIT_DETAILED | typeof FIT_SIMPLE = FIT_DETAILED
 
 export function Canvas() {
   return (
@@ -72,8 +75,10 @@ function CanvasInner() {
     select: s.select, selectCell: s.selectCell, setUserMovedViewport: s.setUserMovedViewport,
   })))
   const flow = useReactFlow()
+  FIT = viewMode === 'simple' ? FIT_SIMPLE : FIT_DETAILED
 
-  const layout = useMemo(() => layoutGraph({ plan, findings, viewMode }), [plan, findings, viewMode])
+  const contradictionCount = useCrux((s) => (s.contradictionsStatus === 'ready' ? s.contradictions.length : 0))
+  const layout = useMemo(() => layoutGraph({ plan, findings, viewMode, contradictionCount }), [plan, findings, viewMode, contradictionCount])
   const nodes = useMemo(() => buildNodes(layout), [layout])
   const edges = useMemo(
     () => buildEdges({ layout, detailed: viewMode === 'detailed', ...edgeState }),
@@ -140,15 +145,15 @@ function CanvasInner() {
         <Background variant={BackgroundVariant.Dots} gap={20} size={1} color="#DCDCE0" />
       </ReactFlow>
 
-      <div className="cx-overlay cx-overlay-tl cx-legend" aria-label="Status legend">
+      {viewMode === 'detailed' && <div className="cx-overlay cx-overlay-tl cx-legend" aria-label="Status legend">
         <StatusDot tone="queued" label="Queued" />
         <StatusDot tone="active" label="Searching" />
         <StatusDot tone="active" label="Reading" />
         <StatusDot tone="done" label="Done" />
         <StatusDot tone="failed" label="Failed" />
-      </div>
+      </div>}
       <div className="cx-overlay cx-overlay-tr">
-        <span className="cx-hint">Click any card for details</span>
+        {viewMode === 'detailed' && <span className="cx-hint">Click any card for details</span>}
         <button type="button" className="cx-icon-btn" onClick={fit} aria-label="Fit to view" title="Fit to view">
           <Maximize />
         </button>

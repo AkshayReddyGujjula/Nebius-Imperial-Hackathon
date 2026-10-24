@@ -11,6 +11,7 @@ import type { CruxNode } from '../buildGraph'
 import { agentColor, agentNumber, disagreesWith, modelName, qLabel } from '../helpers'
 import { AgentBadge, SourceChip, StatePill, TypeOut, pillState } from '../parts'
 import { NodeShell } from './NodeShell'
+import { firstWords } from './StagePill'
 import '../activity.css'
 
 function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
@@ -23,12 +24,34 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
     const a = s.agentByQuestion[qid]
     return a ? s.reasoning[a]?.summary ?? null : null
   })
+  const busy = useCrux((s) => s.phase !== 'done' && s.phase !== 'error' && s.phase !== 'idle')
   if (!question) return null
 
   const status = agent?.status ?? null
   const deeper = question.origin === 'dig_deeper'
   const agentId = agent?.id ?? null
   const total = 1 + (agent?.extraRounds ?? 0)
+
+  if (!detailed) {
+    // Simple mode: who, the question (2 lines), one live line, the status pill. Nothing else.
+    const active = status !== null && ACTIVE.includes(status)
+    return (
+      <NodeShell id={id} dim={question.stale} label={question.text} accent={agentId ? agentColor(agentId) : undefined}
+        className="cx-node-simple" focus={active} faded={busy && !active && !question.stale}>
+        <div className="cx-k">
+          {agentId && <AgentBadge agentId={agentId} />}
+          <span className="cx-agent-name" title={agentLine(agentId, agent?.model, question.effort)}>
+            {agentId ? modelName(agent?.model || 'deepseek').split(' ')[0] : 'Waiting'}
+          </span>
+          <span className="cx-right">
+            <StatePill state={pillState(status)} progress={agentProgress(status, agent?.round ?? 0, total)} />
+          </span>
+        </div>
+        <div className="cx-title cx-clamp-2 cx-title-simple" title={question.text}>{question.text}</div>
+        <SimpleLine agentId={agentId} summary={summary} />
+      </NodeShell>
+    )
+  }
 
   return (
     <NodeShell id={id} dim={question.stale} label={question.text} accent={agentId ? agentColor(agentId) : undefined}>
@@ -53,6 +76,35 @@ function QuestionNodeImpl({ id, data }: NodeProps<CruxNode>) {
         <div className="ax-panel"><div className="ax-text">Waiting to start</div></div>
       )}
     </NodeShell>
+  )
+}
+
+const ACTIVE = ['searching', 'reading', 'thinking', 'writing']
+
+/** The one live line on a Simple-mode agent card: at most 8 words. */
+function SimpleLine({ agentId, summary }: { agentId: string | null; summary: string | null }) {
+  const { status, query, read, answer } = useCrux(useShallow((s) => {
+    const a = agentId ? s.agents[agentId] : undefined
+    const sid = a?.searchIds[a.searchIds.length - 1]
+    return { status: a?.status ?? 'queued', query: sid ? s.searches[sid]?.query ?? '' : '', read: a?.sourcesRead ?? 0, answer: a?.answer ?? '' }
+  }))
+  let text: string
+  switch (status) {
+    case 'searching': text = query ? `Searching “${firstWords(query, 6)}”` : 'Searching the web'; break
+    case 'reading': text = `Reading sources · ${read} read`; break
+    case 'thinking': text = summary ? firstWords(summary, 8) : 'Weighing the evidence'; break
+    case 'writing': text = 'Writing up findings'; break
+    case 'done': text = answer ? firstWords(answer, 8) : 'Finished'; break
+    case 'timeout': text = 'Ran out of time'; break
+    case 'failed': text = 'Couldn’t finish'; break
+    default: text = 'Waiting to start'
+  }
+  const live = ACTIVE.includes(status)
+  return (
+    <div className={`cx-simple-line${live ? ' is-live' : ''}${status === 'failed' ? ' is-bad' : ''}`}>
+      {live ? <span className="cx-dot cx-aud-pulse" aria-hidden /> : null}
+      <span className="cx-ellipsis">{text}</span>
+    </div>
   )
 }
 

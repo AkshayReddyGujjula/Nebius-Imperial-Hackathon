@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useCrux } from '../../store/runStore'
 import type { CruxNode } from '../buildGraph'
 import { NodeShell } from './NodeShell'
+import { StagePill } from './StagePill'
 
 /** Deterministic quote check (code, no model): every finding's quote is matched against its source text. */
 function QuoteCheckNodeImpl({ id }: NodeProps<CruxNode>) {
@@ -18,6 +19,17 @@ function QuoteCheckNodeImpl({ id }: NodeProps<CruxNode>) {
     }
     return { verified, partial, missing, total }
   }))
+  const simple = useCrux((s) => s.viewMode === 'simple')
+  const busy = useCrux((s) => s.phase === 'planning' || s.phase === 'researching')
+  if (simple) {
+    const state = c.total === 0 ? 'waiting' : busy ? 'working' : c.missing ? 'attention' : 'ok'
+    const text = c.total === 0 ? 'waiting for findings' : `${c.verified + c.partial}/${c.total} verified`
+    return (
+      <NodeShell id={id} className={`cx-node-pill is-${state}`} label="Quote check">
+        <StagePill state={state} name="Quote check" text={text} title="Code, no model: each quote must appear in its source" />
+      </NodeShell>
+    )
+  }
   return (
     <NodeShell id={id} className="cx-node-qc" label="Quote check">
       <div className="cx-k">

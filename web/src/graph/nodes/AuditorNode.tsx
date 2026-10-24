@@ -5,6 +5,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useCrux } from '../../store/runStore'
 import type { CruxNode } from '../buildGraph'
 import { NodeShell } from './NodeShell'
+import { StagePill, firstWords } from './StagePill'
 
 const MAX_SHOWN = 3
 
@@ -18,6 +19,35 @@ function AuditorNodeImpl({ id }: NodeProps<CruxNode>) {
   })))
   const checking = status === 'idle' && phase === 'checking'
   const waiting = status === 'idle' && !checking
+  const simple = useCrux((s) => s.viewMode === 'simple')
+
+  if (simple) {
+    const conflicts = status === 'ready' ? contradictions.length : 0
+    if (conflicts > 0) {
+      return (
+        <NodeShell id={id} className="cx-node-auditor is-attention" label="Contradiction check">
+          <StagePill state="attention" name="Auditor" text={`${conflicts} conflict${conflicts === 1 ? '' : 's'}`} />
+          <div className="cx-aud-list">
+            {contradictions.slice(0, 2).map((c) => (
+              <div key={c.id} className="cx-ellipsis" title={c.explanation}>
+                <b>{c.findingIds.join(' vs ')}</b>: {firstWords(c.explanation, 7)}
+              </div>
+            ))}
+          </div>
+        </NodeShell>
+      )
+    }
+    const [state, text] = status === 'failed' ? ['attention', 'check failed'] as const
+      : status === 'ready' ? ['ok', 'no conflicts'] as const
+      : checking ? ['working', 'checking…'] as const
+      : ['waiting', 'waiting for agents'] as const
+    return (
+      <NodeShell id={id} className={`cx-node-pill is-${state}`} label="Contradiction check">
+        <StagePill state={state} name={state === 'ok' ? 'Auditor (MiniMax)' : 'Auditor'} text={text}
+          title={status === 'failed' && error ? error : 'Contradiction check · MiniMax, a different model family from the researchers'} />
+      </NodeShell>
+    )
+  }
 
   return (
     <NodeShell id={id} className="cx-node-auditor" label="Contradiction check">

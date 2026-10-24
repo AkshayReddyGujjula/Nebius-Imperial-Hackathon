@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { useShallow } from 'zustand/react/shallow'
 import {
@@ -32,6 +32,8 @@ function useFeed(): FeedItem[] {
 export function FeedRail() {
   const items = useFeed()
   const runId = useCrux((s) => s.runId)
+  const simple = useCrux((s) => s.viewMode === 'simple')
+  const [showStream, setShowStream] = useState(false)
   const { open, seen, setOpen, markSeen, clear } = useFeedUi()
   useEffect(() => { clear() }, [runId, clear])
 
@@ -39,6 +41,9 @@ export function FeedRail() {
     .filter((it) => it.priority === 3 && !seen[it.id])
     .sort((a, b) => urgency(b) - urgency(a) || b.ts - a.ts), [items, seen])
   const stream = useMemo(() => items.slice(-STREAM_LIMIT).reverse(), [items])
+  // Simple mode: at most three things to look at; the full stream sits behind a toggle.
+  const shownAttention = simple ? attention.slice(0, 3) : attention
+  const streamOpen = !simple || showStream
 
   if (!open) {
     return (
@@ -53,11 +58,11 @@ export function FeedRail() {
   }
 
   return (
-    <aside aria-label="Live feed" className="dl-feed">
+    <aside aria-label="Live feed" className={`dl-feed${simple ? ' is-simple' : ''}`}>
       <header className="dl-feed-head">
         <div className="min-w-0">
           <div className="dl-feed-title"><span className="dl-feed-live" aria-hidden /> Live feed</div>
-          <div className="dl-feed-sub">what the agents are doing</div>
+          {simple ? null : <div className="dl-feed-sub">what the agents are doing</div>}
         </div>
         <button type="button" className="dl-feed-iconbtn" onClick={() => setOpen(false)} title="Collapse" aria-label="Collapse the live feed">
           <ChevronsRight size={16} />
@@ -68,17 +73,23 @@ export function FeedRail() {
         {attention.length ? (
           <section className="dl-feed-section dl-feed-attn" aria-label="Needs your attention">
             <div className="dl-feed-label">
-              <span>Needs your attention · {attention.length}</span>
+              <span>{simple ? 'Look here' : 'Needs your attention'} · {attention.length}</span>
               <button type="button" className="dl-feed-link" onClick={() => markSeen(attention.map((a) => a.id))}>
                 <CheckCheck size={12} /> Mark all seen
               </button>
             </div>
-            <CardList items={attention} seen={seen} pinned />
+            <CardList items={shownAttention} seen={seen} pinned />
           </section>
         ) : null}
         <section className="dl-feed-section" aria-label="Everything, newest first">
-          <div className="dl-feed-label"><span>Everything · newest first</span><span className="ui-num">{items.length}</span></div>
-          {stream.length ? <CardList items={stream} seen={seen} /> : <p className="dl-feed-empty">Waiting for the first agent…</p>}
+          {simple ? (
+            <button type="button" className="dl-feed-toggle" aria-expanded={showStream} onClick={() => setShowStream((v) => !v)}>
+              {showStream ? 'Hide activity' : 'Show activity'} <span className="ui-num">({items.length})</span>
+            </button>
+          ) : (
+            <div className="dl-feed-label"><span>Everything · newest first</span><span className="ui-num">{items.length}</span></div>
+          )}
+          {streamOpen ? (stream.length ? <CardList items={stream} seen={seen} /> : <p className="dl-feed-empty">Waiting for the first agent…</p>) : null}
         </section>
       </div>
     </aside>
@@ -107,6 +118,7 @@ function CardList({ items, seen, pinned = false }: { items: FeedItem[]; seen: Re
 function FeedCard({ item, unseen, pinned }: { item: FeedItem; unseen: boolean; pinned: boolean }) {
   const select = useCrux((s) => s.select)
   const markSeen = useFeedUi((s) => s.markSeen)
+  const simple = useCrux((s) => s.viewMode === 'simple')
   const onClick = () => {
     markSeen([item.id])
     if (item.nodeId) select(item.nodeId)
@@ -122,8 +134,8 @@ function FeedCard({ item, unseen, pinned }: { item: FeedItem; unseen: boolean; p
           {item.actor.model ? <span className="dl-feed-model">· {item.actor.model}</span> : null}
           <span className="dl-feed-time ui-num">{new Date(item.ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })}</span>
         </div>
-        <div className="dl-feed-card-title">{item.title}</div>
-        {item.body ? <p className={`dl-feed-body ${item.mono ? 'is-mono' : ''}`}>{item.body}</p> : null}
+        <div className="dl-feed-card-title" title={item.title}>{simple ? words(item.title, 6) : item.title}</div>
+        {item.body && !simple ? <p className={`dl-feed-body ${item.mono ? 'is-mono' : ''}`}>{item.body}</p> : null}
         {item.quote ? <blockquote className="dl-feed-quote">“{item.quote}”</blockquote> : null}
         {item.chips.length ? (
           <div className="dl-feed-chips">
@@ -134,6 +146,12 @@ function FeedCard({ item, unseen, pinned }: { item: FeedItem; unseen: boolean; p
       {unseen ? <span className="dl-feed-bang" aria-label="New">!</span> : null}
     </button>
   )
+}
+
+/** First n words, with an ellipsis if cut. */
+function words(text: string, n: number): string {
+  const w = text.trim().split(/\s+/)
+  return w.length <= n ? text : `${w.slice(0, n).join(' ')}…`
 }
 
 function Avatar({ actor }: { actor: FeedActor }) {

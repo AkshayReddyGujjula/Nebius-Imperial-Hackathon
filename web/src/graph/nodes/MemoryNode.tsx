@@ -6,6 +6,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { useCrux } from '../../store/runStore'
 import type { CruxNode } from '../buildGraph'
 import { NodeShell } from './NodeShell'
+import { StagePill } from './StagePill'
 
 /** user.md — the shared memory every agent and the brief writer read. Pulses when it changes. */
 function MemoryNodeImpl({ id }: NodeProps<CruxNode>) {
@@ -14,6 +15,21 @@ function MemoryNodeImpl({ id }: NodeProps<CruxNode>) {
     changes: s.memoryChanges,
     lines: s.memory.split('\n').filter((l) => l.trim().startsWith('- ')).length,
   })))
+  const simple = useCrux((s) => s.viewMode === 'simple')
+  if (simple) {
+    const state = seq === 0 ? 'waiting' : 'ok'
+    return (
+      <NodeShell id={id} className={`cx-node-pill is-${state}`} label="Shared memory user.md">
+        {seq > 0 && (
+          <motion.span key={seq} className="cx-mem-pulse" style={{ borderRadius: 999 }}
+            initial={{ opacity: 0.9, scale: 1 }} animate={{ opacity: 0, scale: 1.12 }}
+            transition={{ duration: 1.2, ease: 'easeOut' }} aria-hidden />
+        )}
+        <StagePill state={state} name="user.md" text={seq === 0 ? 'empty' : `${lines} note${lines === 1 ? '' : 's'}`}
+          title="Shared memory: every agent and the brief writer read it" />
+      </NodeShell>
+    )
+  }
   return (
     <NodeShell id={id} className="cx-node-memory" label="Shared memory user.md">
       {seq > 0 && (
