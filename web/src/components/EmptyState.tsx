@@ -45,21 +45,23 @@ export function EmptyState({ onRun, onReplay, error }: {
             Type it or say it. Include what matters: deadlines, stakes, what you value.
           </p>
           <Composer onSubmit={onRun} error={error ?? micError} mic={<MicButton onError={setMicError} />} />
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <span className="text-[12px] text-crux-text-tertiary">Try:</span>
-            {EXAMPLES.map((ex) => (
-              <button key={ex.label} type="button" className="ui-pill" onClick={() => {
-                setDraft(ex.text, 'text')
-                // Caret at the end, after React has written the value, so Enter runs it straight away.
-                requestAnimationFrame(() => {
-                  const el = document.getElementById('crux-composer') as HTMLTextAreaElement | null
-                  if (!el) return
-                  el.focus()
-                  el.setSelectionRange(el.value.length, el.value.length)
-                  el.scrollTop = el.scrollHeight
-                })
-              }}>{ex.label}</button>
-            ))}
+          <div className="mt-3 flex items-start gap-2">
+            <span className="flex-none text-[12px] leading-[22px] text-crux-text-tertiary">Try:</span>
+            <div className="flex min-w-0 flex-wrap gap-2">
+              {EXAMPLES.map((ex) => (
+                <button key={ex.label} type="button" className="ui-pill" onClick={() => {
+                  setDraft(ex.text, 'text')
+                  // Caret at the end, after React has written the value, so Enter runs it straight away.
+                  requestAnimationFrame(() => {
+                    const el = document.getElementById('crux-composer') as HTMLTextAreaElement | null
+                    if (!el) return
+                    el.focus()
+                    el.setSelectionRange(el.value.length, el.value.length)
+                    el.scrollTop = el.scrollHeight
+                  })
+                }}>{ex.label}</button>
+              ))}
+            </div>
           </div>
         </div>
 

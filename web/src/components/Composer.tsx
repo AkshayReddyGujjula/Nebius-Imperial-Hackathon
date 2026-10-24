@@ -31,6 +31,7 @@ export function Composer({ onSubmit, mic, error }: { onSubmit: (text: string) =>
         <textarea
           ref={ref}
           id="crux-composer"
+          autoFocus
           className="ui-textarea ui-scroll"
           rows={3}
           maxLength={4000}
