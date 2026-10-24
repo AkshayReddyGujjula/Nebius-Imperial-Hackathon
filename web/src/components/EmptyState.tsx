@@ -50,7 +50,14 @@ export function EmptyState({ onRun, onReplay, error }: {
             {EXAMPLES.map((ex) => (
               <button key={ex.label} type="button" className="ui-pill" onClick={() => {
                 setDraft(ex.text, 'text')
-                document.getElementById('crux-composer')?.focus()
+                // Caret at the end, after React has written the value, so Enter runs it straight away.
+                requestAnimationFrame(() => {
+                  const el = document.getElementById('crux-composer') as HTMLTextAreaElement | null
+                  if (!el) return
+                  el.focus()
+                  el.setSelectionRange(el.value.length, el.value.length)
+                  el.scrollTop = el.scrollHeight
+                })
               }}>{ex.label}</button>
             ))}
           </div>
